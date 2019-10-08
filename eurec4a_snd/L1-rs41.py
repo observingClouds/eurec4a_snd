@@ -20,6 +20,7 @@ import glob
 import configparser
 from configparser import ExtendedInterpolation
 import argparse
+import logging
 
 
 # ====================================================
@@ -112,6 +113,8 @@ try:
     git_module_version = sp.check_output(
         ["git", "describe", "--always"]).strip()
 except:
+    logging.info('No git-version could be found. Please consider'
+                 'pulling the git repository.')
     git_module_version = "--"
 
 compression_level = int(args["compression"])
