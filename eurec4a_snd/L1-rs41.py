@@ -45,8 +45,7 @@ def load_configuration(configuration_file=None):
             configuration_file = "~/PATH.ini"
         elif os.path.isfile(ini_path):
             configuration_file = ini_path
-
-        if not os.path.isfile(configuration_file):
+        if configuration_file is None or not os.path.isfile(configuration_file):
             raise FileNotFoundError(
                 "No Configuration File 'PATH.ini' found. Please create one in your home directory "
                 "or provide the path via the argument parsing -c.")
@@ -99,12 +98,15 @@ args = get_args()
 try:
     config = load_configuration(args["configfile"])
 except FileNotFoundError:
-    print("No config file found! Outputfolder and Inputpath or Inputfile need to be provided!")
-
-if args["inputpath"] is None:
-    args["inputpath"] = config["BCO_RADIOSONDES"]["PATH"]
-if args["outputfolder"] is None:
-    args["outputfolder"] = config["CONVERT_BCO_RADIOSONDES"]["OUTPUT_PATH"]
+    if args["outputfolder"] is None and (args["inputpath"] is None and args["inputpath"] is None):
+        sys.exit("No config file found! Outputfolder and Inputpath or Inputfile need to be provided!")
+    else:
+        pass
+else:
+    if args["inputpath"] is None:
+        args["inputpath"] = config["BCO_RADIOSONDES"]["PATH"]
+    if args["outputfolder"] is None:
+        args["outputfolder"] = config["CONVERT_BCO_RADIOSONDES"]["OUTPUT_PATH"]
 
 try:
     git_module_version = sp.check_output(
