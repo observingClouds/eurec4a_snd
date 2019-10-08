@@ -118,20 +118,12 @@ compression_level = int(args["compression"])
 
 time_in = time.time()
 
-# <<<<<<< L1-rs41.py
 # Creating file list according to given arguments
 if args['inputfile'] is None:
     filelist = glob.glob(args['inputpath'] + '*.txt')
 else:
     filelist = glob.glob(args['inputfile'])
 filelist = sorted(filelist)
-# =======
-inroot = '/media/lukas/Lidar_LF/Radiosondes/ASCII/201902/'
-outroot = '/media/lukas/Lidar_LF/Radiosondes/NetCDF/'
-
-filelist0 = os.listdir(inroot)
-filelist0.sort()
-# >>>>>>> L1-rs41.py
 
 print('Files to process {}'.format(filelist))
 for ifile in range(0, len(filelist)):
