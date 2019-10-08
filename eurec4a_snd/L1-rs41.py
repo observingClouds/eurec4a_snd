@@ -51,7 +51,7 @@ def load_configuration(configuration_file=None):
                 "No Configuration File 'PATH.ini' found. Please create one in your home directory "
                 "or provide the path via the argument parsing -c.")
         else:
-            print("Using configuration file: %s" % configuration_file)
+            logging.info("Using configuration file: %s" % configuration_file)
 
     conf = configparser.ConfigParser(interpolation=ExtendedInterpolation())
     conf.read(configuration_file)
@@ -82,6 +82,11 @@ def get_args():
                         help="Set the Level of compression for the output (1-9)",
                         required=False, default=4)
 
+    parser.add_argument('-v', '--verbose', metavar="DEBUG",
+                        help='Set the level of verbosity [DEBUG, INFO,'
+                        ' WARNING, ERROR]',
+                        required=False, default="INFO")
+
     parser.add_argument('-d', '--date', metavar="YYYYMMDD", help='Provide the desired date to be processed. '
                                                                  'Fomat: YYYYMMDD', required=False, default=None)
     parsed_args = vars(parser.parse_args())
@@ -93,8 +98,20 @@ def get_args():
     return parsed_args
 
 
+def setup_logging(verbose):
+    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
+    logging.basicConfig(
+        level=logging.getLevelName(verbose),
+        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
+        handlers=[
+            logging.FileHandler(f"{__file__}.log"),
+            logging.StreamHandler()
+        ])
+
+
 # Set up global configuration of BCO-MPI-GIT:
 args = get_args()
+setup_logging(args['verbose'])
 
 try:
     config = load_configuration(args["configfile"])
@@ -128,13 +145,13 @@ else:
     filelist = glob.glob(args['inputfile'])
 filelist = sorted(filelist)
 
-print('Files to process {}'.format(filelist))
+logging.info('Files to process {}'.format(filelist))
 for ifile in range(0, len(filelist)):
-    print('Reading file number {}'.format(ifile))
+    logging.info('Reading file number {}'.format(ifile))
     linecount = 0
     with open(filelist[ifile], 'rb') as fa:
         for line in fa:  # loop over all lines within ASCII file
-            print(line)
+            logging.info(line.decode('ISO-8859-1'))
             linecount += 1  # Counts all lines within header
             string = line.split()
             if linecount == 1:
@@ -156,7 +173,7 @@ for ifile in range(0, len(filelist)):
         filelist[ifile], skip_header=9, invalid_raise=False)
 
     num_rows = data.shape[0]  # length of raw array
-    print('Number of rows: {}'.format(num_rows))
+    logging.info('Number of rows: {}'.format(num_rows))
 
     # after all needed header information is read, the reduced data field is masked for
     # NaN values and an output file produced afterward:
@@ -290,7 +307,7 @@ for ifile in range(0, len(filelist)):
     nc_long[:] = long_m[:]
 
     fo.close()
-    print('File Done')
+    logging.info('File Done')
 
 time_out = time.time()
-print('System time: ', time_out - time_in, ' s')
+logging.debug('System time: ', time_out - time_in, ' s')
