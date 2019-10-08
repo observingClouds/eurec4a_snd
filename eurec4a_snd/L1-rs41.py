@@ -156,7 +156,7 @@ for ifile in range(0, len(filelist)):
     utctime = calendar.timegm(datetime.datetime(int(datest[0:4]), int(datest[4:6]), int(datest[6:8]),
                                                 int(timest[0:2]), int(timest[2:4]), int(timest[4:6])).timetuple())
     data = np.genfromtxt(
-        filelist[ifile], skip_header=9, invalid_raise=False, encoding="ISO-8859-1")
+        filelist[ifile], skip_header=9, invalid_raise=False)
 
     num_rows = data.shape[0]  # length of raw array
     print('Number of rows: {}'.format(num_rows))
