@@ -13,19 +13,20 @@ import calendar
 import os.path
 import sys
 import glob
-import numpy as np
-from netCDF4 import Dataset, default_fillvals, num2date
 import subprocess as sp
 import glob
 import configparser
 from configparser import ExtendedInterpolation
 import argparse
 import logging
-
+import numpy as np
+from netCDF4 import Dataset, default_fillvals, num2date
 
 # ====================================================
 # General MPI-BCO settings:
 # ====================================================
+
+
 def load_configuration(configuration_file=None):
     """
     Loads the configuration file PATH.ini.
@@ -48,7 +49,8 @@ def load_configuration(configuration_file=None):
             configuration_file = ini_path
         if configuration_file is None or not os.path.isfile(configuration_file):
             raise FileNotFoundError(
-                "No Configuration File 'PATH.ini' found. Please create one in your home directory "
+                "No Configuration File 'PATH.ini' found. Please create one"
+                " in your home directory "
                 "or provide the path via the argument parsing -c.")
         else:
             logging.info("Using configuration file: %s" % configuration_file)
@@ -117,7 +119,8 @@ try:
     config = load_configuration(args["configfile"])
 except FileNotFoundError:
     if args["outputfolder"] is None and (args["inputpath"] is None and args["inputpath"] is None):
-        sys.exit("No config file found! Outputfolder and Inputpath or Inputfile need to be provided!")
+        sys.exit("No config file found! Outputfolder and Inputpath"
+                 " or Inputfile need to be provided!")
     else:
         pass
 else:
