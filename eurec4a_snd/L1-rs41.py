@@ -238,11 +238,11 @@ for ifile in range(0, len(filelist)):
     fo.resolution = "{:g} sec".format(time_resolution)
     fo.original_file = filelist[ifile]
     fo.git_version = git_module_version
-
-    # add file history, including file creation timestamp, path of python file and of ASCII data file
-    fo.history = 'File created ' + time.ctime(time.time()) + ' with ' + os.path.basename(__file__), \
-                 ', last program modification on ' + \
-        time.ctime(os.path.getmtime(os.path.realpath(__file__)))
+    fo.Conventions = 'CF-1.7'
+    fo.created_with = '{file} with its last modifications on {time}'.\
+        format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
+               file=os.path.basename(__file__))
+    fo.created_on = str(time.ctime(time.time()))
 
     # Define Dimension (record length) from ASCII record counter
     fo.createDimension('levels', num_rows)
@@ -251,50 +251,61 @@ for ifile in range(0, len(filelist)):
     # Creation of NetCDF Variables, including description and unit
     nc_tindex = fo.createVariable('time', 'f4', ('levels'), fill_value=fillval)
     nc_tindex.long_name = 'time passed since launch'
+    nc_tindex.standard_name = 'time'
     nc_tindex.units = 's'
+    nc_tindex.axis = 'T'
+    nc_tindex.calendar = "proleptic_gregorian"
     nc_vvert = fo.createVariable(
         'ascentRate', 'f4', ('levels'), fill_value=fillval)
-    nc_vvert.long_name = 'Ascent/descent rate (vertical velocity)'
+    nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
+    nc_vvert.description = 'ascent rate is positive/ descent rate is negative'
     nc_vvert.units = 'm/s'
     nc_alti = fo.createVariable(
         'altitude', 'f4', ('levels'), fill_value=fillval)
-    nc_alti.long_name = 'altitude'
+    nc_alti.standard_name = 'altitude'
     nc_alti.units = 'm'
     nc_pres = fo.createVariable(
         'pressure', 'f4', ('levels'), fill_value=fillval)
-    nc_pres.long_name = 'pressure'
+    nc_pres.standard_name = 'air_pressure'
     nc_pres.units = 'hPa'
+    nc_pres.axis = 'Z'
     nc_temp = fo.createVariable(
         'temperature', 'f4', ('levels'), fill_value=fillval)
-    nc_temp.long_name = 'air temperature'
-    nc_temp.units = 'degrees Celsius'
-    nc_rh = fo.createVariable('humidity', 'f4', ('levels'), fill_value=fillval)
-    nc_rh.long_name = 'relative humidity'
+    nc_temp.standard_name = 'air_temperature'
+    nc_temp.units = 'degrees_Celsius'
+    nc_rh = fo.createVariable(
+        'humidity', 'f4', ('levels'), fill_value=fillval)
+    nc_rh.standard_name = 'relative_humidity'
     nc_rh.units = '%'
     nc_dewp = fo.createVariable(
         'dewPoint', 'f4', ('levels'), fill_value=fillval)
-    nc_dewp.long_name = 'dew point'
-    nc_dewp.units = 'degrees Celsius'
+    nc_dewp.standard_name = 'dew_point_temperature'
+    nc_dewp.units = 'degrees_Celsius'
     nc_mix = fo.createVariable(
         'mixingRatio', 'f4', ('levels'), fill_value=fillval)
-    nc_mix.long_name = 'Water vapor mixing ratio'
+    nc_mix.long_name = 'water vapor mixing ratio'
+    nc_mix.standard_name = 'humidity_mixing_ratio'
     nc_mix.units = 'g/kg'
     nc_vhori = fo.createVariable(
         'windSpeed', 'f4', ('levels'), fill_value=fillval)
-    nc_vhori.long_name = 'wind speed)'
+    nc_vhori.standard_name = 'wind_speed'
     nc_vhori.units = 'm/s'
     nc_vdir = fo.createVariable(
         'windDirection', 'f4', ('levels'), fill_value=fillval)
-    nc_vdir.long_name = 'wind direction'
+    nc_vdir.standard_name = 'wind_from_direction'
     nc_vdir.units = 'degrees'
     nc_lat = fo.createVariable(
         'latitude', 'f4', ('levels'), fill_value=fillval)
     nc_lat.long_name = 'latitude'
-    nc_lat.units = 'degrees-north'
+    nc_lat.standard_name = 'latitude'
+    nc_lat.units = 'degrees_north'
+    nc_lat.axis = 'Y'
     nc_long = fo.createVariable(
         'longitude', 'f4', ('levels'), fill_value=fillval)
     nc_long.long_name = 'longitude'
-    nc_long.units = 'degrees-east'
+    nc_long.standard_name = 'longitude'
+    nc_long.units = 'degrees_east'
+    nc_long.axis = 'X'
 
     nc_tindex[:] = tindex[:]
     nc_vvert[:] = vvert_m[:]
