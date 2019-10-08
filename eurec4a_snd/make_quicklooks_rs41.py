@@ -54,7 +54,7 @@ def plot_ptrh(data,specs, outputpath):
         - outputpath: path where png will be stored in.
     OUTPUT: .png file stored in outputpath
     '''
-    print 'now plotting pressure, temperature, rel humidity sounding.........'
+    print('now plotting pressure, temperature, rel humidity sounding.........')
     
     #define outputname of .png-file:
     outputname = '%s__%s__%s__%s__%s__%s_ptrelh.png'%(specs['rs'], specs['type'], specs['location'], specs['motion'], specs['tempres'], specs['date'])
@@ -130,7 +130,7 @@ def plot_wind(data,specs, outputpath):
         - outputpath: path where png will be stored in.
     OUTPUT: .png file stored in outputpath
     '''
-    print 'now plotting wind speed and direction sounding.........'
+    print('now plotting wind speed and direction sounding.........')
     #define outputname of .png-file:
     outputname = '%s__%s__%s__%s__%s__%s_wind.png'%(specs['rs'], specs['type'], specs['location'], specs['motion'], specs['tempres'], specs['date'])
     
@@ -193,7 +193,7 @@ def plot_map(data,specs, outputpath):
     OUTPUT: .png file stored in outputpath.
     REQUIRES: basemap-data-hires package to be installed.
     '''
-    print 'now plotting map of sounding.........'
+    print('now plotting map of sounding.........')
     #define outputname of .png-file:
     outputname = '%s__%s__%s__%s__%s__%s_map.png'%(specs['rs'], specs['type'], specs['location'], specs['motion'], specs['tempres'], specs['date'])
     
@@ -233,7 +233,7 @@ def plot_map(data,specs, outputpath):
     
     fig.savefig(outputpath+outputname)
     
-    print 'done.'
+    print('done.')
     return
 
 
@@ -250,15 +250,15 @@ try:
     opts, args = getopt.getopt(sys.argv[1:],'d:n:o:i:h',['date=','inputncfile=','outputpath=','inputpath=','help'])
     
 except getopt.GetoptError:
-    print 'usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath> '
+    print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath> ')
     sys.exit(2)
 
 for opt, arg in opts:
     if opt in ('-h',"--help"): #help option
-        print 'usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath>'
-        print 'specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -i inputpath. '
-        print 'default inputpath: current directory. specify with -i option if different. if used together with -d, make sure -i is given first in call.'
-        print 'default outputpath: current directory. if -o is specified, outputpath is created if not yet existant.'
+        print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath>')
+        print('specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -i inputpath. ')
+        print('default inputpath: current directory. specify with -i option if different. if used together with -d, make sure -i is given first in call.')
+        print('default outputpath: current directory. if -o is specified, outputpath is created if not yet existant.')
         sys.exit()
     
     elif opt in ("-i", "--inputpath"):
@@ -270,13 +270,13 @@ for opt, arg in opts:
         try:
             ncfile = glob.glob(inputpath + '*%s*.nc'%arg)[0]
         except IndexError:
-            print 'couldnt find your specified input: check date or/and inputpath selection.'
+            print('couldnt find your specified input: check date or/and inputpath selection.')
             sys.exit()
     
     elif opt in ("-n","--inputncfile"):
         ncfile = arg
         if not os.isfile(ncfile):
-            print 'couldnt find your specified inputfile.'
+            print('couldnt find your specified inputfile.')
             sys.exit()
     
     elif opt in ("-o","--outputpath"):
@@ -287,7 +287,7 @@ for opt, arg in opts:
         if not os.path.isdir(outputpath):
             os.mkdir(outputpath)
     
-print 'plotting sounding file %s'%ncfile
+print('plotting sounding file %s'%ncfile)
 
 #read netcdf-variables into dictionnary:
 data, specs = read_ncfile(ncfile)
