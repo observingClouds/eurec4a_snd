@@ -239,7 +239,10 @@ def main():
 
         outfile = outpath + \
             "Sounding__{location}__{direction}__{resolution}s__{date}.nc".\
-            format(location=config['PLATFORM']['location'].replace(' ', '_'),
+            format(location=config['PLATFORM']['platform_location'].
+                                replace(' ', '_').
+                                replace(',', '_').
+                                replace(';', '_'),
                    direction='AscentProfile',
                    resolution=np.int(time_resolution),
                    date=YYYYMMDDHHMM)
