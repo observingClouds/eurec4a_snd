@@ -251,8 +251,8 @@ def plot_map(data, specs, outputpath):
     m.plot(x, y, '-k')
 
     # plot launch position as red square:
-    m.plot(float(data['Longitude_of_launch_location'][:5])*-1,
-           float(data['Latitude_of_launch_location'][:5]),
+    m.plot(float(data['longitude'][0]),
+           float(data['latitude'][0]),
            'sr',
            markersize=5)
 
