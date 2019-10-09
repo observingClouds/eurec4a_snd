@@ -242,8 +242,8 @@ for ifile in range(0, len(filelist)):
     fo.date_YYYYMMDD = datest
     fo.time_of_launch_HHmmss = timest
     fo.launch_unixtime = utctime
-    fo.latitude_of_launch_location = '{0:5.2f} deg N'.format(np.round(lat_m[0]), 2)
-    fo.longitude_of_launch_location = '{0:6.2f} deg E'.format(np.round(long_m[0]), 2)
+    fo.latitude_of_launch_location = '{0:5.2f} deg N'.format(np.round(lat_m[0], 2))
+    fo.longitude_of_launch_location = '{0:6.2f} deg E'.format(np.round(long_m[0], 2))
 
     # Information about output
     fo.resolution = "{:g} sec".format(time_resolution)
