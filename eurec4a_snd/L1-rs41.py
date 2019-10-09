@@ -14,7 +14,6 @@ import os.path
 import sys
 import glob
 import subprocess as sp
-import glob
 import configparser
 from configparser import ExtendedInterpolation
 import argparse
