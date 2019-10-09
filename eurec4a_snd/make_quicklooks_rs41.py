@@ -33,7 +33,10 @@ def read_ncfile(ncfile):
     ncf = nc.Dataset(ncfile)
 
     for k in ncf.variables.keys():
-        data[k] = ncf.variables[k][:]
+        try:
+            data[k] = ncf.variables[k][0, :]
+        except ValueError:
+            data[k] = ncf.variables[k][:]
 
     for a in ncf.ncattrs():
         data[a] = ncf.getncattr(a)
