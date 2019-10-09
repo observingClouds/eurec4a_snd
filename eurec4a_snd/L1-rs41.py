@@ -249,6 +249,8 @@ for ifile in range(0, len(filelist)):
         format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
                file=os.path.basename(__file__))
     fo.created_on = str(time.ctime(time.time()))
+    fo.contact_person = ''
+    fo.converted_by = ''
     fo.python_version = "{} (with numpy:{}, netCDF4:{})".\
         format(sys.version, np.__version__, netCDF4.__version__)
     fo.Conventions = 'CF-1.7'
