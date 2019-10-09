@@ -226,7 +226,7 @@ for ifile in range(0, len(filelist)):
                ' latitude, longitude, wind direction, wind speed, and time'
     # Platform information
     fo.platform_name = 'Barbados Cloud Observatory'
-    fo.surface_altitude = '20.'
+    fo.surface_altitude = '20. m'
     fo.location = 'Deebles Point, Barbados, West Indies'
 
     # Instrument metadata
