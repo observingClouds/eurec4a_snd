@@ -19,8 +19,10 @@ from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
+from pathlib import Path
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date
+from config import cfg_creator as configupdater
 
 # ====================================================
 # General MPI-BCO settings:
@@ -41,15 +43,16 @@ def load_configuration(configuration_file=None):
         instance of ConfigParser class with extended interpolation.
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    ini_path = dir_path.split("BCO")[0] + "BCO/PATH.ini"
+    ini_path = "/".join(dir_path.split("/")[:-1]) + "/eurec4a_snd/meta_information.ini"
     if not isinstance(configuration_file, str):
-        if os.path.isfile("~/PATH.ini"):
-            configuration_file = "~/PATH.ini"
+        possible_file_in_userdir = Path("~/meta_information.ini").expanduser()
+        if os.path.isfile(possible_file_in_userdir):
+            configuration_file = possible_file_in_userdir
         elif os.path.isfile(ini_path):
             configuration_file = ini_path
         if configuration_file is None or not os.path.isfile(configuration_file):
             raise FileNotFoundError(
-                "No Configuration File 'PATH.ini' found. Please create one"
+                "No Configuration File 'meta_information.ini' found. Please create one"
                 " in your home directory "
                 "or provide the path via the argument parsing -c.")
         else:
@@ -62,10 +65,10 @@ def load_configuration(configuration_file=None):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--configfile', metavar="PATH.ini", help='Provide a PATH.ini configuration file. \n'
+    parser.add_argument('-c', '--configfile', metavar="meta_information.ini", help='Provide a meta_information.ini configuration file. \n'
                                                                        'If not provided it will be searched for at:\n'
-                                                                       '1. ~/PATH.ini\n'
-                                                                       '2. ../../../PATH.ini', required=False)
+                                                                       '1. ~/meta_information.ini\n'
+                                                                       '2. ../../../meta_information.ini', required=False, default=None)
     parser.add_argument("-i", "--inputfile", metavar="INPUT_FILE",
                         help="Single rs41 data file (txt) or file format\n"
                              "including wildcards", default=None, required=False)
@@ -118,16 +121,23 @@ setup_logging(args['verbose'])
 try:
     config = load_configuration(args["configfile"])
 except FileNotFoundError:
+    logging.info('No configuration file could be found and will now'
+                 ' be created with your help')
+    configupdater.update_config('./meta_information_template.ini', Path('~/meta_information.ini').expanduser())
+    sys.exit("Config file has been created at {0}. Please restart script with the option -c {0}".format(Path('~/meta_information.ini').expanduser()))
     if args["outputfolder"] is None and (args["inputpath"] is None and args["inputpath"] is None):
         sys.exit("No config file found! Outputfolder and Inputpath"
                  " or Inputfile need to be provided!")
     else:
+        logging.warning("The file meta_information.ini could not be found and"
+                        " no metainformation will be added to the output! "
+                        " This is not recommended!")
         pass
 else:
     if args["inputpath"] is None:
-        args["inputpath"] = config["BCO_RADIOSONDES"]["PATH"]
+        args["inputpath"] = config["FILES"]["INPUT_DAT"]
     if args["outputfolder"] is None:
-        args["outputfolder"] = config["CONVERT_BCO_RADIOSONDES"]["OUTPUT_PATH"]
+        args["outputfolder"] = config["FILES"]["OUTPUT_DAT2NC"]
 
 try:
     git_module_version = sp.check_output(
@@ -212,9 +222,11 @@ for ifile in range(0, len(filelist)):
         np.int(utctime), 'seconds since 1970-01-01 00:00:00 UTC').strftime('%Y%m')
     YYYYMMDDHHMM = num2date(
         np.int(utctime), 'seconds since 1970-01-01 00:00:00 UTC').strftime('%Y%m%d%H%M')
+
     outpath = args['outputfolder'] + YYYYMM + '/'
     if not os.path.exists(outpath):
         success = sp.call(["mkdir", "-p", outpath])
+
     outfile = outpath + \
         "rs__Vaisala__{location}__{direction}__{resolution}s__{date}.nc".\
         format(location='Deebles_Point',
@@ -229,12 +241,12 @@ for ifile in range(0, len(filelist)):
     fo.title = 'Sounding data containing temperature, pressure, humidity,' \
                ' latitude, longitude, wind direction, wind speed, and time'
     # Platform information
-    fo.platform_name = 'Barbados Cloud Observatory'
-    fo.surface_altitude = '20. m'
-    fo.location = 'Deebles Point, Barbados, West Indies'
+    fo.platform_name = config['PLATFORM']['platform_name_long']
+    fo.surface_altitude = config['PLATFORM']['platform_altitude']
+    fo.location = config['PLATFORM']['platform_location']
 
     # Instrument metadata
-    fo.instrument = "radiosonde by Vaisala"
+    fo.instrument = config['INSTRUMENT']['instrument_description']
     fo.number_of_Probe = serial
     fo.radiosonde_type = sondetype
 
@@ -253,8 +265,13 @@ for ifile in range(0, len(filelist)):
         format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
                file=os.path.basename(__file__))
     fo.created_on = str(time.ctime(time.time()))
-    fo.contact_person = ''
-    fo.converted_by = ''
+    fo.contact_person = '{name} ({mail})'.format(
+        name=config['OUTPUT']['contact_person_name'],
+        mail=config['OUTPUT']['contact_person_email'])
+    fo.institution = config['OUTPUT']['institution']
+    fo.converted_by = '{name} ({mail})'.format(
+        name=config['OUTPUT']['executive_person_name'],
+        mail=config['OUTPUT']['executive_person_email'])
     fo.python_version = "{} (with numpy:{}, netCDF4:{})".\
         format(sys.version, np.__version__, netCDF4.__version__)
     fo.Conventions = 'CF-1.7'
@@ -346,8 +363,8 @@ for ifile in range(0, len(filelist)):
     nc_long.units = 'degrees_east'
     nc_long.axis = 'X'
 
-    trajectory_name = '{plattform}__{lat}_{lon}__{launchtime}'.\
-                      format(plattform='BCO',
+    trajectory_name = '{platform}__{lat}_{lon}__{launchtime}'.\
+                      format(platform=config['PLATFORM']['platform_name_short'],
                              lat=lat_m[0],
                              lon=long_m[0],
                              launchtime=str(utctime))
