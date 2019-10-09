@@ -231,8 +231,8 @@ def main():
             success = sp.call(["mkdir", "-p", outpath])
 
         outfile = outpath + \
-            "rs__Vaisala__{location}__{direction}__{resolution}s__{date}.nc".\
-            format(location='Deebles_Point',
+            "Sounding__{location}__{direction}__{resolution}s__{date}.nc".\
+            format(location=config['PLATFORM']['location'].replace(' ', '_'),
                    direction='AscentProfile',
                    resolution=np.int(time_resolution),
                    date=YYYYMMDDHHMM)
