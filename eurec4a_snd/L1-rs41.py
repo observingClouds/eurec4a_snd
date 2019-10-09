@@ -216,7 +216,11 @@ for ifile in range(0, len(filelist)):
     if not os.path.exists(outpath):
         success = sp.call(["mkdir", "-p", outpath])
     outfile = outpath + \
-        "rs__Vaisala__{}__{}check6.nc".format(time_resolution, YYYYMMDDHHMM)
+        "rs__Vaisala__{location}__{direction}__{resolution}s__{date}.nc".\
+        format(location='Deebles_Point',
+               direction='AscentProfile',
+               resolution=np.int(time_resolution),
+               date=YYYYMMDDHHMM)
 
     # Creation of output NetCDF file
     fo = Dataset(outfile, 'w', format='NETCDF4')
