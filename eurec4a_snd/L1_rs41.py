@@ -27,6 +27,13 @@ import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date
 from config import cfg_creator as configupdater
 
+try:
+    import eurec4a_snd
+    __version__ = eurec4a_snd.__version__
+except ModuleNotFoundError:
+    print('Not found')
+    __version__ = 'see git_version'
+
 # ====================================================
 # General MPI-BCO settings:
 # ====================================================
@@ -275,8 +282,8 @@ def main():
         fo.converted_by = '{name} ({mail})'.format(
             name=config['OUTPUT']['executive_person_name'],
             mail=config['OUTPUT']['executive_person_email'])
-        fo.python_version = "{} (with numpy:{}, netCDF4:{})".\
-            format(sys.version, np.__version__, netCDF4.__version__)
+        fo.python_version = "{} (with numpy:{}, netCDF4:{}, eurec4a_snd:{})".\
+            format(sys.version, np.__version__, netCDF4.__version__, __version__)
         fo.Conventions = 'CF-1.7'
         fo.featureType = "trajectory"
 
