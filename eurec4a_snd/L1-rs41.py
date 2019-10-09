@@ -243,82 +243,116 @@ for ifile in range(0, len(filelist)):
         format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
                file=os.path.basename(__file__))
     fo.created_on = str(time.ctime(time.time()))
+    fo.featureType = "trajectory"
 
     # Define Dimension (record length) from ASCII record counter
     fo.createDimension('levels', num_rows)
+    prof_dim = fo.createDimension('trajectory', 1)
+    str_dim = fo.createDimension('str_dim', 1000)
     fillval = default_fillvals['f4']
 
     # Creation of NetCDF Variables, including description and unit
-    nc_tindex = fo.createVariable('time', 'f4', ('levels'), fill_value=fillval)
+    nc_prof = fo.createVariable(
+        'trajectory', 'S1', ('trajectory', 'str_dim'), fill_value='')
+    nc_prof.cf_role = "trajectory_id"
+    nc_prof.long_name = 'trajectory identifier'
+    nc_prof.description = 'unique string describing the trajectories origin'
+
+    nc_launchtime = fo.createVariable('launch_time', 'f8', ('trajectory'))
+    nc_launchtime.long_name = "time at which the sonde has been launched"
+    nc_launchtime.units = 'seconds since 1970-01-01 00:00:00 UTC'
+    nc_launchtime.calendar = 'gregorian'
+
+    nc_tindex = fo.createVariable(
+        'flight_time', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_tindex.long_name = 'time passed since launch'
     nc_tindex.standard_name = 'time'
     nc_tindex.units = 's'
     nc_tindex.axis = 'T'
     nc_tindex.calendar = "proleptic_gregorian"
     nc_vvert = fo.createVariable(
-        'ascentRate', 'f4', ('levels'), fill_value=fillval)
+        'ascentRate', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
     nc_vvert.description = 'ascent rate is positive/ descent rate is negative'
     nc_vvert.units = 'm/s'
+    nc_vvert.coordinates = "flight_time longitude latitude pressure"
     nc_alti = fo.createVariable(
-        'altitude', 'f4', ('levels'), fill_value=fillval)
+        'altitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_alti.standard_name = 'altitude'
     nc_alti.units = 'm'
+    nc_alti.coordinates = "flight_time longitude latitude pressure"
     nc_pres = fo.createVariable(
-        'pressure', 'f4', ('levels'), fill_value=fillval)
+        'pressure', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_pres.standard_name = 'air_pressure'
     nc_pres.units = 'hPa'
     nc_pres.axis = 'Z'
     nc_temp = fo.createVariable(
-        'temperature', 'f4', ('levels'), fill_value=fillval)
+        'temperature', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_temp.standard_name = 'air_temperature'
     nc_temp.units = 'degrees_Celsius'
+    nc_temp.coordinates = "flight_time longitude latitude pressure"
     nc_rh = fo.createVariable(
-        'humidity', 'f4', ('levels'), fill_value=fillval)
+        'humidity', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_rh.standard_name = 'relative_humidity'
     nc_rh.units = '%'
+    nc_rh.coordinates = "flight_time longitude latitude pressure"
     nc_dewp = fo.createVariable(
-        'dewPoint', 'f4', ('levels'), fill_value=fillval)
+        'dewPoint', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_dewp.standard_name = 'dew_point_temperature'
     nc_dewp.units = 'degrees_Celsius'
+    nc_dewp.coordinates = "flight_time longitude latitude pressure"
     nc_mix = fo.createVariable(
-        'mixingRatio', 'f4', ('levels'), fill_value=fillval)
+        'mixingRatio', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_mix.long_name = 'water vapor mixing ratio'
     nc_mix.standard_name = 'humidity_mixing_ratio'
     nc_mix.units = 'g/kg'
+    nc_mix.coordinates = "flight_time longitude latitude pressure"
     nc_vhori = fo.createVariable(
-        'windSpeed', 'f4', ('levels'), fill_value=fillval)
+        'windSpeed', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_vhori.standard_name = 'wind_speed'
     nc_vhori.units = 'm/s'
+    nc_vhori.coordinates = "flight_time longitude latitude pressure"
     nc_vdir = fo.createVariable(
-        'windDirection', 'f4', ('levels'), fill_value=fillval)
+        'windDirection', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_vdir.standard_name = 'wind_from_direction'
     nc_vdir.units = 'degrees'
+    nc_vdir.coordinates = "flight_time longitude latitude pressure"
     nc_lat = fo.createVariable(
-        'latitude', 'f4', ('levels'), fill_value=fillval)
+        'latitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_lat.long_name = 'latitude'
     nc_lat.standard_name = 'latitude'
     nc_lat.units = 'degrees_north'
     nc_lat.axis = 'Y'
     nc_long = fo.createVariable(
-        'longitude', 'f4', ('levels'), fill_value=fillval)
+        'longitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_long.long_name = 'longitude'
     nc_long.standard_name = 'longitude'
     nc_long.units = 'degrees_east'
     nc_long.axis = 'X'
 
-    nc_tindex[:] = tindex[:]
-    nc_vvert[:] = vvert_m[:]
-    nc_alti[:] = alti_m[:]
-    nc_pres[:] = pres_m[:]
-    nc_temp[:] = temp_m[:]
-    nc_rh[:] = rh_m[:]
-    nc_dewp[:] = dewp_m[:]
-    nc_mix[:] = mix_m[:]
-    nc_vhori[:] = vhori_m[:]
-    nc_vdir[:] = vdir_m[:]
-    nc_lat[:] = lat_m[:]
-    nc_long[:] = long_m[:]
+    trajectory_name = '{plattform}__{lat}_{lon}__{launchtime}'.\
+                      format(plattform='BCO',
+                             lat=lat_m[0],
+                             lon=long_m[0],
+                             launchtime=str(utctime))
+    trajectory_name_parts = []
+    for char in trajectory_name:
+        trajectory_name_parts.extend(char)
+
+    nc_prof[0, 0:len(trajectory_name_parts)] = trajectory_name_parts
+
+    nc_tindex[0, :] = tindex[:]
+    nc_vvert[0, :] = vvert_m[:]
+    nc_alti[0, :] = alti_m[:]
+    nc_pres[0, :] = pres_m[:]
+    nc_temp[0, :] = temp_m[:]
+    nc_rh[0, :] = rh_m[:]
+    nc_dewp[0, :] = dewp_m[:]
+    nc_mix[0, :] = mix_m[:]
+    nc_vhori[0, :] = vhori_m[:]
+    nc_vdir[0, :] = vdir_m[:]
+    nc_lat[0, :] = lat_m[:]
+    nc_long[0, :] = long_m[:]
 
     fo.close()
     logging.info('File Done')
