@@ -20,6 +20,7 @@ from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
+import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date
 
 # ====================================================
@@ -224,25 +225,34 @@ for ifile in range(0, len(filelist)):
     # assign NetCDF file attributes from strings read from ASCII file header
     fo.title = 'Sounding data containing temperature, pressure, humidity,' \
                ' latitude, longitude, wind direction, wind speed, and time'
-    fo.featureType = "profile"
+    # Platform information
+    fo.platform_name = 'Barbados Cloud Observatory'
+    fo.surface_altitude = '20.'
+    fo.location = 'Deebles Point, Barbados, West Indies'
+
+    # Instrument metadata
+    fo.instrument = "radiosonde by Vaisala"
+    fo.number_of_Probe = serial
+    fo.radiosonde_type = sondetype
+
+    # Information about launch
     fo.date_YYYYMMDD = datest
     fo.time_of_launch_HHmmss = timest
-    fo.Launch_unixtime = utctime
-    fo.location = 'Deebles Point, Barbados, West Indies'
-    fo.Latitude_of_launch_location = '13.16 deg N'
-    fo.Longitude_of_launch_location = '59.43 deg W'
-    fo.Altitude_of_launch_location_meters = '20.'
-    fo.instrument = "radiosonde by Vaisala"
-    fo.Number_of_Probe = serial
-    fo.Radiosonde_type = sondetype
+    fo.launch_unixtime = utctime
+    fo.latitude_of_launch_location = '{0:5.2f} deg N'.format(np.round(lat_m[0]), 2)
+    fo.longitude_of_launch_location = '{0:6.2f} deg E'.format(np.round(long_m[0]), 2)
+
+    # Information about output
     fo.resolution = "{:g} sec".format(time_resolution)
-    fo.original_file = filelist[ifile]
+    fo.source = filelist[ifile]
     fo.git_version = git_module_version
-    fo.Conventions = 'CF-1.7'
     fo.created_with = '{file} with its last modifications on {time}'.\
         format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
                file=os.path.basename(__file__))
     fo.created_on = str(time.ctime(time.time()))
+    fo.python_version = "{} (with numpy:{}, netCDF4:{})".\
+        format(sys.version, np.__version__, netCDF4.__version__)
+    fo.Conventions = 'CF-1.7'
     fo.featureType = "trajectory"
 
     # Define Dimension (record length) from ASCII record counter
@@ -267,9 +277,9 @@ for ifile in range(0, len(filelist)):
         'flight_time', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_tindex.long_name = 'time passed since launch'
     nc_tindex.standard_name = 'time'
-    nc_tindex.units = 's'
+    nc_tindex.units = 'seconds since launchtime'
     nc_tindex.axis = 'T'
-    nc_tindex.calendar = "proleptic_gregorian"
+    nc_tindex.calendar = "gregorian"
     nc_vvert = fo.createVariable(
         'ascentRate', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
@@ -286,6 +296,7 @@ for ifile in range(0, len(filelist)):
     nc_pres.standard_name = 'air_pressure'
     nc_pres.units = 'hPa'
     nc_pres.axis = 'Z'
+    nc_pres.positive = 'down'
     nc_temp = fo.createVariable(
         'temperature', 'f4', ('trajectory', 'levels'), fill_value=fillval)
     nc_temp.standard_name = 'air_temperature'
