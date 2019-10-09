@@ -20,5 +20,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    entry_points={'console_scripts': ['sounding_converter:eurec4a_snd.L1-rs41.py:main']}
+    entry_points={'console_scripts': ['sounding_converter=eurec4a_snd.L1_rs41:main']}
 )
