@@ -13,6 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/observingClouds/eurec4a_snd",
     packages=setuptools.find_packages(),
+    py_modules=['eurec4a_snd'],
     setup_requires=['setuptools-git-version'],
     classifiers=[
         "Programming Language :: Python :: 3",
