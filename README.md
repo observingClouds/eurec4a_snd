@@ -40,7 +40,15 @@ It is also possible to copy the `config/meta_information_template.ini` to ones f
 sounding_convert -i your_sounding.dat -c /your/path/to/meta_information.ini
 ```
 
-## Level_1 files
+## Visualization
+### Panoply
 The converted dat files are netCDF files which conform to the CF-Conventions as far as possible and make use of the `discrete sampling geometry`. The sounding data can therefore easily be drawn as trajectories without extra efforts.
 
 ![Trajectory visualization with panoply](docs/panoply_visualization_traj.png?raw=true "Trajectory visualization with panoply")
+
+### Simple Plotting
+The package also includes a few plotting routines that can be called with e.g.
+
+```bash
+sounding_visualization -n converted/file/sounding.nc
+```
