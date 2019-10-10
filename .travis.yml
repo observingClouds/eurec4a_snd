@@ -84,5 +84,5 @@ deploy:
 
   distributions: "sdist bdist_wheel"
 
-  # on:
-  #   tags: true
+  on:
+    tags: true
