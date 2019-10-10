@@ -25,7 +25,7 @@ import numpy as np
 from pathlib import Path
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date
-from config import cfg_creator as configupdater
+from .config import cfg_creator as configupdater
 
 try:
     import eurec4a_snd
@@ -53,7 +53,7 @@ def load_configuration(configuration_file=None):
         instance of ConfigParser class with extended interpolation.
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    ini_path = "/".join(dir_path.split("/")[:-1]) + "/eurec4a_snd/meta_information.ini"
+    ini_path = "/".join(dir_path.split("/")[:-1]) + "/eurec4a_snd/config/meta_information.ini"
     if not isinstance(configuration_file, str):
         possible_file_in_userdir = Path("~/meta_information.ini").expanduser()
         if os.path.isfile(possible_file_in_userdir):
@@ -133,7 +133,7 @@ def main():
     except FileNotFoundError:
         logging.info('No configuration file could be found and will now'
                      ' be created with your help')
-        configupdater.update_config('./meta_information_template.ini', Path('~/meta_information.ini').expanduser())
+        configupdater.update_config('./config/meta_information_template.ini', Path('~/meta_information.ini').expanduser())
         sys.exit("Config file has been created at {0}. Please restart script with the option -c {0}".format(Path('~/meta_information.ini').expanduser()))
         if args["outputfolder"] is None and (args["inputpath"] is None and args["inputpath"] is None):
             sys.exit("No config file found! Outputfolder and Inputpath"
