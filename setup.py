@@ -24,6 +24,6 @@ setuptools.setup(
                       'numpy>=1.14.0', 'netCDF4>=1.5.2'],
     entry_points={'console_scripts':
                     ['sounding_converter=eurec4a_snd.L1_rs41:main',
-                     'sounding_visualize=eurec4a_snd.make_quicklooks_rs41.py:main']},
+                     'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main']},
     package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini"]}
 )
