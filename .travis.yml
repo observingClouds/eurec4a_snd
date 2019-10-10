@@ -17,6 +17,8 @@ before_install:
   - conda update -q conda  # Update CONDA without command line prompt
     # Useful for debugging any issues with conda
   - conda info -a
+  - conda config --add channels conda-forge 
+  - conda config --add channels observingclouds
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION --file dev-requirements.txt
   # - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION eurec4a_snd --file dev-requirements.txt
   - source activate test-environment
@@ -72,7 +74,7 @@ before_deploy:
         - conda convert --platform osx-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
         # Upload to Anaconda
         # We could use --all but too much platforms to uploaded
-        - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda -v -t $CONDA_UPLOAD_TOKEN upload -u pytorch {}
+        - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda -v -t $CONDA_UPLOAD_TOKEN upload {}
 
 deploy:
   provider: pypi
