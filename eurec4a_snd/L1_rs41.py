@@ -193,7 +193,7 @@ def main():
         utctime = calendar.timegm(datetime.datetime(int(datest[0:4]), int(datest[4:6]), int(datest[6:8]),
                                                     int(timest[0:2]), int(timest[2:4]), int(timest[4:6])).timetuple())
         data = np.genfromtxt(
-            filelist[ifile], skip_header=9, invalid_raise=False)
+            filelist[ifile], skip_header=9, invalid_raise=False, encoding="ISO-8859-1")
 
         num_rows = data.shape[0]  # length of raw array
         logging.info('Number of rows: {}'.format(num_rows))
