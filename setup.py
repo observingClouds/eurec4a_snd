@@ -22,5 +22,7 @@ setuptools.setup(
     python_requires='>=3.6',
     install_requires=['matplotlib>=3.1.0', 'basemap>=1.2.0',
                       'numpy>=1.13.0', 'netCDF4>=1.5.2'],
-    entry_points={'console_scripts': ['sounding_converter=eurec4a_snd.L1_rs41:main']}
+    entry_points={'console_scripts':
+                    ['sounding_converter=eurec4a_snd.L1_rs41:main',
+                     'sounding_visualize=eurec4a_snd.make_quicklooks_rs41.py:main']}
 )
