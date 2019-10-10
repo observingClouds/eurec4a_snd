@@ -4,7 +4,7 @@ matrix:
   # This will launch a separate build for each Python version you add
   # Feel free to add extra environment variables as needed
   include:
-    - python: 3.5
+    # - python: 3.5
     - python: 3.6
 
 before_install:
@@ -17,12 +17,14 @@ before_install:
   - conda update -q conda  # Update CONDA without command line prompt
     # Useful for debugging any issues with conda
   - conda info -a
-  - conda create -q -n test-environment pytorch cpuonly torchvision python=$TRAVIS_PYTHON_VERSION -c $PYTORCH_CHANNEL
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION --file dev-requirements.txt
+  # - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION eurec4a_snd --file dev-requirements.txt
   - source activate test-environment
   #pip install -r dev-requirements.txt
 
 install:
-  - python setup.py install
+  # - python setup.py install
+  - python setup.py build
   #- conda install -q conda-build # --yes?
   # You can add any CONDA channels you may need here. CONDA supports
   # both the commands add and append. The only difference is that 
@@ -64,7 +66,7 @@ before_deploy:
         # https://conda.io/docs/user-guide/tasks/build-packages/install-conda-build.html
         - conda install -y conda-build conda-verify anaconda-client
         - conda config --set anaconda_upload no
-        - travis_wait 60 conda build --quiet --no-test --output-folder conda_build conda-recipe
+        - travis_wait 60 conda build --quiet --no-test --output-folder conda_build conda_recipe
         # Convert to other platforms: OSX, WIN
         - conda convert --platform win-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
         - conda convert --platform osx-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
