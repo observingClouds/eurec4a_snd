@@ -47,34 +47,22 @@ install:
 script: true
 
 after_success: true
-  # Install the command line API for CONDA uploads
-  # - conda install anaconda-client
-  # - |
-  #   # Only upload builds from tags
-  #   if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == "org/pkgname"
-  #         && $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' ]]; then
-  #     export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN
-
-  #     #conda convert --platform all $HOME/miniconda3/bld-dir/linux-64/PACKAGENAME-*.tar.bz2 --output-dir bld-dir/
-
-  #     anaconda upload bld-dir/**/PACKAGENAME-*.tar.bz2
-  #   fi
 
 before_deploy:
-        # Conda deploy if on tag
-        # ANACONDA_TOKEN should be provided by Travis
-        # How to generate ANACONDA_TOKEN: https://docs.anaconda.com/anaconda-cloud/user-guide/tasks/work-with-accounts#creating-access-tokens
+  # Conda deploy if on tag
+  # ANACONDA_TOKEN should be provided by Travis
+  # How to generate ANACONDA_TOKEN: https://docs.anaconda.com/anaconda-cloud/user-guide/tasks/work-with-accounts#creating-access-tokens
 
-        # https://conda.io/docs/user-guide/tasks/build-packages/install-conda-build.html
-        - conda install -y conda-build conda-verify anaconda-client
-        - conda config --set anaconda_upload no
-        - travis_wait 60 conda build --quiet --no-test --output-folder conda_build conda_recipe
-        # Convert to other platforms: OSX, WIN
-        - conda convert --platform win-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
-        - conda convert --platform osx-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
-        # Upload to Anaconda
-        # We could use --all but too much platforms to uploaded
-        - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda -v -t $CONDA_UPLOAD_TOKEN upload --skip-existing {}
+  # https://conda.io/docs/user-guide/tasks/build-packages/install-conda-build.html
+  - conda install -y conda-build conda-verify anaconda-client
+  - conda config --set anaconda_upload no
+  - travis_wait 60 conda build --quiet --no-test --output-folder conda_build conda_recipe
+  # Convert to other platforms: OSX, WIN
+  - conda convert --platform win-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
+  - conda convert --platform osx-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
+  # Upload to Anaconda
+  # We could use --all but too much platforms to uploaded
+  - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda -v -t $CONDA_UPLOAD_TOKEN upload --force {}
 
 deploy:
   provider: pypi
