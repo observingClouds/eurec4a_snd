@@ -231,9 +231,18 @@ def plot_map(data, specs, outputpath):
     minlat = math.floor(np.min(data['latitude'])/0.5)*0.5
 
     # set up basemap projection
-    m = Basemap(projection='cyl', resolution='h', llcrnrlat=minlat,
-                urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
-                area_thresh=1)
+    try:
+        m = Basemap(projection='cyl', resolution='h', llcrnrlat=minlat,
+                    urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
+                    area_thresh=1)
+    except OSError:
+        print('High resolution map data has not been installed and the low'
+              ' resolution resolution will be used. For the hight resolution'
+              ' install with e.g. conda install -c conda-forge'
+              ' basemap-data-hires')
+        m = Basemap(projection='cyl', resolution='l', llcrnrlat=minlat,
+                    urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
+                    area_thresh=1)
     # plot a topography on top:
     m.etopo(alpha=0.4)
 
