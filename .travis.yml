@@ -78,8 +78,9 @@ before_deploy:
 
 deploy:
   provider: pypi
-  username: $PYPI_USER
+  user: $PYPI_USER
   password: $PYPI_PASSWORD
+  skip_existing: true
 
   distributions: "sdist bdist_wheel"
 
