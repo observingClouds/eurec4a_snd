@@ -2,6 +2,8 @@
 from pkg_resources import get_distribution, DistributionNotFound
 import os.path
 
+__import__('pkg_resources').declare_namespace(__name__)
+
 try:
     _dist = get_distribution('eurec4a_snd')
     # Normalize case for Windows systems
