@@ -11,13 +11,24 @@ These include e.g. `contact_person` and `platform` name which are probably helpf
 
 ## Installation
 
-The package can be installed with `pip`:
+The package can be installed with `conda`:
+
+The best option is to create a new environment to not run into dependency problems with pre-installed package:
 
 ```bash
-pip install -i https://test.pypi.org/simple/ eurec4a-snd==0.0.5
+conda create --name field_campaign
 ```
 
-Since this is just a test version, currently the dependencies need to be installed beforehand. The dependencies are stated in `requirements.txt`
+Activate the new environment with
+
+```bash
+conda activate field_campaign
+```
+
+The actual package can than be installed with
+```bash
+conda install -c observingclouds eurec4a_snd
+```
 
 ## First execution
 
