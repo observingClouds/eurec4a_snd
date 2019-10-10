@@ -274,7 +274,7 @@ def plot_map(data, specs, outputpath):
     print('done.')
 
 
-if __name__ == "__main__":
+def main():
     # options for the skript: date (yymmddhh); inputfilename; outputpath;
     # inputpath
     # (needs to be specified if date is used);
@@ -344,3 +344,7 @@ if __name__ == "__main__":
     # conda install -c conda-forge basemap-data-hires)
 
     plot_map(radiosonde_data, radiosonde_specs, outputpath)
+
+
+if __name__ == "__main__":
+    main()
