@@ -74,7 +74,7 @@ before_deploy:
         - conda convert --platform osx-64 conda_build/linux-64/*.tar.bz2 -o conda_build/
         # Upload to Anaconda
         # We could use --all but too much platforms to uploaded
-        - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda -v -t $CONDA_UPLOAD_TOKEN upload {}
+        - ls conda_build/*/*.tar.bz2 | xargs -I {} anaconda --skip -v -t $CONDA_UPLOAD_TOKEN upload {}
 
 deploy:
   provider: pypi
