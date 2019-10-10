@@ -31,3 +31,5 @@ sounding_convert -i your_sounding.dat -c /your/path/to/meta_information.ini
 
 ## Level_1 files
 The converted dat files are netCDF files which conform to the CF-Conventions as far as possible and make use of the `discrete sampling geometry`. The sounding data can therefore easily be drawn as trajectories without extra efforts.
+
+![Trajectory visualization with panoply](docs/panoply_visualization_traj.png?raw=true "Trajectory visualization with panoply")
