@@ -46,9 +46,7 @@ install:
   
 script: true
 
-after_success: true
-
-before_deploy:
+after_success:
   # Conda deploy if on tag
   # ANACONDA_TOKEN should be provided by Travis
   # How to generate ANACONDA_TOKEN: https://docs.anaconda.com/anaconda-cloud/user-guide/tasks/work-with-accounts#creating-access-tokens
