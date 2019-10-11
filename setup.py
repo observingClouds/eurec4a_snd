@@ -1,11 +1,13 @@
 import setuptools
+import versioneer
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="eurec4a_snd",
-    version_format='{tag}.dev{commitcount}+{gitsha}',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="eurec4a folks",
     author_email="",
     description="Common EUREC4A sounding standard",
