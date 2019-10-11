@@ -25,7 +25,9 @@ import numpy as np
 from pathlib import Path
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date
-from .config import cfg_creator as configupdater
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from config import cfg_creator as configupdater
 
 try:
     import eurec4a_snd
