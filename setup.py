@@ -20,7 +20,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['pillow>=5.0.0', 'matplotlib>=3.1.0', 'basemap>=1.2.0',
+    install_requires=['pillow>=6.0.0', 'matplotlib>=3.1.0', 'basemap>=1.2.0',
                       'numpy>=1.14.0', 'netCDF4>=1.5.2'],
     entry_points={'console_scripts':
                     ['sounding_converter=eurec4a_snd.L1_rs41:main',
