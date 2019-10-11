@@ -1,6 +1,6 @@
 package:
   name: eurec4a_snd
-  version: "0.0.8"
+  version: "0.0.9"
 
 source:
   path: ..
