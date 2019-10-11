@@ -20,3 +20,4 @@ requirements:
     - matplotlib
     - basemap
     - netCDF4
+    - pillow
