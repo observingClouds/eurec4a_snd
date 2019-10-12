@@ -11,7 +11,7 @@ These include e.g. `contact_person` and `platform` name which are probably helpf
 
 ## Installation
 
-The package can be installed with `conda`:
+The package can be installed with `conda` (https://www.anaconda.com/distribution/):
 
 The best option is to create a new environment to not run into dependency problems with pre-installed package:
 
@@ -50,5 +50,23 @@ The converted dat files are netCDF files which conform to the CF-Conventions as 
 The package also includes a few plotting routines that can be called with e.g.
 
 ```bash
-sounding_visualization -n converted/file/sounding.nc
+sounding_visualize -n converted/file/sounding.nc
 ```
+
+## Example
+
+Examples of the input `.dat` file and the converted `.nc` file can be found in `examples/data`.
+
+## Tipps and tricks
+
+- Commands `sounding_convert` and `sounding_visualize` cannot be found!
+  It seems something went wrong with the installation via `conda`. Although it is recommended to install this package via anaconda because it comes with the benefit that all dependencies should be resolved. However, you can also download this git repository and run within the `eurec4a_snd` folder:
+  
+  ```bash
+  python L1_rs41.py -i your_sounding.dat
+  ```
+  or for the quicklooks
+  
+  ```bash
+  python make_quicklooks_rs41.py -n converted/file/sounding.nc
+  ```
