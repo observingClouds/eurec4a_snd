@@ -149,6 +149,9 @@ def plot_ptrh(data, specs, outputpath):
 
     fig.savefig(outputpath+outputname)
 
+    logging.info('{} profiles saved at {}'.format(variable,
+                                                  outputpath+outputname))
+
 
 def plot_wind(data, specs, outputpath):
     '''
@@ -219,6 +222,8 @@ def plot_wind(data, specs, outputpath):
 
     fig.savefig(outputpath+outputname)
 
+    logging.info('Wind profile saved at {}'.format(outputpath+outputname))
+
 
 def plot_map(data, specs, outputpath):
     '''
@@ -257,10 +262,10 @@ def plot_map(data, specs, outputpath):
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
                     area_thresh=1)
     except OSError:
-        print('High resolution map data has not been installed and the low'
-              ' resolution resolution will be used. For the hight resolution'
-              ' install with e.g. conda install -c conda-forge'
-              ' basemap-data-hires')
+        logging.warning('High resolution map data has not been installed and'
+                        ' the low resolution resolution will be used. For the'
+                        ' hight resolution install with e.g. conda install -c'
+                        ' conda-forge basemap-data-hires')
         m = Basemap(projection='cyl', resolution='l', llcrnrlat=minlat,
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
                     area_thresh=1)
@@ -292,8 +297,17 @@ def plot_map(data, specs, outputpath):
 
     fig.savefig(outputpath+outputname)
 
-    print('done.')
+    logging.info('Map saved at {}'.format(outputpath+outputname))
 
+def setup_logging(verbose):
+    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
+    logging.basicConfig(
+        level=logging.getLevelName(verbose),
+        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
+        handlers=[
+            logging.FileHandler(f"{__file__}.log"),
+            logging.StreamHandler()
+        ])
 
 def main():
     # options for the skript: date (yymmddhh); inputfilename; outputpath;
@@ -307,6 +321,8 @@ def main():
     date = ''
     outputpath = './'  # default setting
     inputpath = './'  # default setting
+
+    setup_logging('INFO')
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
@@ -332,13 +348,13 @@ def main():
             try:
                 ncfile = glob.glob(inputpath + '*%s*.nc' % arg)[0]
             except IndexError:
-                print(
-                    'couldnt find your specified input: check date or/and inputpath selection.')
+                logging.error('couldnt find your specified input: check date'
+                              ' or/and inputpath selection.')
                 sys.exit()
         elif opt in ("-n", "--inputncfile"):
             ncfile = arg
             if not os.path.isfile(ncfile):
-                print('couldnt find your specified inputfile.')
+                logging.error('couldnt find your specified inputfile.')
                 sys.exit()
 
         elif opt in ("-o", "--outputpath"):
@@ -349,7 +365,7 @@ def main():
             if not os.path.isdir(outputpath):
                 os.mkdir(outputpath)
 
-    print('plotting sounding file %s' % ncfile)
+    logging.info('plotting sounding file %s' % ncfile)
 
     # read netcdf-variables into dictionnary:
     radiosonde_data, radiosonde_specs = read_ncfile(ncfile)
