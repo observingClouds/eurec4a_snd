@@ -2,12 +2,8 @@
 Script to produce quicklooks of radiosonde type RS41, read from netcdf-files
 converted using L1-rs41.py
 
-Created by: Sabrina Schnitt
-tested on python 2.7
+Original version by: Sabrina Schnitt
 """
-
-__author__ = "Sabrina Schnitt"
-__date__ = "$Oct 2, 19$"
 
 import glob
 import sys

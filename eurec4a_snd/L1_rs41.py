@@ -4,10 +4,8 @@
 """
 Script to convert ASCII files of radiosonde type RS41
 
-Created by: Johannes Kiliani/Lukas Frank
+Original version by: Johannes Kiliani/Lukas Frank
 """
-__author__ = "Johannes Kiliani/Lukas Frank"
-__date__ = "$Nov 19, 2018 05:27:06 PM$"
 
 # insert some subroutines if possible
 import time
