@@ -7,6 +7,6 @@ __import__('pkg_resources').declare_namespace(__name__)
 
 try:
     __version__ = get_versions()['version']
-else:
+except:
     __version__ = '--'
 del get_versions
