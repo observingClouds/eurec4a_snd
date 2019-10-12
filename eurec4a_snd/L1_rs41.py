@@ -232,24 +232,24 @@ def main():
         time_resolution = (np.diff(tindex)[np.argmax(np.bincount(indices))])
 
         # Create outputfile with time information from file
-        YYYYMM = num2date(
-            np.int(utctime), 'seconds since 1970-01-01 00:00:00 UTC').strftime('%Y%m')
-        YYYYMMDDHHMM = num2date(
-            np.int(utctime), 'seconds since 1970-01-01 00:00:00 UTC').strftime('%Y%m%d%H%M')
+        sounding_date = num2date(
+            np.int(utctime), 'seconds since 1970-01-01 00:00:00 UTC')
+        YYYYMM = sounding_date.strftime('%Y%m')
+        YYYYMMDDHHMM = sounding_date.strftime('%Y%m%d%H%M')
 
         outpath = args['outputfolder'] + YYYYMM + '/'
         if not os.path.exists(outpath):
             success = sp.call(["mkdir", "-p", outpath])
 
         outfile = outpath + \
-            "Sounding__{location}__{direction}__{resolution}s__{date}.nc".\
-            format(location=config['PLATFORM']['platform_location'].
-                                replace(' ', '_').
-                                replace(',', '_').
-                                replace(';', '_'),
+            "{platform}_Sounding{direction}_{location}_{date}.nc".\
+            format(platform=config['PLATFORM']['platform_name_short'],
+                   location=config['PLATFORM']['platform_location'].
+                                replace(' ', '').
+                                replace(',', '').
+                                replace(';', ''),
                    direction='AscentProfile',
-                   resolution=np.int(time_resolution),
-                   date=YYYYMMDDHHMM)
+                   date=sounding_date.strftime('%Y%m%d_%H%M'))
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
@@ -258,7 +258,9 @@ def main():
         fo.title = 'Sounding data containing temperature, pressure, humidity,' \
                    ' latitude, longitude, wind direction, wind speed, and time'
         # Platform information
-        fo.platform_name = config['PLATFORM']['platform_name_long']
+        fo.platform_name = '{long} ({short})'.format(
+            long=config['PLATFORM']['platform_name_long'],
+            short=config['PLATFORM']['platform_name_short'])
         fo.surface_altitude = config['PLATFORM']['platform_altitude']
         fo.location = config['PLATFORM']['platform_location']
 

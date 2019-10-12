@@ -13,7 +13,9 @@ import glob
 import sys
 import getopt
 import os
+import re
 import math
+import logging
 import netCDF4 as nc
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.pyplot as plt
@@ -42,12 +44,29 @@ def read_ncfile(ncfile):
         data[a] = ncf.getncattr(a)
 
     specs = {}
-    keys = ['rs', 'type', 'location', 'motion', 'tempres', 'date']
-    for kk, key in enumerate(keys):
-        specs[key] = ncfile.split('/')[-1].split('__')[kk]
 
-    specs['rs'] = specs['rs']
-    specs['date'] = specs['date'][:-3]
+    specs['location'] = ncf.location
+    specs['tempres'] = ncf.resolution
+    specs['date'] = ncf.date_YYYYMMDD
+    specs['time'] = ncf.time_of_launch_HHmmss
+    specs['type'] = ncf.instrument
+    # Extract platform short name from the global attribute
+    specs['platform_short'] = re.search(r"\(([A-Za-z0-9_]+)\)",
+                                        ncf.platform_name).group(1)
+    # Extract main flight direction from variable ascentRate
+    most_common_vertical_movement = np.argmax(
+        [np.count_nonzero(data['ascentRate'] > 0),
+         np.count_nonzero(data['ascentRate'] < 0)])
+    if most_common_vertical_movement == 0:
+        # Mostly ascent rates
+        specs['direction'] = 'AscentProfile'
+    elif most_common_vertical_movement == 1:
+        # Mostly descending rates
+        specs['direction'] = 'DescentProfile'
+    else:
+        logging.warning('Main flight direction (ascent/descent) of instrument'
+                        ' could not be identified!')
+        specs['direction'] = 'Unknow'
 
     return data, specs
 
@@ -63,15 +82,17 @@ def plot_ptrh(data, specs, outputpath):
         - outputpath: path where png will be stored in.
     OUTPUT: .png file stored in outputpath
     '''
-    print('now plotting pressure, temperature, rel humidity sounding.........')
+    logging.info('now plotting pressure, temperature, rel humidity sounding.........')
 
     # define outputname of .png-file:
-    outputname = '%s__%s__%s__%s__%s__%s_ptrelh.png' % (specs['rs'],
-                                                        specs['type'],
-                                                        specs['location'],
-                                                        specs['motion'],
-                                                        specs['tempres'],
-                                                        specs['date'])
+    variable = 'ptrelh'
+    outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
+        platform=specs['platform_short'],
+        instrument=specs['type'],
+        direction=specs['direction'],
+        variable=variable,
+        date=specs['date']+'_'+specs['time'],
+        tempres=specs['tempres'].replace(' ', ''))
 
     fig, ax = plt.subplots(1, 3, sharey=True, figsize=(8, 6))
 
@@ -144,14 +165,16 @@ def plot_wind(data, specs, outputpath):
         - outputpath: path where png will be stored in.
     OUTPUT: .png file stored in outputpath
     '''
-    print('now plotting wind speed and direction sounding.........')
+    logging.info('now plotting wind speed and direction sounding.........')
     # define outputname of .png-file:
-    outputname = '%s__%s__%s__%s__%s__%s_wind.png' % (specs['rs'],
-                                                      specs['type'],
-                                                      specs['location'],
-                                                      specs['motion'],
-                                                      specs['tempres'],
-                                                      specs['date'])
+    variable = 'wind'
+    outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
+        platform=specs['platform_short'],
+        instrument=specs['type'],
+        direction=specs['direction'],
+        variable=variable,
+        date=specs['date']+'_'+specs['time'],
+        tempres=specs['tempres'].replace(' ', ''))
 
     fig, ax = plt.subplots(1, 2, sharey=True, figsize=(8, 6))
 
@@ -212,14 +235,16 @@ def plot_map(data, specs, outputpath):
     OUTPUT: .png file stored in outputpath.
     REQUIRES: basemap-data-hires package to be installed.
     '''
-    print('now plotting map of sounding.........')
+    logging.info('now plotting map of sounding.........')
     # define outputname of .png-file:
-    outputname = '%s__%s__%s__%s__%s__%s_map.png' % (specs['rs'],
-                                                     specs['type'],
-                                                     specs['location'],
-                                                     specs['motion'],
-                                                     specs['tempres'],
-                                                     specs['date'])
+    variable = 'map'
+    outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
+        platform=specs['platform_short'],
+        instrument=specs['type'],
+        direction=specs['direction'],
+        variable=variable,
+        date=specs['date']+'_'+specs['time'],
+        tempres=specs['tempres'].replace(' ', ''))
 
     fig = plt.figure(figsize=(8, 6))
 
