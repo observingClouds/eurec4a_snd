@@ -119,7 +119,7 @@ def setup_logging(verbose):
         level=logging.getLevelName(verbose),
         format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
         handlers=[
-            logging.FileHandler(f"{__file__}.log"),
+            logging.FileHandler("{}.log".format(__file__)),
             logging.StreamHandler()
         ])
 
