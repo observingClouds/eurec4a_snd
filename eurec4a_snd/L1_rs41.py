@@ -259,8 +259,8 @@ def main():
         fo.platform_name = '{long} ({short})'.format(
             long=config['PLATFORM']['platform_name_long'],
             short=config['PLATFORM']['platform_name_short'])
-        fo.surface_altitude = config['PLATFORM']['platform_altitude']
         fo.location = config['PLATFORM']['platform_location']
+        fo.surface_altitude = config['PLATFORM']['platform_altitude']
 
         # Instrument metadata
         fo.instrument = config['INSTRUMENT']['instrument_description']
