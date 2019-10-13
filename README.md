@@ -59,6 +59,9 @@ The package also includes a few plotting routines that can be called with e.g.
 sounding_visualize -n converted/file/sounding.nc
 ```
 
+### SkewT Plotting
+Examples on how to create a skewT diagram can be found in `eurec4a_snd/examples/visualizing`. Have a look at [Skew-T examples](eurec4a_snd/examples/visualizing/README.md)
+
 ## Example
 
 Examples of the input `.dat` file and the converted `.nc` file can be found in `examples/data`.
