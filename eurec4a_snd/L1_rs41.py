@@ -296,7 +296,7 @@ def main():
 
         # Define Dimension (record length) from ASCII record counter
         fo.createDimension('levels', num_rows)
-        prof_dim = fo.createDimension('trajectory', 1)
+        prof_dim = fo.createDimension('trajectory', None)
         str_dim = fo.createDimension('str_dim', 1000)
         fillval = default_fillvals['f4']
 
