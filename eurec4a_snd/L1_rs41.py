@@ -133,7 +133,7 @@ def main():
     except FileNotFoundError:
         logging.info('No configuration file could be found and will now'
                      ' be created with your help')
-        configupdater.update_config(os.path.dirname(__file__) +
+        configupdater.update_config(os.path.abspath(os.path.dirname(__file__)) +
             '/config/meta_information_template.ini',
             Path('~/meta_information.ini').expanduser())
         sys.exit("Config file has been created at {0}. Please restart script with the option -c {0}".format(Path('~/meta_information.ini').expanduser()))
