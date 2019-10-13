@@ -302,19 +302,19 @@ def main():
 
         # Creation of NetCDF Variables, including description and unit
         nc_prof = fo.createVariable(
-            'trajectory', 'S1', ('trajectory', 'str_dim'), fill_value='')
+            'trajectory', 'S1', ('trajectory', 'str_dim'), fill_value='', zlib=True)
         nc_prof.cf_role = "trajectory_id"
         nc_prof.long_name = 'trajectory identifier'
         nc_prof.description = 'unique string describing the trajectories origin'
 
-        nc_launchtime = fo.createVariable('launch_time', 'f8', ('trajectory'))
+        nc_launchtime = fo.createVariable('launch_time', 'f8', ('trajectory'), zlib=True)
         nc_launchtime.long_name = "time at which the sonde has been launched"
         nc_launchtime.units = 'seconds since 1970-01-01 00:00:00 UTC'
         nc_launchtime.calendar = 'gregorian'
         nc_launchtime.standard_name = 'time'
 
         nc_tindex = fo.createVariable(
-            'flight_time', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'flight_time', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_tindex.long_name = 'time passed since launch'
         nc_tindex.standard_name = 'time'
         nc_tindex.units = 'seconds since {launch}'.format(
@@ -322,61 +322,61 @@ def main():
         nc_tindex.axis = 'T'
         nc_tindex.calendar = "gregorian"
         nc_vvert = fo.createVariable(
-            'ascentRate', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'ascentRate', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
         nc_vvert.description = 'ascent rate is positive/ descent rate is negative'
         nc_vvert.units = 'm/s'
         nc_vvert.coordinates = "flight_time longitude latitude pressure"
         nc_alti = fo.createVariable(
-            'altitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'altitude', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_alti.standard_name = 'altitude'
         nc_alti.units = 'm'
         nc_alti.coordinates = "flight_time longitude latitude pressure"
         nc_pres = fo.createVariable(
-            'pressure', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'pressure', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_pres.standard_name = 'air_pressure'
         nc_pres.units = 'hPa'
         nc_pres.axis = 'Z'
         nc_pres.positive = 'down'
         nc_temp = fo.createVariable(
-            'temperature', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'temperature', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_temp.standard_name = 'air_temperature'
         nc_temp.units = 'degrees_Celsius'
         nc_temp.coordinates = "flight_time longitude latitude pressure"
         nc_rh = fo.createVariable(
-            'humidity', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'humidity', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_rh.standard_name = 'relative_humidity'
         nc_rh.units = '%'
         nc_rh.coordinates = "flight_time longitude latitude pressure"
         nc_dewp = fo.createVariable(
-            'dewPoint', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'dewPoint', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_dewp.standard_name = 'dew_point_temperature'
         nc_dewp.units = 'degrees_Celsius'
         nc_dewp.coordinates = "flight_time longitude latitude pressure"
         nc_mix = fo.createVariable(
-            'mixingRatio', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'mixingRatio', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_mix.long_name = 'water vapor mixing ratio'
         nc_mix.standard_name = 'humidity_mixing_ratio'
         nc_mix.units = 'g/kg'
         nc_mix.coordinates = "flight_time longitude latitude pressure"
         nc_vhori = fo.createVariable(
-            'windSpeed', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'windSpeed', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_vhori.standard_name = 'wind_speed'
         nc_vhori.units = 'm/s'
         nc_vhori.coordinates = "flight_time longitude latitude pressure"
         nc_vdir = fo.createVariable(
-            'windDirection', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'windDirection', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_vdir.standard_name = 'wind_from_direction'
         nc_vdir.units = 'degrees'
         nc_vdir.coordinates = "flight_time longitude latitude pressure"
         nc_lat = fo.createVariable(
-            'latitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'latitude', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_lat.long_name = 'latitude'
         nc_lat.standard_name = 'latitude'
         nc_lat.units = 'degrees_north'
         nc_lat.axis = 'Y'
         nc_long = fo.createVariable(
-            'longitude', 'f4', ('trajectory', 'levels'), fill_value=fillval)
+            'longitude', 'f4', ('trajectory', 'levels'), fill_value=fillval, zlib=True)
         nc_long.long_name = 'longitude'
         nc_long.standard_name = 'longitude'
         nc_long.units = 'degrees_east'
