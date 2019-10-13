@@ -408,7 +408,9 @@ def main():
         nc_long[0, :] = long_m[:]
 
         fo.close()
-        logging.info('File Done')
+        logging.info('DONE: {input} converted to {output}'.format(
+            input=filelist[ifile],
+            output=outfile))
 
     time_out = time.time()
     logging.debug('System time: {}s'.format(time_out - time_in))
