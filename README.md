@@ -37,12 +37,18 @@ During the first execution, the `meta_information.ini` configuration file has to
 It is also possible to copy the `config/meta_information_template.ini` to ones favorite folder and change the files content accordingly. If the file in not renamed `meta_information.ini` and is in the home directory, the option `-c` has to be used during calling `sounding_converter` otherwise it will not recognize the configuration.
 
 ```python
-sounding_convert -i your_sounding.dat -c /your/path/to/meta_information.ini
+sounding_converter -i your_sounding.dat -c /your/path/to/meta_information.ini
 ```
+
+## Change meta-information
+The meta-information which is used in the netCDF files and in order to create a resonable filename, can always be changed by either
+
+- remove the file `meta_information.ini` in `$HOME` and run `sounding_converter` again, as if would be your first execution
+- edit the file `~/meta_information.ini` directly
 
 ## Visualization
 ### Panoply
-The converted dat files are netCDF files which conform to the CF-Conventions as far as possible and make use of the `discrete sampling geometry`. The sounding data can therefore easily be drawn as trajectories without extra efforts.
+The converted dat files are netCDF files which conform to the CF-Conventions as far as possible and make use of the `discrete sampling geometry`. The sounding data can therefore easily be drawn as trajectories without extra efforts. One example is the software [Panoply](https://www.giss.nasa.gov/tools/panoply/)
 
 ![Trajectory visualization with panoply](docs/panoply_visualization_traj.png?raw=true "Trajectory visualization with panoply")
 
