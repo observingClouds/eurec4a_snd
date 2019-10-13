@@ -311,12 +311,14 @@ def main():
         nc_launchtime.long_name = "time at which the sonde has been launched"
         nc_launchtime.units = 'seconds since 1970-01-01 00:00:00 UTC'
         nc_launchtime.calendar = 'gregorian'
+        nc_launchtime.standard_name = 'time'
 
         nc_tindex = fo.createVariable(
             'flight_time', 'f4', ('trajectory', 'levels'), fill_value=fillval)
         nc_tindex.long_name = 'time passed since launch'
         nc_tindex.standard_name = 'time'
-        nc_tindex.units = 'seconds since launchtime'
+        nc_tindex.units = 'seconds since {launch}'.format(
+            launch=sounding_date.strftime('%Y-%m-%d %H:%M%S UTC'))
         nc_tindex.axis = 'T'
         nc_tindex.calendar = "gregorian"
         nc_vvert = fo.createVariable(
@@ -384,12 +386,13 @@ def main():
                           format(platform=config['PLATFORM']['platform_name_short'],
                                  lat=lat_m[0],
                                  lon=long_m[0],
-                                 launchtime=str(utctime))
+                                 launchtime=str(YYYYMMDDHHMM))
         trajectory_name_parts = []
         for char in trajectory_name:
             trajectory_name_parts.extend(char)
 
         nc_prof[0, 0:len(trajectory_name_parts)] = trajectory_name_parts
+        nc_launchtime[0] = utctime
 
         nc_tindex[0, :] = tindex[:]
         nc_vvert[0, :] = vvert_m[:]
