@@ -219,6 +219,11 @@ def main():
         lat_m = np.ma.masked_invalid(data[:, 11])
         long_m = np.ma.masked_invalid(data[:, 12])
 
+        # calculate water vapor mixing ratio from temperature and
+        # relative humidity using magnus formula
+        vapor_pressure = (rh_m/100.) * (611.2 * np.exp((17.62*(temp_m))/(243.12 + temp_m)))
+        mix_m = 1000.*((0.622*vapor_pressure)/(100.*pres_m - vapor_pressure))
+
         rh_m = np.ma.masked_outside(rh_m, 0., 100.)
         pres_m = np.ma.masked_less(pres_m, 5.)
         vhori_m = np.ma.masked_greater(vhori_m, 100.)
