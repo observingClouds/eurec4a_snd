@@ -226,6 +226,13 @@ def main():
 #         vhori_m = np.ma.masked_greater(vhori_m, 100.)
 #         mix_m = np.ma.masked_greater(mix_m, -1., )
 
+        # Calculate additional variables
+        relative_humidity = 100*(np.exp((17.625*sounding.dewpoint)/(243.04+sounding.dewpoint))/np.exp((17.625*sounding.temperature)/(243.04+sounding.temperature)))
+        vapor_pressure = (relative_humidity/100.) * (611.2 * np.exp((17.62*(sounding.temperature))/(243.12 + sounding.temperature)))
+        wv_mix_ratio = 1000.*((0.622*vapor_pressure)/(100.*sounding.pressure - vapor_pressure))
+
+        relative_humidity = np.ma.masked_invalid(relative_humidity)
+        wv_mix_ratio = np.ma.masked_invalid(wv_mix_ratio)
         # Find temporal resolution
         # using most common time difference
         _, indices = np.unique(np.diff(sounding.time), return_inverse=True)
@@ -430,9 +437,9 @@ def main():
         nc_alti[0, :] = sounding.gpm
         nc_pres[0, :] = sounding.pressure
         nc_temp[0, :] = sounding.temperature
-#         nc_rh[0, :] = rh_m[:]
+        nc_rh[0, :] = relative_humidity
         nc_dewp[0, :] = sounding.dewpoint
-#         nc_mix[0, :] = mix_m[:]
+        nc_mix[0, :] = wv_mix_ratio
         nc_vhori[0, :] = sounding.windspeed
         nc_vdir[0, :] = sounding.winddirection
         nc_lat[0, :] = sounding.latitude
