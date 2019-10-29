@@ -9,6 +9,7 @@ Original version by: Johannes Kiliani/Lukas Frank
 
 # insert some subroutines if possible
 import time
+import shutil
 import datetime
 import calendar
 import os.path
@@ -179,6 +180,8 @@ def main():
         
         json_file = convert_bufr_to_json(filelist[ifile])
         json_flat, keys = read_json(json_file)
+        shutil.rmtree(os.path.dirname(json_file))
+
         sounding = convert_json_to_arrays(json_flat, keys)
         sounding = replace_missing_data(sounding)
         sounding = convert_list_to_array(sounding)
