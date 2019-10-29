@@ -3,3 +3,4 @@ basemap>=1.2.0
 numpy>=1.14.0
 netCDF4>=1.4.0
 pillow>=5.0.0
+eccodes>=2.14.0

@@ -1,2 +1,3 @@
 include versioneer.py
 include eurec4a_snd/_version.py
+include eurec4a_snd/_helpers.py
