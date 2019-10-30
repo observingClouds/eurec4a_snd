@@ -23,10 +23,11 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=['pillow>=6.0.0', 'matplotlib>=3.1.0', 'basemap>=1.2.0',
-                      'numpy>=1.14.0', 'netCDF4>=1.4.0',
+                      'numpy>=1.15.0', 'netCDF4>=1.4.0', 'metpy>=0.10.0',
                       'basemap-data-hires>=1.0.8'],
     entry_points={'console_scripts':
                     ['sounding_converter=eurec4a_snd.L1_bufr:main',
-                     'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main']},
+                     'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main',
+                     'sounding_skewT=eurec4a_snd.']},
     package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini"]}
 )
