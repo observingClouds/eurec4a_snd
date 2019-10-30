@@ -64,7 +64,11 @@ sounding_visualize -n converted/file/sounding.nc
 ```
 
 ### SkewT Plotting
-Examples on how to create a skewT diagram can be found in `eurec4a_snd/examples/visualizing`. Have a look at [Skew-T examples](eurec4a_snd/examples/visualizing/README.md)
+A skewT diagram can be created with
+```bash
+sounding_skewT -i converted/file/sounding.nc
+```
+Further examples on how to create a skewT diagram can be found in `eurec4a_snd/examples/visualizing`. Have a look at [Skew-T examples](eurec4a_snd/examples/visualizing/README.md)
 
 ## Example
 
