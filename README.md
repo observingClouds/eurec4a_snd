@@ -31,7 +31,7 @@ source activate field_campaign
 
 The actual package can than be installed with
 ```bash
-conda install -c observingclouds eurec4a_snd
+conda install -c observingclouds -c conda-forge eurec4a_snd
 ```
 
 ## First execution
