@@ -5,4 +5,3 @@ numpy>=1.14.0
 netCDF4>=1.4.0
 pillow>=5.0.0
 eccodes>=2.13.0
-metpy>=0.10.0

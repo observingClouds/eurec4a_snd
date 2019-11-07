@@ -22,5 +22,4 @@ requirements:
     - netCDF4
     - pillow
     - eccodes
-    - metpy
     - basemap-data-hires
