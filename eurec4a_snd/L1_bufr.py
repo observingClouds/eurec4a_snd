@@ -107,13 +107,17 @@ def get_args():
                         ' WARNING, ERROR]',
                         required=False, default="INFO")
 
-    parser.add_argument('-d', '--date', metavar="YYYYMMDD", help='Provide the desired date to be processed. '
-                                                                 'Fomat: YYYYMMDD', required=False, default=None)
     parsed_args = vars(parser.parse_args())
 
-    if (parsed_args["date"] is None) and (parsed_args["inputfile"] is None):
+    if (parsed_args["inputpath"] is not None) and (parsed_args["inputfile"] is not None):
         parser.error(
-            "either --date or --inputfile needs to be set. (--date not yet implemented)")
+            "either --inputpath or --inputfile should be used. Use --inputpath"
+            "for several files and --inputfile for single ones")
+
+    if (parsed_args["inputpath"] is None) and (parsed_args["inputfile"] is None):
+        parser.error(
+            "either --inputpath or --inputfile must be defined. Use --inputpath"
+            "for several files and --inputfile for single ones.")
 
     return parsed_args
 
