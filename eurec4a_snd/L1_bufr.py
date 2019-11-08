@@ -308,7 +308,7 @@ def main():
                        date=sounding_date.strftime('%Y%m%d_%H%M')))
 
         if not outfile.parent.exists():
-            success = os.makedirs(outpath.parent)
+            os.makedirs(outpath.parent)
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
