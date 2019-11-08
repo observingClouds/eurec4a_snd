@@ -9,19 +9,17 @@ Original version by: Johannes Kiliani/Lukas Frank
 
 # insert some subroutines if possible
 import time
+import platform
+from pathlib import Path, PureWindowsPath
 import shutil
-import datetime
-import calendar
 import os.path
 import sys
-import glob
 import subprocess as sp
 import configparser
 from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
-from pathlib import Path
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date, date2num
 
@@ -29,12 +27,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config import cfg_creator as configupdater
 from _helpers import *
 
-try:
-    import eurec4a_snd
-    __version__ = eurec4a_snd.__version__
-except ModuleNotFoundError:
-    print('Not found')
-    __version__ = 'see git_version'
 
 # ====================================================
 # General MPI-BCO settings:
@@ -76,22 +68,37 @@ def load_configuration(configuration_file=None):
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--configfile', metavar="meta_information.ini", help='Provide a meta_information.ini configuration file. \n'
                                                                        'If not provided it will be searched for at:\n'
                                                                        '1. ~/meta_information.ini\n'
                                                                        '2. ../../../meta_information.ini', required=False, default=None)
     parser.add_argument("-i", "--inputfile", metavar="INPUT_FILE",
                         help="Single sonde file (bufr) or file format\n"
-                             "including wildcards", default=None, required=False)
-
-    parser.add_argument("-p", "--inputpath", metavar='/some/example/path/',
-                        help="Path to the folder containing sonde bufr files",
+                             "including wildcards",
                         default=None,
-                        required=False)
+                        required=False,
+                        type=unixpath)
+
+    parser.add_argument("-p", "--inputpath", metavar='/some/example/path',
+                        help="Path to the folder containing sonde bufr files.",
+                        default=None,
+                        required=False,
+                        type=unixpath)
 
     parser.add_argument("-o", "--outputfolder", metavar="/some/example/path/",
-                        help="Output folder for converted files (netCDF)",
+                        help="Output folder for converted files (netCDF). You can\n"
+                             " although not recommended also define an output file\n"
+                             "(format). However, please share only those with the\n"
+                             " the default filename.\n"
+                             " The following formats can be used:\n"
+                             "\t {platform}\t platform name\n"
+                             "\t {location}\t platform location\n"
+                             "\t {direction}\t sounding direction\n"
+                             "\t {date}\t\t date of sounding release\n"
+                             "\t\t or self defined date format with\n"
+                             "\t\t %%Y%%m%%d %%H%%M and so on\n"
+                             "\t\t and others to format the output folder dynamically.",
                         default=None,
                         required=False)
 
@@ -100,15 +107,30 @@ def get_args():
                         ' WARNING, ERROR]',
                         required=False, default="INFO")
 
-    parser.add_argument('-d', '--date', metavar="YYYYMMDD", help='Provide the desired date to be processed. '
-                                                                 'Fomat: YYYYMMDD', required=False, default=None)
     parsed_args = vars(parser.parse_args())
 
-    if (parsed_args["date"] is None) and (parsed_args["inputfile"] is None):
+    if (parsed_args["inputpath"] is not None) and (parsed_args["inputfile"] is not None):
         parser.error(
-            "either --date or --inputfile needs to be set. (--date not yet implemented)")
+            "either --inputpath or --inputfile should be used. Use --inputpath"
+            "for several files and --inputfile for single ones")
+
+    if (parsed_args["inputpath"] is None) and (parsed_args["inputfile"] is None):
+        parser.error(
+            "either --inputpath or --inputfile must be defined. Use --inputpath"
+            "for several files and --inputfile for single ones.")
 
     return parsed_args
+
+def unixpath(path_in):
+    """
+    Convert windows path to unix path syntax
+    depending on the used OS
+    """
+    if platform.system() == 'Windows':
+        path_out = Path(PureWindowsPath(path_in))
+    else:
+        path_out = Path(path_in)
+    return path_out
 
 
 def setup_logging(verbose):
@@ -125,7 +147,35 @@ def setup_logging(verbose):
 def main():
     # Set up global configuration of BCO-MPI-GIT:
     args = get_args()
+
     setup_logging(args['verbose'])
+
+    # Get version information
+    try:
+        import eurec4a_snd
+        __version__ = eurec4a_snd.__version__
+        package_version_set = True
+    except (ModuleNotFoundError, AttributeError):
+        logging.debug('No eurec4a_snd package version found')
+        __version__ = 'see git_version'
+        package_version_set = False
+
+    try:
+        git_module_version = sp.check_output(
+            ["git", "describe", "--always"]).strip()
+        git_version_set = True
+    except:
+        logging.debug('No git-version could be found.')
+        git_module_version = "--"
+        git_version_set = False
+
+    if (~git_version_set and ~package_version_set):
+        logging.warning('No version of the converter could be found!'
+                        ' Please consider the installation via conda'
+                        ' or if this is not working clone the git re'
+                        'pository')
+
+    logging.info('Version of script: {} (conda package), {} (git version)'.format(__version__, git_module_version))
 
     try:
         config = load_configuration(args["configfile"])
@@ -150,25 +200,17 @@ def main():
         if args["outputfolder"] is None:
             args["outputfolder"] = config["FILES"]["OUTPUT_DAT2NC"]
 
-    try:
-        git_module_version = sp.check_output(
-            ["git", "describe", "--always"]).strip()
-    except:
-        logging.info('No git-version could be found. Please consider'
-                     'pulling the git repository.')
-        git_module_version = "--"
-
     time_in = time.time()
     date_unit = "seconds since 1970-01-01 00:00:00 UTC"
 
     # Creating file list according to given arguments
     if args['inputfile'] is None:
-        filelist = glob.glob(args['inputpath'] + '*.bfr')
+        filelist = args['inputpath'].glob('*.bfr')
     else:
-        filelist = glob.glob(args['inputfile'])
+        filelist = [args['inputfile']]
     filelist = sorted(filelist)
 
-    logging.info('Files to process {}'.format(filelist))
+    logging.info('Files to process {}'.format([file.name for file in filelist]))
     for ifile, bufr_file in enumerate(filelist):
         logging.info('Reading file number {}'.format(ifile))
 
@@ -243,19 +285,31 @@ def main():
         YYYYMM = sounding.sounding_start_time.strftime('%Y%m')
         YYYYMMDDHHMM = sounding.sounding_start_time.strftime('%Y%m%d%H%M')
 
-        outpath = args['outputfolder'] + YYYYMM + '/'
-        if not os.path.exists(outpath):
-            success = sp.call(["mkdir", "-p", outpath])
+        outpath_fmt = unixpath(args['outputfolder'])
+        outpath = Path(sounding.sounding_start_time.strftime(outpath_fmt.as_posix()))
 
-        outfile = outpath + \
-            "{platform}_Sounding{direction}_{location}_{date}.nc".\
-            format(platform=config['PLATFORM']['platform_name_short'],
-                   location=config['PLATFORM']['platform_location'].
-                                replace(' ', '').
-                                replace(',', '').
-                                replace(';', ''),
-                   direction='{}Profile'.format(direction_str),
-                   date=sounding_date.strftime('%Y%m%d_%H%M'))
+        if outpath.suffix == '.nc':
+            outfile = Path(outpath.as_posix().format(platform=config['PLATFORM']['platform_name_short'],
+                                                     location=config['PLATFORM']['platform_location'].
+                                                               replace(' ', '').
+                                                               replace(',', '').
+                                                               replace(';', ''),
+                                                     direction='{}Profile'.format(direction_str),
+                                                     date=sounding_date.strftime('%Y%m%d_%H%M')))
+        else:
+            outfile = Path(os.path.join(outpath, \
+                "{platform}_Sounding{direction}_{location}_{date}.nc".\
+                format(platform=config['PLATFORM']['platform_name_short'],
+                       location=config['PLATFORM']['platform_location'].
+                                 replace(' ', '').
+                                 replace(',', '').
+                                 replace(';', ''),
+                       direction='{}Profile'.format(direction_str),
+                       date=sounding_date.strftime('%Y%m%d_%H%M'))))
+
+        import pdb; pdb.set_trace()
+        if not outfile.parent.exists():
+            os.makedirs(outfile.parent)
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
@@ -286,7 +340,7 @@ def main():
 
         # Information about output
         fo.resolution = "{:g} sec".format(time_resolution)
-        fo.source = bufr_file
+        fo.source = Path(PureWindowsPath(bufr_file)).absolute().as_posix()
         fo.git_version = git_module_version
         fo.created_with = '{file} with its last modifications on {time}'.\
             format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),

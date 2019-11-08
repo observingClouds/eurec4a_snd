@@ -3,22 +3,30 @@ Helper functions for bufr import
 """
 import tempfile
 import os
-import numpy as np
 import json
 import datetime as dt
+import numpy as np
+
 
 class UnitChangedError(Exception):
     pass
 
+
 class UnexpectedUnit(Exception):
     pass
 
+
 def convert_bufr_to_json(bufr_fn):
+    """
+    Convert bufr file to json with ecCodes
+    software
+    """
     tmp_folder = tempfile.mkdtemp()
-    tmp_output_json_fn = tmp_folder+'/tmp_bufr.json'
+    tmp_output_json_fn = os.path.join(tmp_folder, 'tmp_bufr.json')
     r = os.system("bufr_dump -j s {} > {}".format(bufr_fn, tmp_output_json_fn))
     print("Converted {} to {}".format(bufr_fn, tmp_output_json_fn))
     return tmp_output_json_fn
+
 
 def flatten_json(y):
     global r
@@ -41,6 +49,7 @@ def flatten_json(y):
     flatten(y)
     return out
 
+
 def read_json(json_fn):
     """
     Read and flatten json
@@ -54,8 +63,9 @@ def read_json(json_fn):
     for key in keys:
         if 'key' in key:
             key_keys.append(key[:-4])
-    
+
     return bfr_json_flat, key_keys
+
 
 def calculate_sounding_start(sounding):
     import datetime as dt
@@ -67,11 +77,11 @@ def calculate_sounding_start(sounding):
                                                second)
     return sounding
 
+
 def convert_json_to_arrays(json_flat, key_keys):
     """
     Convert json data to array
     """
-    
     class Sounding:
         def __init__(self):
             self.station_lat = None
@@ -96,9 +106,9 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.displacement_lon = []
             self.displacement_lon_unit = None
             self.meta_data = {}
-    
+
     s = Sounding()
-            
+
     year_ = None
     month_ = None
     day_ = None
@@ -207,19 +217,20 @@ def convert_json_to_arrays(json_flat, key_keys):
             try:
                 s.meta_data['bufr_msg'] = json_flat[key_key+'_value']
             except KeyError:
-                # Error probably caused, because there are several unexpandedDescriptors
+                # Error probably caused, because there are several 
+                # unexpandedDescriptors
                 # which seems to be only the case for dropsondes?!
                 s.meta_data['bufr_msg'] = 309053
-                
-    
+
     s.sounding_start_time = dt.datetime(year,
                                         month,
                                         day,
                                         hour,
                                         minute,
                                         second)
-    
+
     return s
+
 
 def replace_missing_data(sounding):
     # Remove Nones from lists and
@@ -237,6 +248,7 @@ def replace_missing_data(sounding):
     
     return sounding
 
+
 def convert_list_to_array(sounding):
     """
     Convert datatype of sounding
@@ -249,33 +261,36 @@ def convert_list_to_array(sounding):
     
     return sounding
 
+
 def calculate_coordinates(origin, offset):
     return origin + offset
+
 
 def bufr_specific_handling(sounding):
     """
     Apply bufr message specific functions
-    
+
     Depending on the BUFR format, that data
     has to be prepared differently
-    
+
     BUFR309053 (dropsonde)
     BUFR309056 (radiosonde descent)
     BUFR309057 (radiosonde ascent)
     - Remove last entries of time, latitude, longitude because those
-        belong to the 'absoluteWindShearIn1KmLayerAbove'/ 'absoluteWindShearIn1KmLayerBelow' entries
-    
+        belong to the 'absoluteWindShearIn1KmLayerAbove'/
+        'absoluteWindShearIn1KmLayerBelow' entries
+
     """
     variables = ['latitude', 'longitude', 'pressure', 'windspeed',
                  'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
-    
+
     if sounding.meta_data['bufr_msg'] == 309053:
         # Nothing to do so far
         pass
     elif sounding.meta_data['bufr_msg'] == 309056:
         if np.isnan(sounding.time[0]):
             for var in variables:
-                sounding.__dict__[var] = sounding.__dict__[var][1:] 
+                sounding.__dict__[var] = sounding.__dict__[var][1:]
         sounding.latitude = sounding.latitude[:-1]
         sounding.longitude = sounding.longitude[:-1]
         sounding.pressure = sounding.pressure[:-1]
@@ -287,14 +302,15 @@ def bufr_specific_handling(sounding):
         sounding.time = sounding.time[:-1]
     return sounding
 
+
 def get_sounding_direction(bufr_msg):
     """
     Get direction of sounding
-    
+
     1: upward
     -1: downward
     """
-    
+
     if str(bufr_msg) == '309053':
         return -1
     elif str(bufr_msg) == '309056':
@@ -304,29 +320,39 @@ def get_sounding_direction(bufr_msg):
     else:
         raise NotImplementedError('The bufr message format {} is not implemented'.format(bufr_msg))
 
+
 def kelvin_to_celsius(kelvin):
+    """
+    Convert Kelvin to Celsius
+    """
     return kelvin - 273.15
 
+
 def pascal_to_hectoPascal(pascal):
+    """
+    Convert Pa to hPa
+    """
     return pascal/100.
+
 
 converter_dict = {'K-->C': kelvin_to_celsius,
                   'K-->degC': kelvin_to_celsius,
                   'Pa-->hPa': pascal_to_hectoPascal
-                 }
+                  }
+
 
 def expected_unit_check(sounding):
     """
     Check if units are as expected
     and try to convert accordingly
     """
-    
+
     variables = ['displacement_lat', 'displacement_lon', 'pressure', 'windspeed',
                  'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
-    
+
     expected_bufr_units = ['deg', 'deg', 'Pa', 'm/s', 'deg', 'K', 'K', 'gpm', 's']
     expected_output_units = ['deg', 'deg', 'hPa', 'm/s', 'deg', 'degC', 'degC', 'gpm', 's']
-    
+
     for v, var in enumerate(variables):
         if (sounding.__dict__[var+'_unit'] != expected_output_units[v]):
             # Convert data to expected unit
@@ -341,6 +367,5 @@ def expected_unit_check(sounding):
                 sounding.__dict__[var+'_unit'] = expected_output_units[v]
         else:
             pass
-    
+
     return sounding
-    
