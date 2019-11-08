@@ -27,12 +27,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config import cfg_creator as configupdater
 from _helpers import *
 
-try:
-    import eurec4a_snd
-    __version__ = eurec4a_snd.__version__
-except ModuleNotFoundError:
-    print('Not found')
-    __version__ = 'see git_version'
 
 # ====================================================
 # General MPI-BCO settings:
@@ -149,7 +143,35 @@ def setup_logging(verbose):
 def main():
     # Set up global configuration of BCO-MPI-GIT:
     args = get_args()
+
     setup_logging(args['verbose'])
+
+    # Get version information
+    try:
+        import eurec4a_snd
+        __version__ = eurec4a_snd.__version__
+        package_version_set = True
+    except (ModuleNotFoundError, AttributeError):
+        logging.debug('No eurec4a_snd package version found')
+        __version__ = 'see git_version'
+        package_version_set = False
+
+    try:
+        git_module_version = sp.check_output(
+            ["git", "describe", "--always"]).strip()
+        git_version_set = True
+    except:
+        logging.debug('No git-version could be found.')
+        git_module_version = "--"
+        git_version_set = False
+
+    if (~git_version_set and ~package_version_set):
+        logging.warning('No version of the converter could be found!'
+                        ' Please consider the installation via conda'
+                        ' or if this is not working clone the git re'
+                        'pository')
+
+    logging.info('Version of script: {} (conda package), {} (git version)'.format(__version__, git_module_version))
 
     try:
         config = load_configuration(args["configfile"])
