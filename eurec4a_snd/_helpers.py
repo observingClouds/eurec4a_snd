@@ -15,7 +15,7 @@ class UnexpectedUnit(Exception):
 
 def convert_bufr_to_json(bufr_fn):
     tmp_folder = tempfile.mkdtemp()
-    tmp_output_json_fn = tmp_folder+'/tmp_bufr.json'
+    tmp_output_json_fn = os.path.join(tmp_folder, 'tmp_bufr.json')
     r = os.system("bufr_dump -j s {} > {}".format(bufr_fn, tmp_output_json_fn))
     print("Converted {} to {}".format(bufr_fn, tmp_output_json_fn))
     return tmp_output_json_fn

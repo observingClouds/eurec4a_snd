@@ -9,6 +9,7 @@ Original version by: Johannes Kiliani/Lukas Frank
 
 # insert some subroutines if possible
 import time
+import platform
 import shutil
 import datetime
 import calendar
@@ -21,7 +22,7 @@ from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date, date2num
 
@@ -110,6 +111,17 @@ def get_args():
 
     return parsed_args
 
+def unixpath(path_in):
+    """
+    Convert windows path to unix path syntax
+    depending on the used OS
+    """
+    if platform.system() == 'Windows':
+        path_out = Path(PureWindowsPath(path_in))
+    else:
+        path_out = Path(path_in)
+    return path_out
+
 
 def setup_logging(verbose):
     assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
@@ -150,25 +162,17 @@ def main():
         if args["outputfolder"] is None:
             args["outputfolder"] = config["FILES"]["OUTPUT_DAT2NC"]
 
-    try:
-        git_module_version = sp.check_output(
-            ["git", "describe", "--always"]).strip()
-    except:
-        logging.info('No git-version could be found. Please consider'
-                     'pulling the git repository.')
-        git_module_version = "--"
-
     time_in = time.time()
     date_unit = "seconds since 1970-01-01 00:00:00 UTC"
 
     # Creating file list according to given arguments
     if args['inputfile'] is None:
-        filelist = glob.glob(args['inputpath'] + '*.bfr')
+        filelist = args['inputpath'].glob('*.bfr')
     else:
-        filelist = glob.glob(args['inputfile'])
+        filelist = [args['inputfile']]
     filelist = sorted(filelist)
 
-    logging.info('Files to process {}'.format(filelist))
+    logging.info('Files to process {}'.format([file.name for file in filelist]))
     for ifile, bufr_file in enumerate(filelist):
         logging.info('Reading file number {}'.format(ifile))
 
@@ -243,19 +247,31 @@ def main():
         YYYYMM = sounding.sounding_start_time.strftime('%Y%m')
         YYYYMMDDHHMM = sounding.sounding_start_time.strftime('%Y%m%d%H%M')
 
-        outpath = args['outputfolder'] + YYYYMM + '/'
-        if not os.path.exists(outpath):
-            success = sp.call(["mkdir", "-p", outpath])
+        outpath_fmt = unixpath(args['outputfolder'])
+        outpath = Path(sounding.sounding_start_time.strftime(outpath_fmt.as_posix()))
 
-        outfile = outpath + \
-            "{platform}_Sounding{direction}_{location}_{date}.nc".\
-            format(platform=config['PLATFORM']['platform_name_short'],
-                   location=config['PLATFORM']['platform_location'].
-                                replace(' ', '').
-                                replace(',', '').
-                                replace(';', ''),
-                   direction='{}Profile'.format(direction_str),
-                   date=sounding_date.strftime('%Y%m%d_%H%M'))
+
+        if outpath.suffix == '.nc':
+            outfile = Path(outpath.as_posix().format(platform=config['PLATFORM']['platform_name_short'],
+                                     location=config['PLATFORM']['platform_location'].
+                                               replace(' ', '').
+                                               replace(',', '').
+                                               replace(';', ''),
+                                     direction='{}Profile'.format(direction_str),
+                                     date=sounding_date.strftime('%Y%m%d_%H%M')))
+        else:
+            outfile = os.path.join(outpath, \
+                "{platform}_Sounding{direction}_{location}_{date}.nc".\
+                format(platform=config['PLATFORM']['platform_name_short'],
+            	       location=config['PLATFORM']['platform_location'].
+            	                 replace(' ', '').
+            	                 replace(',', '').
+            	                 replace(';', ''),
+            	       direction='{}Profile'.format(direction_str),
+            	       date=sounding_date.strftime('%Y%m%d_%H%M')))
+		
+        if not outfile.parent.exists():
+            success = os.makedirs(outpath.parent)
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
@@ -286,7 +302,7 @@ def main():
 
         # Information about output
         fo.resolution = "{:g} sec".format(time_resolution)
-        fo.source = bufr_file
+        fo.source = Path(PureWindowsPath(bufr_file)).absolute().as_posix()
         fo.git_version = git_module_version
         fo.created_with = '{file} with its last modifications on {time}'.\
             format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
