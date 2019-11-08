@@ -321,6 +321,7 @@ def main():
     date = ''
     outputpath = './'  # default setting
     inputpath = './'  # default setting
+    ncfile = None
 
     setup_logging('INFO')
 
@@ -364,6 +365,11 @@ def main():
                 outputpath = outputpath+'/'
             if not os.path.isdir(outputpath):
                 os.mkdir(outputpath)
+
+        if ncfile is None:
+            logging.error('Input file must be defined with either'
+                          ' --inputncfile or --inputpath and --date')
+            sys.exit()
 
     logging.info('plotting sounding file %s' % ncfile)
 
