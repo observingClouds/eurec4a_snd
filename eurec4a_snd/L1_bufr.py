@@ -10,19 +10,16 @@ Original version by: Johannes Kiliani/Lukas Frank
 # insert some subroutines if possible
 import time
 import platform
+from pathlib import Path, PureWindowsPath
 import shutil
-import datetime
-import calendar
 import os.path
 import sys
-import glob
 import subprocess as sp
 import configparser
 from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
-from pathlib import Path, PureWindowsPath
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date, date2num
 
@@ -77,22 +74,37 @@ def load_configuration(configuration_file=None):
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--configfile', metavar="meta_information.ini", help='Provide a meta_information.ini configuration file. \n'
                                                                        'If not provided it will be searched for at:\n'
                                                                        '1. ~/meta_information.ini\n'
                                                                        '2. ../../../meta_information.ini', required=False, default=None)
     parser.add_argument("-i", "--inputfile", metavar="INPUT_FILE",
                         help="Single sonde file (bufr) or file format\n"
-                             "including wildcards", default=None, required=False)
-
-    parser.add_argument("-p", "--inputpath", metavar='/some/example/path/',
-                        help="Path to the folder containing sonde bufr files",
+                             "including wildcards",
                         default=None,
-                        required=False)
+                        required=False,
+                        type=unixpath)
+
+    parser.add_argument("-p", "--inputpath", metavar='/some/example/path',
+                        help="Path to the folder containing sonde bufr files.",
+                        default=None,
+                        required=False,
+                        type=unixpath)
 
     parser.add_argument("-o", "--outputfolder", metavar="/some/example/path/",
-                        help="Output folder for converted files (netCDF)",
+                        help="Output folder for converted files (netCDF). You can\n"
+                             " although not recommended also define an output file\n"
+                             "(format). However, please share only those with the\n"
+                             " the default filename.\n"
+                             " The following formats can be used:\n"
+                             "\t {platform}\t platform name\n"
+                             "\t {location}\t platform location\n"
+                             "\t {direction}\t sounding direction\n"
+                             "\t {date}\t\t date of sounding release\n"
+                             "\t\t or self defined date format with\n"
+                             "\t\t %%Y%%m%%d %%H%%M and so on\n"
+                             "\t\t and others to format the output folder dynamically.",
                         default=None,
                         required=False)
 
@@ -250,26 +262,25 @@ def main():
         outpath_fmt = unixpath(args['outputfolder'])
         outpath = Path(sounding.sounding_start_time.strftime(outpath_fmt.as_posix()))
 
-
         if outpath.suffix == '.nc':
             outfile = Path(outpath.as_posix().format(platform=config['PLATFORM']['platform_name_short'],
-                                     location=config['PLATFORM']['platform_location'].
-                                               replace(' ', '').
-                                               replace(',', '').
-                                               replace(';', ''),
-                                     direction='{}Profile'.format(direction_str),
-                                     date=sounding_date.strftime('%Y%m%d_%H%M')))
+                                                     location=config['PLATFORM']['platform_location'].
+                                                               replace(' ', '').
+                                                               replace(',', '').
+                                                               replace(';', ''),
+                                                     direction='{}Profile'.format(direction_str),
+                                                     date=sounding_date.strftime('%Y%m%d_%H%M')))
         else:
             outfile = os.path.join(outpath, \
                 "{platform}_Sounding{direction}_{location}_{date}.nc".\
                 format(platform=config['PLATFORM']['platform_name_short'],
-            	       location=config['PLATFORM']['platform_location'].
-            	                 replace(' ', '').
-            	                 replace(',', '').
-            	                 replace(';', ''),
-            	       direction='{}Profile'.format(direction_str),
-            	       date=sounding_date.strftime('%Y%m%d_%H%M')))
-		
+                       location=config['PLATFORM']['platform_location'].
+                                 replace(' ', '').
+                                 replace(',', '').
+                                 replace(';', ''),
+                       direction='{}Profile'.format(direction_str),
+                       date=sounding_date.strftime('%Y%m%d_%H%M')))
+
         if not outfile.parent.exists():
             success = os.makedirs(outpath.parent)
 
