@@ -44,6 +44,13 @@ It is also possible to copy the `config/meta_information_template.ini` to one's 
 sounding_converter -i your_sounding.bfr -c /your/path/to/meta_information.ini
 ```
 
+## Update
+
+Please check for updates at the beginning of the campaign by running
+```bash
+conda install -c observingclouds -c conda-forge eurec4a_snd
+```
+
 ## Change meta-information
 The meta-information which is used in the netCDF files and in order to create a resonable filename, can always be changed by either
 
