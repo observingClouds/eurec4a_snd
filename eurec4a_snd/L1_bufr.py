@@ -297,7 +297,7 @@ def main():
                                                      direction='{}Profile'.format(direction_str),
                                                      date=sounding_date.strftime('%Y%m%d_%H%M')))
         else:
-            outfile = os.path.join(outpath, \
+            outfile = Path(os.path.join(outpath, \
                 "{platform}_Sounding{direction}_{location}_{date}.nc".\
                 format(platform=config['PLATFORM']['platform_name_short'],
                        location=config['PLATFORM']['platform_location'].
@@ -305,10 +305,11 @@ def main():
                                  replace(',', '').
                                  replace(';', ''),
                        direction='{}Profile'.format(direction_str),
-                       date=sounding_date.strftime('%Y%m%d_%H%M')))
+                       date=sounding_date.strftime('%Y%m%d_%H%M'))))
 
+        import pdb; pdb.set_trace()
         if not outfile.parent.exists():
-            os.makedirs(outpath.parent)
+            os.makedirs(outfile.parent)
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
