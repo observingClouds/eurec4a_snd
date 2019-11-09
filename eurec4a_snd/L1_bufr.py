@@ -307,7 +307,6 @@ def main():
                        direction='{}Profile'.format(direction_str),
                        date=sounding_date.strftime('%Y%m%d_%H%M'))))
 
-        import pdb; pdb.set_trace()
         if not outfile.parent.exists():
             os.makedirs(outfile.parent)
 
