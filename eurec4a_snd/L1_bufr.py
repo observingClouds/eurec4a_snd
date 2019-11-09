@@ -234,7 +234,10 @@ def main():
 
         serial = sounding.meta_data['sonde_serial_number']
         sondetype = sounding.meta_data['radiosondeType']
-        sondefreq = sounding.meta_data['sonde_frequency']
+        try:
+            sondefreq = sounding.meta_data['sonde_frequency']
+        except KeyError:
+            sondefreq = '--'
 
         direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
         if direction == 1:
