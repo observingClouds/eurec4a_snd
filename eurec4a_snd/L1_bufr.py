@@ -234,6 +234,7 @@ def main():
 
         serial = sounding.meta_data['sonde_serial_number']
         sondetype = sounding.meta_data['radiosondeType']
+        sondefreq = sounding.meta_data['sonde_frequency']
 
         direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
         if direction == 1:
@@ -316,7 +317,8 @@ def main():
         # Instrument metadata
         fo.instrument = config['INSTRUMENT']['instrument_description']
         fo.number_of_Probe = serial
-        fo.radiosonde_type = sondetype
+        fo.sonde_type = sondetype
+        fo.sonde_frequency = sondefreq
 
         # Information about launch
         fo.date_YYYYMMDD = sounding_date.strftime('%Y%m%d')

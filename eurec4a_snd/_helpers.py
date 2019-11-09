@@ -216,6 +216,8 @@ def convert_json_to_arrays(json_flat, key_keys):
                 # unexpandedDescriptors
                 # which seems to be only the case for dropsondes?!
                 s.meta_data['bufr_msg'] = 309053
+        elif json_flat[key_key+'_key'] == 'radiosondeOperatingFrequency':
+            s.meta_data['sonde_frequency'] = str(json_flat[key_key+'_value']) + json_flat[key_key+'_units']
 
     s.sounding_start_time = dt.datetime(year,
                                         month,
