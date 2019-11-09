@@ -373,20 +373,20 @@ def main():
 
         # Define Dimension (record length) from ASCII record counter
         fo.createDimension('levels', len(sounding.pressure))
-        prof_dim = fo.createDimension('trajectory', None)
+        prof_dim = fo.createDimension('sounding', None)
         str_dim = fo.createDimension('str_dim', 1000)
         fillval = default_fillvals['f4']
 
         # Creation of NetCDF Variables, including description and unit
         nc_prof = fo.createVariable(
-            'trajectory', 'S1', ('trajectory', 'str_dim'),
+            'sounding', 'S1', ('sounding', 'str_dim'),
             fill_value='',
             zlib=True)
-        nc_prof.cf_role = "trajectory_id"
-        nc_prof.long_name = 'trajectory identifier'
-        nc_prof.description = 'unique string describing the trajectories origin'
+        nc_prof.cf_role = "sounding_id"
+        nc_prof.long_name = 'sounding identifier'
+        nc_prof.description = 'unique string describing the soundings origin'
 
-        nc_launchtime = fo.createVariable('launch_time', 'f8', ('trajectory'),
+        nc_launchtime = fo.createVariable('launch_time', 'f8', ('sounding'),
             zlib=True)
         nc_launchtime.long_name = "time at which the sonde has been launched"
         nc_launchtime.units = 'seconds since 1970-01-01 00:00:00 UTC'
@@ -394,7 +394,7 @@ def main():
         nc_launchtime.standard_name = 'time'
 
         nc_tindex = fo.createVariable(
-            'flight_time', 'f4', ('trajectory', 'levels'),
+            'flight_time', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_tindex.long_name = 'time passed since launch'
@@ -404,7 +404,7 @@ def main():
         nc_tindex.axis = 'T'
         nc_tindex.calendar = "gregorian"
         nc_vvert = fo.createVariable(
-            'ascentRate', 'f4', ('trajectory', 'levels'),
+            'ascentRate', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
@@ -412,14 +412,14 @@ def main():
         nc_vvert.units = 'm/s'
         nc_vvert.coordinates = "flight_time longitude latitude pressure"
         nc_alti = fo.createVariable(
-            'altitude', 'f4', ('trajectory', 'levels'),
+            'altitude', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_alti.standard_name = 'altitude'
         nc_alti.units = 'm'
         nc_alti.coordinates = "flight_time longitude latitude pressure"
         nc_pres = fo.createVariable(
-            'pressure', 'f4', ('trajectory', 'levels'),
+            'pressure', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_pres.standard_name = 'air_pressure'
@@ -427,28 +427,28 @@ def main():
         nc_pres.axis = 'Z'
         nc_pres.positive = 'down'
         nc_temp = fo.createVariable(
-            'temperature', 'f4', ('trajectory', 'levels'),
+            'temperature', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_temp.standard_name = 'air_temperature'
         nc_temp.units = 'degrees_Celsius'
         nc_temp.coordinates = "flight_time longitude latitude pressure"
         nc_rh = fo.createVariable(
-            'humidity', 'f4', ('trajectory', 'levels'),
+            'humidity', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_rh.standard_name = 'relative_humidity'
         nc_rh.units = '%'
         nc_rh.coordinates = "flight_time longitude latitude pressure"
         nc_dewp = fo.createVariable(
-            'dewPoint', 'f4', ('trajectory', 'levels'),
+            'dewPoint', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_dewp.standard_name = 'dew_point_temperature'
         nc_dewp.units = 'degrees_Celsius'
         nc_dewp.coordinates = "flight_time longitude latitude pressure"
         nc_mix = fo.createVariable(
-            'mixingRatio', 'f4', ('trajectory', 'levels'),
+            'mixingRatio', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_mix.long_name = 'water vapor mixing ratio'
@@ -456,21 +456,21 @@ def main():
         nc_mix.units = 'g/kg'
         nc_mix.coordinates = "flight_time longitude latitude pressure"
         nc_vhori = fo.createVariable(
-            'windSpeed', 'f4', ('trajectory', 'levels'),
+            'windSpeed', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_vhori.standard_name = 'wind_speed'
         nc_vhori.units = 'm/s'
         nc_vhori.coordinates = "flight_time longitude latitude pressure"
         nc_vdir = fo.createVariable(
-            'windDirection', 'f4', ('trajectory', 'levels'),
+            'windDirection', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_vdir.standard_name = 'wind_from_direction'
         nc_vdir.units = 'degrees'
         nc_vdir.coordinates = "flight_time longitude latitude pressure"
         nc_lat = fo.createVariable(
-            'latitude', 'f4', ('trajectory', 'levels'),
+            'latitude', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_lat.long_name = 'latitude'
@@ -478,7 +478,7 @@ def main():
         nc_lat.units = 'degrees_north'
         nc_lat.axis = 'Y'
         nc_long = fo.createVariable(
-            'longitude', 'f4', ('trajectory', 'levels'),
+            'longitude', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
         nc_long.long_name = 'longitude'
@@ -486,16 +486,16 @@ def main():
         nc_long.units = 'degrees_east'
         nc_long.axis = 'X'
 
-        trajectory_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
-                          format(platform=config['PLATFORM']['platform_name_short'],
-                                 lat=sounding.station_lat,
-                                 lon=sounding.station_lon,
-                                 launchtime=str(YYYYMMDDHHMM))
-        trajectory_name_parts = []
-        for char in trajectory_name:
-            trajectory_name_parts.extend(char)
+        sounding_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
+                        format(platform=config['PLATFORM']['platform_name_short'],
+                               lat=sounding.station_lat,
+                               lon=sounding.station_lon,
+                               launchtime=str(YYYYMMDDHHMM))
+        sounding_name_parts = []
+        for char in sounding_name:
+            sounding_name_parts.extend(char)
 
-        nc_prof[0, 0:len(trajectory_name_parts)] = trajectory_name_parts
+        nc_prof[0, 0:len(sounding_name_parts)] = sounding_name_parts
         nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
 
         nc_tindex[0, :] = sounding.time

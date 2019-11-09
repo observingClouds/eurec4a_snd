@@ -49,11 +49,11 @@ def main():
 
     ds = xr.open_dataset(file)
 
-    p = ds['pressure'].isel({'trajectory': 0}).values * units.hPa
-    T = ds['temperature'].isel({'trajectory': 0}).values * units.degC
-    Td = ds['dewPoint'].isel({'trajectory': 0}).values * units.degC
-    wind_speed = ds['windSpeed'].isel({'trajectory': 0}).values * (units.meter/units.second)
-    wind_dir = ds['windDirection'].isel({'trajectory': 0}).values * units.degrees
+    p = ds['pressure'].isel({'sounding': 0}).values * units.hPa
+    T = ds['temperature'].isel({'sounding': 0}).values * units.degC
+    Td = ds['dewPoint'].isel({'sounding': 0}).values * units.degC
+    wind_speed = ds['windSpeed'].isel({'sounding': 0}).values * (units.meter/units.second)
+    wind_dir = ds['windDirection'].isel({'sounding': 0}).values * units.degrees
     u, v = mpcalc.wind_components(wind_speed, wind_dir)
     lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
 
@@ -79,14 +79,14 @@ def main():
 
     # Search for levels by providing pressures
     # (levels is the coordinate not pressure)
-    pres_vals = ds['pressure'].isel({'trajectory': 0}).values
+    pres_vals = ds['pressure'].isel({'sounding': 0}).values
     closest_pressure_levels = np.unique([find_nearest(pres_vals[~np.isnan(pres_vals)], p_) for p_ in pressure_levels_barbs])
     closest_pressure_levels = closest_pressure_levels[~np.isnan(closest_pressure_levels)]
     _, closest_pressure_levels_idx, _ = np.intersect1d(pres_vals, closest_pressure_levels, return_indices=True)
 
-    p_barbs = ds['pressure'].isel({'trajectory': 0, 'levels': closest_pressure_levels_idx}).values * units.hPa
-    wind_speed_barbs = ds['windSpeed'].isel({'trajectory': 0, 'levels': closest_pressure_levels_idx}).values * (units.meter/units.second)
-    wind_dir_barbs = ds['windDirection'].isel({'trajectory': 0, 'levels': closest_pressure_levels_idx}).values * units.degrees
+    p_barbs = ds['pressure'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * units.hPa
+    wind_speed_barbs = ds['windSpeed'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * (units.meter/units.second)
+    wind_dir_barbs = ds['windDirection'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * units.degrees
     u_barbs, v_barbs = mpcalc.wind_components(wind_speed_barbs, wind_dir_barbs)
 
     # Find nans in pressure
@@ -123,10 +123,10 @@ def main():
     h.plot_colormapped(u, v, wind_speed)  # Plot a line colored by wind speed
 
     # Set title
-    traj_name = ds['trajectory'].isel({'trajectory': 0}).values
-    traj_name_str = str(traj_name.astype('str'))
-    skew.ax.set_title('{trajectory}'.format(
-        trajectory=traj_name_str))
+    sounding_name = ds['sounding'].isel({'sounding': 0}).values
+    sounding_name_str = str(sounding_name.astype('str'))
+    skew.ax.set_title('{sounding}'.format(
+        sounding=sounding_name_str))
 
     if output is None:
         output = str(os.path.basename(file).split('.')[0])+'.pdf'
