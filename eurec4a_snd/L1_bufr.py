@@ -236,7 +236,10 @@ def main():
             serial = sounding.meta_data['sonde_serial_number']
         except KeyError:
             serial = '--'
-        sondetype = sounding.meta_data['radiosondeType']
+        try:
+            sondetype = sounding.meta_data['radiosondeType']
+        except KeyError:
+            sondetype = '--'
         try:
             sondefreq = sounding.meta_data['sonde_frequency']
         except KeyError:
