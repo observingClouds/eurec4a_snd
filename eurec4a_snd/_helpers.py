@@ -107,8 +107,50 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.displacement_lon_unit = None
             self.meta_data = {}
 
-    s = Sounding()
+    def _ensure_measurement_integrity(self):
+        """
+        Test integrity of each measurement unit
 
+        Measurements of the sonde in the bufr file
+        contain usually:
+            - time since launch
+            - pressure
+            - gpm
+            - location displacement
+            - temperature
+            - dewpoint
+            - wind direction
+            - wind speed
+
+        This is a complete unit. However, there are,
+        dependining on the bufr format additional
+        measurements, which might not consist of
+        a complete measurement set. This is for ex.
+        the case for the entry which contains the
+        "absoluteWindShearIn1KmLayerBelow"
+
+        Here the completeness of the measurement
+        is checked and corrected otherwise by
+        adding nan values to the not measured
+        values.
+        """
+        if len(s.time) > len(s.temperature):
+            s.temperature.append(np.nan)
+        if len(s.time) > len(s.gpm):
+            s.gpm.append(np.nan)
+        if len(s.time) > len(s.dewpoint):
+            s.dewpoint.append(np.nan)
+        if len(s.time) > len(s.pressure):
+            s.pressure.append(np.nan)
+        if len(s.time) > len(s.windspeed):
+            s.windspeed.append(np.nan)
+        if len(s.time) > len(s.winddirection):
+            s.winddirection.append(np.nan)
+        if len(s.time) > len(s.displacement_lat):
+            s.displacement_lat.append(np.nan)
+        return
+
+    s = Sounding()
 
     for key_key in key_keys:
         if json_flat[key_key+'_key'] == 'latitude':
@@ -180,6 +222,8 @@ def convert_json_to_arrays(json_flat, key_keys):
                 raise UnitChangedError('{} and {} are not same unit'.format(s.displacement_lon_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'timePeriod':
+            # Check conistency of data
+            _ensure_measurement_integrity(s)
             s.time.append(json_flat[key_key+'_value'])
 
             if s.time_unit is None:
@@ -218,6 +262,8 @@ def convert_json_to_arrays(json_flat, key_keys):
                 s.meta_data['bufr_msg'] = 309053
         elif json_flat[key_key+'_key'] == 'radiosondeOperatingFrequency':
             s.meta_data['sonde_frequency'] = str(json_flat[key_key+'_value']) + json_flat[key_key+'_units']
+
+    _ensure_measurement_integrity(s)
 
     s.sounding_start_time = dt.datetime(year,
                                         month,
@@ -284,19 +330,19 @@ def bufr_specific_handling(sounding):
     if sounding.meta_data['bufr_msg'] == 309053:
         # Nothing to do so far
         pass
-    elif sounding.meta_data['bufr_msg'] == 309056:
-        if np.isnan(sounding.time[0]):
-            for var in variables:
-                sounding.__dict__[var] = sounding.__dict__[var][1:]
-        sounding.latitude = sounding.latitude[:-1]
-        sounding.longitude = sounding.longitude[:-1]
-        sounding.pressure = sounding.pressure[:-1]
-        sounding.time = sounding.time[:-1]
-    elif sounding.meta_data['bufr_msg'] == 309057:
-        sounding.latitude = sounding.latitude[:-1]
-        sounding.longitude = sounding.longitude[:-1]
-        sounding.pressure = sounding.pressure[:-1]
-        sounding.time = sounding.time[:-1]
+    # elif sounding.meta_data['bufr_msg'] == 309056:
+    #     if np.isnan(sounding.time[0]):
+    #         for var in variables:
+    #             sounding.__dict__[var] = sounding.__dict__[var][1:]
+    #     sounding.latitude = sounding.latitude[:-1]
+    #     sounding.longitude = sounding.longitude[:-1]
+    #     sounding.pressure = sounding.pressure[:-1]
+    #     sounding.time = sounding.time[:-1]
+    # elif sounding.meta_data['bufr_msg'] == 309057:
+    #     sounding.latitude = sounding.latitude[:]
+    #     sounding.longitude = sounding.longitude[:]
+    #     sounding.pressure = sounding.pressure[:]
+    #     sounding.time = sounding.time[:]
     return sounding
 
 
