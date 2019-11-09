@@ -55,7 +55,7 @@ def read_json(json_fn):
     Read and flatten json
     """
     with open(json_fn) as f:
-        p=json.load(f)
+        p = json.load(f)
 
     bfr_json_flat = flatten_json(p)
     keys = bfr_json_flat.keys()
@@ -87,7 +87,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.station_lat = None
             self.station_lon = None
             self.sounding_start_time = None
-            self.time  = []
+            self.time = []
             self.time_unit = None
             self.pressure = []
             self.pressure_unit = None
@@ -109,12 +109,6 @@ def convert_json_to_arrays(json_flat, key_keys):
 
     s = Sounding()
 
-    year_ = None
-    month_ = None
-    day_ = None
-    hour_ = None
-    minute_ = None
-    seconds_ = None
 
     for key_key in key_keys:
         if json_flat[key_key+'_key'] == 'latitude':
@@ -126,7 +120,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.pressure_unit is None:
                 s.pressure_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.pressure_unit != json_flat[key_key+'_units']):
+            elif s.pressure_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.pressure_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'windSpeed':
@@ -134,7 +128,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.windspeed_unit is None:
                 s.windspeed_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.windspeed_unit != json_flat[key_key+'_units']):
+            elif s.windspeed_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.windspeed_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'windDirection':
@@ -142,7 +136,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.winddirection_unit is None:
                 s.winddirection_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.winddirection_unit != json_flat[key_key+'_units']):
+            elif s.winddirection_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.winddirection_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'nonCoordinateGeopotentialHeight':
@@ -150,7 +144,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.gpm_unit is None:
                 s.gpm_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.gpm_unit != json_flat[key_key+'_units']):
+            elif s.gpm_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.gpm_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'airTemperature':
@@ -158,7 +152,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.temperature_unit is None:
                 s.temperature_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.temperature_unit != json_flat[key_key+'_units']):
+            elif s.temperature_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.temperature_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'dewpointTemperature':
@@ -166,7 +160,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.dewpoint_unit is None:
                 s.dewpoint_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.dewpoint_unit != json_flat[key_key+'_units']):
+            elif s.dewpoint_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.dewpoint_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'latitudeDisplacement':
@@ -174,7 +168,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.displacement_lat_unit is None:
                 s.displacement_lat_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.displacement_lat_unit != json_flat[key_key+'_units']):
+            elif s.displacement_lat_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.displacement_lat_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'longitudeDisplacement':
@@ -182,15 +176,16 @@ def convert_json_to_arrays(json_flat, key_keys):
             if s.displacement_lon_unit is None:
                 s.displacement_lon_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.displacement_lon_unit != json_flat[key_key+'_units']):
+            elif s.displacement_lon_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.displacement_lon_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'timePeriod':
             s.time.append(json_flat[key_key+'_value'])
+
             if s.time_unit is None:
                 s.time_unit = json_flat[key_key+'_units']
             # Unit consistency test
-            elif (s.time_unit != json_flat[key_key+'_units']):
+            elif s.time_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.time_unit,
                                                                             json_flat[key_key+'_units']))
         elif json_flat[key_key+'_key'] == 'year':
@@ -242,10 +237,10 @@ def replace_missing_data(sounding):
 
     variables = ['displacement_lat', 'displacement_lon', 'pressure', 'windspeed',
                  'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
-    
+
     for var in variables:
-        sounding.__dict__[var] =list(map(replace_none, sounding.__dict__[var]))
-    
+        sounding.__dict__[var] = list(map(replace_none, sounding.__dict__[var]))
+
     return sounding
 
 
@@ -255,10 +250,10 @@ def convert_list_to_array(sounding):
     """
     variables = ['displacement_lat', 'displacement_lon', 'pressure', 'windspeed',
                  'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
-    
+
     for var in variables:
         sounding.__dict__[var] = np.array(sounding.__dict__[var])
-    
+
     return sounding
 
 

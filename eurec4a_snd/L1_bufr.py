@@ -248,25 +248,14 @@ def main():
         # is masked for NaN values and an output file produced afterward:
 
         sounding.time = np.ma.masked_invalid(sounding.time)
-#         vvert_m = np.ma.masked_invalid(data[:, 9])
         sounding.gpm = np.ma.masked_invalid(sounding.gpm)
         sounding.pressure = np.ma.masked_invalid(sounding.pressure)
         sounding.temperature = np.ma.masked_invalid(sounding.temperature)
-#         rh_m = np.ma.masked_invalid(data[:, 5])
-#         # mixing ratio is not including in input file
-#         # but remains for compatibility with airport
-#         # sounding files
-#         mix_m = np.ma.masked_invalid(data[:, 5])
         sounding.dewpoint = np.ma.masked_invalid(sounding.dewpoint)
         sounding.windspeed = np.ma.masked_invalid(sounding.windspeed)
         sounding.winddirection = np.ma.masked_invalid(sounding.winddirection)
         sounding.latitude = np.ma.masked_invalid(sounding.latitude)
         sounding.longitude = np.ma.masked_invalid(sounding.longitude)
-
-#         rh_m = np.ma.masked_outside(rh_m, 0., 100.)
-#         pres_m = np.ma.masked_less(pres_m, 5.)
-#         vhori_m = np.ma.masked_greater(vhori_m, 100.)
-#         mix_m = np.ma.masked_greater(mix_m, -1., )
 
         # Calculate additional variables
         relative_humidity = 100*(np.exp((17.625*sounding.dewpoint)/(243.04+sounding.dewpoint))/np.exp((17.625*sounding.temperature)/(243.04+sounding.temperature)))
