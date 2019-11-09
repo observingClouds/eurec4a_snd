@@ -162,7 +162,7 @@ def main():
 
     try:
         git_module_version = sp.check_output(
-            ["git", "describe", "--always"]).strip()
+            ["git", "describe", "--always", "--dirty"]).strip()
         git_version_set = True
     except:
         logging.debug('No git-version could be found.')
