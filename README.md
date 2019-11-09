@@ -31,7 +31,7 @@ source activate field_campaign
 
 The actual package can than be installed with
 ```bash
-conda install -c observingclouds eurec4a_snd
+conda install -c observingclouds -c conda-forge eurec4a_snd
 ```
 
 ## First execution
@@ -42,6 +42,13 @@ It is also possible to copy the `config/meta_information_template.ini` to one's 
 
 ```python
 sounding_converter -i your_sounding.bfr -c /your/path/to/meta_information.ini
+```
+
+## Update
+
+Please check for updates at the beginning of the campaign by running
+```bash
+conda install -c observingclouds -c conda-forge eurec4a_snd
 ```
 
 ## Change meta-information
@@ -77,6 +84,7 @@ Examples of the input `.bfr` files and the converted `.nc` file can be found in 
 ## Tipps and tricks
 
 - Commands `sounding_convert` and `sounding_visualize` cannot be found!
+
   It seems something went wrong with the installation via `conda`. Although it is recommended to install this package via anaconda because it comes with the benefit that all dependencies should be resolved, you can also download this git repository and run within the `eurec4a_snd` folder:
   
   ```bash
@@ -86,4 +94,16 @@ Examples of the input `.bfr` files and the converted `.nc` file can be found in 
   
   ```bash
   python make_quicklooks_rs41.py -n converted/file/sounding.nc
+  ```
+- In case of a slow internet connection, the command `conda install some_package` might fail due to connection timeout. In this case it might be a good option to download the failing package manually.
+
+  In this case the `eurec4a_snd` package for OSX is downloaded and installed manually:
+  ```bash
+  wget -c https://anaconda.org/observingClouds/eurec4a_snd/v0.0.37/download/osx-64/eurec4a_snd-v0.0.37-py37_0.tar.bz2
+  ```
+  The path needs to be adapted depending on the operating system and the version that should be downloaded. You may actually see the path you need to download in the error message of `conda install eurec4a_snd`.
+
+  The installation follows simply with
+  ```bash
+  conda install -c observingClouds eurec4a_snd-v0.0.37-py37_0.tar.bz2
   ```
