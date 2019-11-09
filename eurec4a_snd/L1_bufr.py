@@ -232,7 +232,10 @@ def main():
 
         sounding = bufr_specific_handling(sounding)
 
-        serial = sounding.meta_data['sonde_serial_number']
+        try:
+            serial = sounding.meta_data['sonde_serial_number']
+        except KeyError:
+            serial = '--'
         sondetype = sounding.meta_data['radiosondeType']
         try:
             sondefreq = sounding.meta_data['sonde_frequency']
