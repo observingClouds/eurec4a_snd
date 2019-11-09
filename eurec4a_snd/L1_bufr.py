@@ -268,8 +268,15 @@ def main():
         wv_mix_ratio = np.ma.masked_invalid(wv_mix_ratio)
         # Find temporal resolution
         # using most common time difference
-        _, indices = np.unique(np.diff(sounding.time), return_inverse=True)
-        time_resolution = np.abs(np.diff(sounding.time)[np.argmax(np.bincount(indices))])
+        time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
+        most_common_diff = time_differences[
+                                np.argmax(
+                                    np.bincount(
+                                        time_differences.astype(int)
+                                        )
+                                    )
+                                ]
+        time_resolution = most_common_diff
 
         # Create outputfile with time information from file
         sounding_date = sounding.sounding_start_time
