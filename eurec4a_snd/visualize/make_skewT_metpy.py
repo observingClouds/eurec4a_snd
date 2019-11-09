@@ -49,12 +49,31 @@ def main():
 
     ds = xr.open_dataset(file)
 
-    p = ds['pressure'].isel({'sounding': 0}).values * units.hPa
-    T = ds['temperature'].isel({'sounding': 0}).values * units.degC
-    Td = ds['dewPoint'].isel({'sounding': 0}).values * units.degC
-    wind_speed = ds['windSpeed'].isel({'sounding': 0}).values * (units.meter/units.second)
-    wind_dir = ds['windDirection'].isel({'sounding': 0}).values * units.degrees
+    p = ds['pressure'].isel({'sounding': 0}).values
+    T = ds['temperature'].isel({'sounding': 0}).values
+    Td = ds['dewPoint'].isel({'sounding': 0}).values
+    wind_speed = ds['windSpeed'].isel({'sounding': 0}).values
+    wind_dir = ds['windDirection'].isel({'sounding': 0}).values
+
+    # Filter nans
+    idx = np.where((np.isnan(T)+np.isnan(Td)+np.isnan(p)+
+                    np.isnan(wind_speed)+np.isnan(wind_dir)) == False, True, False)
+    p = p[idx]
+    T = T[idx]
+    Td = Td[idx]
+    wind_speed = wind_speed[idx]
+    wind_dir = wind_dir[idx]
+
+    # Add units
+    p = p * units.hPa
+    T = T * units.degC
+    Td = Td * units.degC
+    wind_speed = wind_speed * (units.meter/units.second)
+    wind_dir = wind_dir * units.degrees
+
     u, v = mpcalc.wind_components(wind_speed, wind_dir)
+    # import pdb; pdb.set_trace()
+
     lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
 
     print(lcl_pressure, lcl_temperature)
@@ -79,9 +98,8 @@ def main():
 
     # Search for levels by providing pressures
     # (levels is the coordinate not pressure)
-    pres_vals = ds['pressure'].isel({'sounding': 0}).values
-    closest_pressure_levels = np.unique([find_nearest(pres_vals[~np.isnan(pres_vals)], p_) for p_ in pressure_levels_barbs])
-    closest_pressure_levels = closest_pressure_levels[~np.isnan(closest_pressure_levels)]
+    pres_vals = ds['pressure'].isel({'sounding': 0}).values[idx]
+    closest_pressure_levels = np.unique([find_nearest(pres_vals, p_) for p_ in pressure_levels_barbs])
     _, closest_pressure_levels_idx, _ = np.intersect1d(pres_vals, closest_pressure_levels, return_indices=True)
 
     p_barbs = ds['pressure'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * units.hPa
@@ -90,21 +108,21 @@ def main():
     u_barbs, v_barbs = mpcalc.wind_components(wind_speed_barbs, wind_dir_barbs)
 
     # Find nans in pressure
-    p_non_nan_idx = np.where(~np.isnan(pres_vals))
+    # p_non_nan_idx = np.where(~np.isnan(pres_vals))
     skew.plot_barbs(p_barbs, u_barbs, v_barbs)
 
-    skew.ax.set_ylim(1000, 100)
+    skew.ax.set_ylim(1020, 100)
     skew.ax.set_xlim(-50, 40)
 
     # Plot LCL as black dot
     skew.plot(lcl_pressure, lcl_temperature, 'ko', markerfacecolor='black')
 
     # Plot the parcel profile as a black line
-    skew.plot(pres_vals[p_non_nan_idx], parcel_prof, 'k', linewidth=2)
+    skew.plot(pres_vals, parcel_prof, 'k', linewidth=2)
 
     # Shade areas of CAPE and CIN
-    skew.shade_cin(pres_vals[p_non_nan_idx], T[p_non_nan_idx], parcel_prof)
-    skew.shade_cape(pres_vals[p_non_nan_idx], T[p_non_nan_idx], parcel_prof)
+    skew.shade_cin(pres_vals, T, parcel_prof)
+    skew.shade_cape(pres_vals, T, parcel_prof)
 
     # Plot a zero degree isotherm
     skew.ax.axvline(0, color='c', linestyle='--', linewidth=2)
