@@ -266,6 +266,11 @@ def main():
 
         relative_humidity = np.ma.masked_invalid(relative_humidity)
         wv_mix_ratio = np.ma.masked_invalid(wv_mix_ratio)
+
+        # Ascent rate
+        ascent_rate = np.diff(sounding.gpm)/(np.diff(sounding.time))
+        ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
+
         # Find temporal resolution
         # using most common time difference
         time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
@@ -485,7 +490,7 @@ def main():
         nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
 
         nc_tindex[0, :] = sounding.time
-#         nc_vvert[0, :] = vvert_m[:]
+        nc_vvert[0, :] = ascent_rate
         nc_alti[0, :] = sounding.gpm
         nc_pres[0, :] = sounding.pressure
         nc_temp[0, :] = sounding.temperature
