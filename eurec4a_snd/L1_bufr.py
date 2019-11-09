@@ -216,7 +216,8 @@ def main():
 
         json_file = convert_bufr_to_json(bufr_file)
         json_flat, keys = read_json(json_file)
-        shutil.rmtree(os.path.dirname(json_file))
+        if args['verbose'] != 'DEBUG':
+            shutil.rmtree(os.path.dirname(json_file))
 
         sounding = convert_json_to_arrays(json_flat, keys)
         sounding = replace_missing_data(sounding)
