@@ -6,6 +6,7 @@ Plot skew-T diagram of converted soundings
 import sys
 import os.path
 import argparse
+import logging
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
@@ -15,7 +16,6 @@ from metpy.cbook import get_test_data
 from metpy.plots import add_metpy_logo, Hodograph, SkewT
 from metpy.units import units
 import xarray as xr
-
 
 
 def get_args():
@@ -40,7 +40,19 @@ def get_args():
     return parsed_args
 
 
+def setup_logging(verbose):
+    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
+    logging.basicConfig(
+        level=logging.getLevelName(verbose),
+        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
+        handlers=[
+            logging.FileHandler("{}.log".format(__file__)),
+            logging.StreamHandler()
+        ])
+
+
 def main():
+    setup_logging(args['verbose'])
     args = get_args()
 
     # Define input file
@@ -72,11 +84,8 @@ def main():
     wind_dir = wind_dir * units.degrees
 
     u, v = mpcalc.wind_components(wind_speed, wind_dir)
-    # import pdb; pdb.set_trace()
 
     lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
-
-    print(lcl_pressure, lcl_temperature)
 
     parcel_prof = mpcalc.parcel_profile(p, T[0], Td[0]).to('degC')
 
@@ -148,7 +157,7 @@ def main():
 
     if output is None:
         output = str(os.path.basename(file).split('.')[0])+'.pdf'
-    print('Write output to {}'.format(output))
+    logging.info('Write output to {}'.format(output))
     plt.savefig(output)
 
 
