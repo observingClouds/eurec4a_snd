@@ -412,3 +412,32 @@ def expected_unit_check(sounding):
             pass
 
     return sounding
+
+
+def nan_argsort(a, direction):
+    tmp = a.copy().astype('float')
+    tmp[np.isnan(a)] = -np.inf*direction
+    return np.argsort(tmp)
+
+
+def sort_sounding_by_time(sounding):
+    """
+    Sort sounding by altitude
+    """
+    sorter = nan_argsort(sounding.time, sounding.direction)#[::sounding.direction]
+    # times_nan = np.where(np.isnan(sounding.time))[0]
+    # height_nan = 
+    sounding.time = sounding.time[sorter]
+    sounding.ascentrate = sounding.ascentrate[sorter]
+    sounding.gpm = sounding.gpm[sorter]
+    sounding.pressure = sounding.pressure[sorter]
+    sounding.temperature = sounding.temperature[sorter]
+    sounding.relativehumidity = sounding.relativehumidity[sorter]
+    sounding.dewpoint = sounding.dewpoint[sorter]
+    sounding.mixingratio = sounding.mixingratio[sorter]
+    sounding.windspeed = sounding.windspeed[sorter]
+    sounding.winddirection = sounding.winddirection[sorter]
+    sounding.latitude = sounding.latitude[sorter]
+    sounding.longitude = sounding.longitude[sorter]
+
+    return sounding

@@ -245,11 +245,11 @@ def main():
         except KeyError:
             sondefreq = '--'
 
-        direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
-        if direction == 1:
+        sounding.direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
+        if sounding.direction == 1:
             # Upward
             direction_str = 'Ascent'
-        elif direction == -1:
+        elif sounding.direction == -1:
             # Downward
             direction_str = 'Descent'
 
@@ -273,12 +273,16 @@ def main():
         vapor_pressure = (relative_humidity/100.) * (611.2 * np.exp((17.62*(sounding.temperature))/(243.12 + sounding.temperature)))
         wv_mix_ratio = 1000.*((0.622*vapor_pressure)/(100.*sounding.pressure - vapor_pressure))
 
-        relative_humidity = np.ma.masked_invalid(relative_humidity)
-        wv_mix_ratio = np.ma.masked_invalid(wv_mix_ratio)
+        sounding.relativehumidity = np.ma.masked_invalid(relative_humidity)
+        sounding.mixingratio = np.ma.masked_invalid(wv_mix_ratio)
 
         # Ascent rate
         ascent_rate = np.diff(sounding.gpm)/(np.diff(sounding.time))
         ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
+        sounding.ascentrate = ascent_rate
+
+        # Sort sounding by flight time
+        sounding = sort_sounding_by_time(sounding)
 
         # Find temporal resolution
         # using most common time difference
@@ -499,13 +503,13 @@ def main():
         nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
 
         nc_tindex[0, :] = sounding.time
-        nc_vvert[0, :] = ascent_rate
+        nc_vvert[0, :] = sounding.ascentrate
         nc_alti[0, :] = sounding.gpm
         nc_pres[0, :] = sounding.pressure
         nc_temp[0, :] = sounding.temperature
-        nc_rh[0, :] = relative_humidity
+        nc_rh[0, :] = sounding.relativehumidity
         nc_dewp[0, :] = sounding.dewpoint
-        nc_mix[0, :] = wv_mix_ratio
+        nc_mix[0, :] = sounding.mixingratio
         nc_vhori[0, :] = sounding.windspeed
         nc_vdir[0, :] = sounding.winddirection
         nc_lat[0, :] = sounding.latitude
