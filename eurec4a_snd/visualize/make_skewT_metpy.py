@@ -61,11 +61,13 @@ def main():
 
     ds = xr.open_dataset(file)
 
-    p = ds['pressure'].isel({'sounding': 0}).values
-    T = ds['temperature'].isel({'sounding': 0}).values
-    Td = ds['dewPoint'].isel({'sounding': 0}).values
-    wind_speed = ds['windSpeed'].isel({'sounding': 0}).values
-    wind_dir = ds['windDirection'].isel({'sounding': 0}).values
+    ds_sel = ds.isel({'sounding': 0})
+
+    p = ds_sel.pressure.values
+    T = ds_sel.temperature.values
+    Td = ds_sel.dewPoint.values
+    wind_speed = ds_sel.windSpeed.values
+    wind_dir = ds_sel.windDirection.values
 
     # Filter nans
     idx = np.where((np.isnan(T)+np.isnan(Td)+np.isnan(p)+
@@ -107,13 +109,13 @@ def main():
 
     # Search for levels by providing pressures
     # (levels is the coordinate not pressure)
-    pres_vals = ds['pressure'].isel({'sounding': 0}).values[idx]
+    pres_vals = ds_sel.pressure.values[idx]
     closest_pressure_levels = np.unique([find_nearest(pres_vals, p_) for p_ in pressure_levels_barbs])
     _, closest_pressure_levels_idx, _ = np.intersect1d(pres_vals, closest_pressure_levels, return_indices=True)
 
-    p_barbs = ds['pressure'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * units.hPa
-    wind_speed_barbs = ds['windSpeed'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * (units.meter/units.second)
-    wind_dir_barbs = ds['windDirection'].isel({'sounding': 0, 'levels': closest_pressure_levels_idx}).values * units.degrees
+    p_barbs = ds_sel.pressure.isel({'levels': closest_pressure_levels_idx}).values * units.hPa
+    wind_speed_barbs = ds_sel.windSpeed.isel({'levels': closest_pressure_levels_idx}).values * (units.meter/units.second)
+    wind_dir_barbs = ds_sel.windDirection.isel({'levels': closest_pressure_levels_idx}).values * units.degrees
     u_barbs, v_barbs = mpcalc.wind_components(wind_speed_barbs, wind_dir_barbs)
 
     # Find nans in pressure
@@ -150,7 +152,7 @@ def main():
     h.plot_colormapped(u, v, wind_speed)  # Plot a line colored by wind speed
 
     # Set title
-    sounding_name = ds['sounding'].isel({'sounding': 0}).values
+    sounding_name = ds_sel.sounding.values
     sounding_name_str = str(sounding_name.astype('str'))
     skew.ax.set_title('{sounding}'.format(
         sounding=sounding_name_str))
