@@ -143,7 +143,7 @@ def plot_ptrh(data, specs, outputpath):
     plt.subplots_adjust(top=0.9, right=0.85, left=0.15)
 
     fig.suptitle('%s, %s %sUTC' % (specs['location'],
-                                   specs['date'][:-2],
+                                   specs['date'],
                                    data['time_of_launch_HHmmss'][:-2]),
                  fontsize=18)
 
@@ -216,7 +216,7 @@ def plot_wind(data, specs, outputpath):
 
     plt.subplots_adjust(top=0.9, right=0.85, left=0.15)
     fig.suptitle('%s, %s %sUTC' % (specs['location'],
-                                   specs['date'][:-2],
+                                   specs['date'],
                                    data['time_of_launch_HHmmss'][:-2]),
                  fontsize=18)
 
@@ -292,7 +292,7 @@ def plot_map(data, specs, outputpath):
            markersize=5)
 
     # and the figure title:
-    plt.title('%s, %s %sUTC' % (specs['location'], specs['date'][:-2],
+    plt.title('%s, %s %sUTC' % (specs['location'], specs['date'],
                                 data['time_of_launch_HHmmss'][:-2]))
 
     fig.savefig(outputpath+outputname)
