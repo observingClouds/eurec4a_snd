@@ -62,6 +62,7 @@ def main():
     ds = xr.open_dataset(file)
 
     ds_sel = ds.isel({'sounding': 0})
+    ds_sel = ds_sel.sortby(ds_sel.pressure, ascending=False)
 
     p = ds_sel.pressure.values
     T = ds_sel.temperature.values
