@@ -284,6 +284,9 @@ def main():
         # Sort sounding by flight time
         sounding = sort_sounding_by_time(sounding)
 
+        # Remove 1000hPa reduced gpm
+        sounding = exclude_1000hPa_gpm(sounding)
+
         # Find temporal resolution
         # using most common time difference
         time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))

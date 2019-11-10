@@ -444,3 +444,32 @@ def sort_sounding_by_time(sounding):
     sounding.longitude = sounding.longitude[sorter]
 
     return sounding
+
+
+def exclude_1000hPa_gpm(sounding):
+    """
+    BUFR files include values calculated for 1000 hPa
+    even when the sounding starts at an higher
+    elevation.
+
+    These values are those, where time contain
+    a missing value.
+
+    This function returns the sounding
+    without the missing data in the time
+    dimension.
+    """
+    nan_mask = ~np.isnan(sounding.time)
+    sounding.time = sounding.time[nan_mask]
+    sounding.ascentrate = sounding.ascentrate[nan_mask]
+    sounding.gpm = sounding.gpm[nan_mask]
+    sounding.pressure = sounding.pressure[nan_mask]
+    sounding.temperature = sounding.temperature[nan_mask]
+    sounding.relativehumidity = sounding.relativehumidity[nan_mask]
+    sounding.dewpoint = sounding.dewpoint[nan_mask]
+    sounding.mixingratio = sounding.mixingratio[nan_mask]
+    sounding.windspeed = sounding.windspeed[nan_mask]
+    sounding.winddirection = sounding.winddirection[nan_mask]
+    sounding.latitude = sounding.latitude[nan_mask]
+    sounding.longitude = sounding.longitude[nan_mask]
+    return sounding
