@@ -84,7 +84,7 @@ def plot_ptrh(data, specs, outputpath):
     variable = 'ptrelh'
     outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
         platform=specs['platform_short'],
-        instrument=specs['type'],
+        instrument=specs['type'].replace(' ', '').replace('_', ''),
         direction=specs['direction'],
         variable=variable,
         date=specs['date']+'_'+specs['time'],
@@ -169,7 +169,7 @@ def plot_wind(data, specs, outputpath):
     variable = 'wind'
     outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
         platform=specs['platform_short'],
-        instrument=specs['type'],
+        instrument=specs['type'].replace(' ', '').replace('_', ''),
         direction=specs['direction'],
         variable=variable,
         date=specs['date']+'_'+specs['time'],
@@ -241,7 +241,7 @@ def plot_map(data, specs, outputpath):
     variable = 'map'
     outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
         platform=specs['platform_short'],
-        instrument=specs['type'],
+        instrument=specs['type'].replace(' ', '').replace('_', ''),
         direction=specs['direction'],
         variable=variable,
         date=specs['date']+'_'+specs['time'],
