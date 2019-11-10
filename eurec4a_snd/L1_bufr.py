@@ -214,7 +214,7 @@ def main():
     for ifile, bufr_file in enumerate(filelist):
         logging.info('Reading file number {}'.format(ifile))
 
-        json_file = convert_bufr_to_json(bufr_file)
+        json_file = convert_bufr_to_json(bufr_file, logging)
         json_flat, keys = read_json(json_file)
         if args['verbose'] != 'DEBUG':
             shutil.rmtree(os.path.dirname(json_file))

@@ -16,7 +16,7 @@ class UnexpectedUnit(Exception):
     pass
 
 
-def convert_bufr_to_json(bufr_fn):
+def convert_bufr_to_json(bufr_fn, logger=None):
     """
     Convert bufr file to json with ecCodes
     software
@@ -24,7 +24,10 @@ def convert_bufr_to_json(bufr_fn):
     tmp_folder = tempfile.mkdtemp()
     tmp_output_json_fn = os.path.join(tmp_folder, 'tmp_bufr.json')
     r = os.system("bufr_dump -j s {} > {}".format(bufr_fn, tmp_output_json_fn))
-    print("Converted {} to {}".format(bufr_fn, tmp_output_json_fn))
+    if logger is None:
+        print("Converted {} to {}".format(bufr_fn, tmp_output_json_fn))
+    else:
+        logger.debug("Converted {} to {}".format(bufr_fn, tmp_output_json_fn))
     return tmp_output_json_fn
 
 
