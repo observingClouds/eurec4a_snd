@@ -4,9 +4,9 @@
 | --- |
 
 This package is ment to help in establishing a common radiosonde output format.
-During the EUREC4A/ATOMIC campagne many radiosondes will be launched and an unique fileformat incl. unique variables names will hopefully help there community.
+During the EUREC4A/ATOMIC campaign many radiosondes will be launched and an unique fileformat incl. unique variables names will hopefully help the community.
 
-Currently, this package contains a script to convert radiosonde datafile of the `MW41` to netCDF files.
+Currently, this package contains scripts to convert and visualize sonde data in the BUFR format to netCDF files.
 
 Simply run `sounding_converter -i your_sounding.bfr` after the installation. During the first execution you will be asked to give meta-information which will be included in the output files.
 
