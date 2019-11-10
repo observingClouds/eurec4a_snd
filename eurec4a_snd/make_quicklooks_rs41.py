@@ -299,6 +299,7 @@ def plot_map(data, specs, outputpath):
 
     logging.info('Map saved at {}'.format(outputpath+outputname))
 
+
 def setup_logging(verbose):
     assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
     logging.basicConfig(
@@ -308,6 +309,7 @@ def setup_logging(verbose):
             logging.FileHandler("{}.log".format(__file__)),
             logging.StreamHandler()
         ])
+
 
 def main():
     # options for the skript: date (yymmddhh); inputfilename; outputpath;

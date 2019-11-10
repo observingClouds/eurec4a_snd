@@ -121,6 +121,7 @@ def get_args():
 
     return parsed_args
 
+
 def unixpath(path_in):
     """
     Convert windows path to unix path syntax
@@ -150,7 +151,7 @@ def main():
 
     setup_logging(args['verbose'])
 
-    # Get version information
+    logging.debug('Gathering version information')
     try:
         import eurec4a_snd
         __version__ = eurec4a_snd.__version__
@@ -177,6 +178,7 @@ def main():
 
     logging.info('Version of script: {} (conda package), {} (git version)'.format(__version__, git_module_version))
 
+    logging.debug('Search for configuration file and load in case present')
     try:
         config = load_configuration(args["configfile"])
     except FileNotFoundError:
@@ -203,7 +205,7 @@ def main():
     time_in = time.time()
     date_unit = "seconds since 1970-01-01 00:00:00 UTC"
 
-    # Creating file list according to given arguments
+    logging.debug('Create filelist')
     if args['inputfile'] is None:
         filelist = args['inputpath'].glob('*.bfr')
     else:
@@ -245,6 +247,7 @@ def main():
         except KeyError:
             sondefreq = '--'
 
+        logging.debug('Get sounding direction (ascending/descending)')
         sounding.direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
         if sounding.direction == 1:
             # Upward
@@ -257,7 +260,7 @@ def main():
 
         # after all needed header information is read, the reduced data field
         # is masked for NaN values and an output file produced afterward:
-
+        logging.debug('Mask invalid sounding data')
         sounding.time = np.ma.masked_invalid(sounding.time)
         sounding.gpm = np.ma.masked_invalid(sounding.gpm)
         sounding.pressure = np.ma.masked_invalid(sounding.pressure)
@@ -269,17 +272,15 @@ def main():
         sounding.longitude = np.ma.masked_invalid(sounding.longitude)
 
         # Calculate additional variables
-        relative_humidity = 100*(np.exp((17.625*sounding.dewpoint)/(243.04+sounding.dewpoint))/np.exp((17.625*sounding.temperature)/(243.04+sounding.temperature)))
-        vapor_pressure = (relative_humidity/100.) * (611.2 * np.exp((17.62*(sounding.temperature))/(243.12 + sounding.temperature)))
-        wv_mix_ratio = 1000.*((0.622*vapor_pressure)/(100.*sounding.pressure - vapor_pressure))
+        sounding.relativehumidity = calc_relative_humidity(sounding)
+        vapor_pressure = calc_vapor_pressure(sounding)
+        sounding.mixingratio = calc_wv_mixing_ratio(sounding, vapor_pressure)
 
-        sounding.relativehumidity = np.ma.masked_invalid(relative_humidity)
-        sounding.mixingratio = np.ma.masked_invalid(wv_mix_ratio)
+        sounding.relativehumidity = np.ma.masked_invalid(sounding.relativehumidity)
+        sounding.mixingratio = np.ma.masked_invalid(sounding.mixingratio)
 
         # Ascent rate
-        ascent_rate = np.diff(sounding.gpm)/(np.diff(sounding.time))
-        ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
-        sounding.ascentrate = ascent_rate
+        sounding = calc_ascentrate(sounding)
 
         # Sort sounding by flight time
         sounding = sort_sounding_by_time(sounding)
@@ -288,20 +289,10 @@ def main():
         sounding = exclude_1000hPa_gpm(sounding)
 
         # Find temporal resolution
-        # using most common time difference
-        time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
-        most_common_diff = time_differences[
-                                np.argmax(
-                                    np.bincount(
-                                        time_differences.astype(int)
-                                        )
-                                    )
-                                ]
-        time_resolution = most_common_diff
+        time_resolution = calc_temporal_resolution(sounding)
 
         # Create outputfile with time information from file
         sounding_date = sounding.sounding_start_time
-        YYYYMM = sounding.sounding_start_time.strftime('%Y%m')
         YYYYMMDDHHMM = sounding.sounding_start_time.strftime('%Y%m%d%H%M')
 
         outpath_fmt = unixpath(args['outputfolder'])
@@ -380,8 +371,8 @@ def main():
 
         # Define Dimension (record length) from ASCII record counter
         fo.createDimension('levels', len(sounding.pressure))
-        prof_dim = fo.createDimension('sounding', None)
-        str_dim = fo.createDimension('str_dim', 1000)
+        fo.createDimension('sounding', None)
+        fo.createDimension('str_dim', 1000)
         fillval = default_fillvals['f4']
 
         # Creation of NetCDF Variables, including description and unit

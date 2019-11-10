@@ -32,10 +32,24 @@ def convert_bufr_to_json(bufr_fn, logger=None):
 
 
 def flatten_json(y):
+    """
+    Flatten structured json array
+    
+    Input
+    -----
+    y : list or dict
+
+    Return
+    ------
+    list : list
+        list containing dicts for each key value pair
+    """
     global r
     out = {}
-    r=0
+    r = 0
+
     def flatten(x, name='', number=0):
+        """helper function"""
         global r
         if type(x) is dict:
             for a in x:
@@ -43,7 +57,7 @@ def flatten_json(y):
         elif type(x) is list:
             i = 0
             for a in x:
-                number=flatten(a)
+                number = flatten(a)
                 i += 1
                 r += 1
         else:
@@ -57,10 +71,10 @@ def read_json(json_fn):
     """
     Read and flatten json
     """
-    with open(json_fn) as f:
-        p = json.load(f)
+    with open(json_fn) as file:
+        struct_json = json.load(file)
 
-    bfr_json_flat = flatten_json(p)
+    bfr_json_flat = flatten_json(struct_json)
     keys = bfr_json_flat.keys()
     key_keys = []
     for key in keys:
@@ -70,22 +84,14 @@ def read_json(json_fn):
     return bfr_json_flat, key_keys
 
 
-def calculate_sounding_start(sounding):
-    import datetime as dt
-    sounding.sounding_start_time = dt.datetime(year,
-                                               month,
-                                               day,
-                                               hour,
-                                               minute,
-                                               second)
-    return sounding
-
-
 def convert_json_to_arrays(json_flat, key_keys):
     """
     Convert json data to array
     """
     class Sounding:
+        """
+        Class containing sounding data
+        """
         def __init__(self):
             self.station_lat = None
             self.station_lon = None
@@ -137,20 +143,20 @@ def convert_json_to_arrays(json_flat, key_keys):
         adding nan values to the not measured
         values.
         """
-        if len(s.time) > len(s.temperature):
-            s.temperature.append(np.nan)
-        if len(s.time) > len(s.gpm):
-            s.gpm.append(np.nan)
-        if len(s.time) > len(s.dewpoint):
-            s.dewpoint.append(np.nan)
-        if len(s.time) > len(s.pressure):
-            s.pressure.append(np.nan)
-        if len(s.time) > len(s.windspeed):
-            s.windspeed.append(np.nan)
-        if len(s.time) > len(s.winddirection):
-            s.winddirection.append(np.nan)
-        if len(s.time) > len(s.displacement_lat):
-            s.displacement_lat.append(np.nan)
+        if len(self.time) > len(self.temperature):
+            self.temperature.append(np.nan)
+        if len(self.time) > len(self.gpm):
+            self.gpm.append(np.nan)
+        if len(self.time) > len(self.dewpoint):
+            self.dewpoint.append(np.nan)
+        if len(self.time) > len(self.pressure):
+            self.pressure.append(np.nan)
+        if len(self.time) > len(self.windspeed):
+            self.windspeed.append(np.nan)
+        if len(self.time) > len(self.winddirection):
+            self.winddirection.append(np.nan)
+        if len(self.time) > len(self.displacement_lat):
+            self.displacement_lat.append(np.nan)
         return
 
     s = Sounding()
@@ -259,7 +265,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             try:
                 s.meta_data['bufr_msg'] = json_flat[key_key+'_value']
             except KeyError:
-                # Error probably caused, because there are several 
+                # Error probably caused, because there are several
                 # unexpandedDescriptors
                 # which seems to be only the case for dropsondes?!
                 s.meta_data['bufr_msg'] = 309053
@@ -279,8 +285,13 @@ def convert_json_to_arrays(json_flat, key_keys):
 
 
 def replace_missing_data(sounding):
-    # Remove Nones from lists and
+    """
+    Removing Nones from sounding measurements
+    """
     def replace_none(entry):
+        """
+        Replace None with NaN
+        """
         if entry == None:
             return np.nan
         else:
@@ -309,7 +320,70 @@ def convert_list_to_array(sounding):
 
 
 def calculate_coordinates(origin, offset):
+    """
+    Calculate positon of measurement
+
+    Input
+    -----
+    origin : float
+        latitude or longitude of launch position
+    offset : float
+        latitudinal or longitudinal displacement
+        since launch from origin
+
+    Return
+    ------
+    float : position of measurement
+    """
     return origin + offset
+
+
+def calc_ascentrate(sounding):
+    """
+    Calculate the ascent rate
+
+    Input
+    -----
+    sounding : obj
+        sounding class containing gpm
+        and flight time
+
+    Return
+    ------
+    soundning : obj
+        sounding including the ascent rate
+    """
+    ascent_rate = np.diff(sounding.gpm)/(np.diff(sounding.time))
+    ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
+    sounding.ascentrate = ascent_rate
+
+    return sounding
+
+
+def calc_temporal_resolution(sounding):
+    """
+    Calculate temporal resolution of sounding
+
+    Returns the most common temporal resolution
+    by calculating the temporal differences
+    and returning the most common difference.
+
+    Input
+    -----
+    sounding : obj
+        sounding class containing flight time
+        information
+
+    Return
+    ------
+    temporal_resolution : float
+        temporal resolution
+    """
+    time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
+    time_differences_counts = np.bincount(time_differences.astype(int))
+    most_common_diff = time_differences[np.argmax(time_differences_counts)]
+    temporal_resolution = most_common_diff
+    return temporal_resolution
 
 
 def bufr_specific_handling(sounding):
@@ -333,19 +407,12 @@ def bufr_specific_handling(sounding):
     if sounding.meta_data['bufr_msg'] == 309053:
         # Nothing to do so far
         pass
-    # elif sounding.meta_data['bufr_msg'] == 309056:
-    #     if np.isnan(sounding.time[0]):
-    #         for var in variables:
-    #             sounding.__dict__[var] = sounding.__dict__[var][1:]
-    #     sounding.latitude = sounding.latitude[:-1]
-    #     sounding.longitude = sounding.longitude[:-1]
-    #     sounding.pressure = sounding.pressure[:-1]
-    #     sounding.time = sounding.time[:-1]
-    # elif sounding.meta_data['bufr_msg'] == 309057:
-    #     sounding.latitude = sounding.latitude[:]
-    #     sounding.longitude = sounding.longitude[:]
-    #     sounding.pressure = sounding.pressure[:]
-    #     sounding.time = sounding.time[:]
+    elif sounding.meta_data['bufr_msg'] == 309056:
+        # Nothing to do so far
+        pass
+    elif sounding.meta_data['bufr_msg'] == 309057:
+        # Nothing to do so far
+        pass
     return sounding
 
 
@@ -387,6 +454,32 @@ converter_dict = {'K-->C': kelvin_to_celsius,
                   }
 
 
+def calc_relative_humidity(sounding):
+    """
+    Calculate relative humidity
+    """
+    relative_humidity = 100*(np.exp((17.625*sounding.dewpoint)/
+        (243.04+sounding.dewpoint))/np.exp((17.625*sounding.temperature)/
+        (243.04+sounding.temperature)))
+    return relative_humidity
+
+
+def calc_vapor_pressure(sounding):
+    """
+    Calculate water vapor pressure
+    """
+    vapor_pressure = (sounding.relativehumidity/100.) * (611.2 * np.exp((17.62 * (sounding.temperature))/(243.12 + sounding.temperature)))
+    return vapor_pressure
+
+
+def calc_wv_mixing_ratio(sounding, vapor_pressure):
+    """
+    Calculate water vapor mixing ratio
+    """
+    wv_mix_ratio = 1000.*((0.622*vapor_pressure)/(100.*sounding.pressure - vapor_pressure))
+    return wv_mix_ratio
+
+
 def expected_unit_check(sounding):
     """
     Check if units are as expected
@@ -417,9 +510,27 @@ def expected_unit_check(sounding):
     return sounding
 
 
-def nan_argsort(a, direction):
-    tmp = a.copy().astype('float')
-    tmp[np.isnan(a)] = -np.inf*direction
+def nan_argsort(array, direction=1):
+    """
+    Sorting with handeling nan values
+    depending on the sounding direction
+
+    Input
+    -----
+    array : array-like
+        data to sort
+    direction : int
+        integer (-1, 1) to indicate on which end
+        of the sorted array nan values should be
+        saved.
+
+    Result
+    ------
+    indices : array
+        Indices that would sort the input array
+    """
+    tmp = array.copy().astype('float')
+    tmp[np.isnan(array)] = -np.inf*direction
     return np.argsort(tmp)
 
 
@@ -427,9 +538,7 @@ def sort_sounding_by_time(sounding):
     """
     Sort sounding by altitude
     """
-    sorter = nan_argsort(sounding.time, sounding.direction)#[::sounding.direction]
-    # times_nan = np.where(np.isnan(sounding.time))[0]
-    # height_nan = 
+    sorter = nan_argsort(sounding.time, sounding.direction)
     sounding.time = sounding.time[sorter]
     sounding.ascentrate = sounding.ascentrate[sorter]
     sounding.gpm = sounding.gpm[sorter]
