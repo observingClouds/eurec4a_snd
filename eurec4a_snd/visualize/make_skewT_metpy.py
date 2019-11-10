@@ -52,8 +52,8 @@ def setup_logging(verbose):
 
 
 def main():
-    setup_logging(args['verbose'])
     args = get_args()
+    setup_logging(args['verbose'])
 
     # Define input file
     file = args['inputfile']
