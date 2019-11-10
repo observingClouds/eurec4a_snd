@@ -1,5 +1,8 @@
 # eurec4a_snd
 
+| :warning: **This is not yet the final version** Feel free to try and submit issues that you encounter. |
+| --- |
+
 This package is ment to help in establishing a common radiosonde output format.
 During the EUREC4A/ATOMIC campagne many radiosondes will be launched and an unique fileformat incl. unique variables names will hopefully help there community.
 
@@ -81,29 +84,35 @@ Further examples on how to create a skewT diagram can be found in `eurec4a_snd/e
 
 Examples of the input `.bfr` files and the converted `.nc` file can be found in `examples/data`.
 
-## Tipps and tricks
+## Trouble shooting
 
-- Commands `sounding_convert` and `sounding_visualize` cannot be found!
-
+<details>
+  <summary>ImportError: DLL load failed: The specific module could not be found</summary>
+  <br>
+  Windows users might get the above error message when trying to visualize the soundings. The error is caused in pillow. Unfortunately there is not a very good solution yet, but the following might work for you:
+  <pre>conda remove --force pillow<br>pip install pillow</pre>
+  <br>
+</details>
+ 
+<details>
+  <summary>Commands `sounding_convert` and `sounding_visualize` cannot be found!</summary>
+  <br>
   It seems something went wrong with the installation via `conda`. Although it is recommended to install this package via anaconda because it comes with the benefit that all dependencies should be resolved, you can also download this git repository and run within the `eurec4a_snd` folder:
-  
-  ```bash
-  python L1_rs41.py -i your_sounding.bfr
-  ```
-  or for the quicklooks
-  
-  ```bash
-  python make_quicklooks_rs41.py -n converted/file/sounding.nc
-  ```
-- In case of a slow internet connection, the command `conda install some_package` might fail due to connection timeout. In this case it might be a good option to download the failing package manually.
+  <pre>python L1_rs41.py -i your_sounding.bfr</pre>
+or for quicklooks
+  <pre>python make_quicklooks_rs41.py -n converted/file/sounding.nc</pre>
+  <br>
+</details>
+
+<details>
+  <summary>Slow internet connection: Download failed</summary>
+  <br>
+  In case of a slow internet connection, the command `conda install some_package` might fail due to connection timeout. In this case it might be a good option to download the failing package manually.
 
   In this case the `eurec4a_snd` package for OSX is downloaded and installed manually:
-  ```bash
-  wget -c https://anaconda.org/observingClouds/eurec4a_snd/v0.0.37/download/osx-64/eurec4a_snd-v0.0.37-py37_0.tar.bz2
-  ```
-  The path needs to be adapted depending on the operating system and the version that should be downloaded. You may actually see the path you need to download in the error message of `conda install eurec4a_snd`.
+  <pre>wget -c https://anaconda.org/observingClouds/eurec4a_snd/v0.0.41/download/osx-64/eurec4a_snd-v0.0.41-py37_0.tar.bz2</pre>
+The path needs to be adapted depending on the operating system and the version that should be downloaded. You may actually see the path you need to download in the error message of `conda install eurec4a_snd`.
 
-  The installation follows simply with
-  ```bash
-  conda install -c observingClouds eurec4a_snd-v0.0.37-py37_0.tar.bz2
-  ```
+The installation follows simply with
+  <pre>conda install -c observingClouds eurec4a_snd-v0.0.41-py37_0.tar.bz2</pre>
+</details>
