@@ -14,7 +14,7 @@ These include e.g. `contact_person` and `platform` name which are probably helpf
 
 ## Installation
 
-The package can be installed with `conda` (https://www.anaconda.com/distribution/):
+The package can be installed with `conda` ([Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/distribution/)):
 
 The best option is to create a new environment to not run into dependency problems with pre-installed package:
 
