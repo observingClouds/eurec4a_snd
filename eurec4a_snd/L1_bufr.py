@@ -163,14 +163,14 @@ def main():
 
     try:
         git_module_version = sp.check_output(
-            ["git", "describe", "--always", "--dirty"]).strip()
+            ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip()
         git_version_set = True
-    except:
+    except sp.CalledProcessError:
         logging.debug('No git-version could be found.')
         git_module_version = "--"
         git_version_set = False
 
-    if (~git_version_set and ~package_version_set):
+    if (not git_version_set and not package_version_set):
         logging.warning('No version of the converter could be found!'
                         ' Please consider the installation via conda'
                         ' or if this is not working clone the git re'
