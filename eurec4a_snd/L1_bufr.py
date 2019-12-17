@@ -26,7 +26,7 @@ from netCDF4 import Dataset, default_fillvals, num2date, date2num
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config import cfg_creator as configupdater
 from _helpers import *
-
+import _thermo as thermo
 
 # ====================================================
 # General MPI-BCO settings:
@@ -272,12 +272,10 @@ def main():
         sounding.longitude = np.ma.masked_invalid(sounding.longitude)
 
         # Calculate additional variables
-        sounding.relativehumidity = calc_relative_humidity(sounding)
-        vapor_pressure = calc_vapor_pressure(sounding)
-        sounding.mixingratio = calc_wv_mixing_ratio(sounding, vapor_pressure)
-
-        sounding.relativehumidity = np.ma.masked_invalid(sounding.relativehumidity)
-        sounding.mixingratio = np.ma.masked_invalid(sounding.mixingratio)
+        e_sat = thermo.es(sounding.temperature, sounding.pressure*100)
+        e = thermo.es(sounding.dewpoint, sounding.pressure*100)
+        sounding.relativehumidity = (e/e_sat)*100
+        sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
 
         # Ascent rate
         sounding = calc_ascentrate(sounding)
