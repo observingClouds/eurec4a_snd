@@ -1,6 +1,6 @@
 # eurec4a_snd
 
-| :warning: **This is not yet the final version** Feel free to try and submit issues that you encounter. |
+| :warning: **Version 2.0.0 or higher should be used during the campaign** |
 | --- |
 
 This package is ment to help in establishing a common radiosonde output format.
