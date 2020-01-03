@@ -441,6 +441,12 @@ def kelvin_to_celsius(kelvin):
     return kelvin - 273.15
 
 
+def celsius_to_kelvin(celsius):
+    """
+    Convert Celsius to Kelvin
+    """
+    return 273.15 + celsius
+
 def pascal_to_hectoPascal(pascal):
     """
     Convert Pa to hPa
@@ -462,6 +468,38 @@ def calc_relative_humidity(sounding):
         (243.04+sounding.dewpoint))/np.exp((17.625*sounding.temperature)/
         (243.04+sounding.temperature)))
     return relative_humidity
+
+
+def convert_Tdew_to_measuredRH(sounding):
+    """
+    Convert dewpoint temperatures to relative
+    humidity
+
+    This function uses the exact invers formula,
+    of which is used by Vaisala MW41 and MW31 to
+    convert the measured RH to dewpoint temperature
+    for the BUFR output.
+
+    Input
+    -----
+    sounding : sounding obj with temperature and dewpoint in Celsius
+
+    Output
+    ------
+    rh_measured : array
+      measured relative humidities
+
+    NOTE: Due to numerical uncertainties (floating point), the conversion from
+    dewpoint temperature back to the measured relative humidity
+    might not be exact.
+    """
+    dewpoint_depr = sounding.temperature - sounding.dewpoint
+    temperature_K = celsius_to_kelvin(sounding.temperature)
+    dewpoint_K = celsius_to_kelvin(sounding.dewpoint)
+    a = 4 * (temperature_K - 273.15) * dewpoint_depr - 2 * 2711.5 * dewpoint_depr
+    b = temperature_K * 30 - dewpoint_K*temperature_K - dewpoint_K * 30
+    rh_measured = 100 * np.exp(-a / b)
+    return rh_measured
 
 
 def calc_vapor_pressure(sounding):

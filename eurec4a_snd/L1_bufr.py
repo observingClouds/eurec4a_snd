@@ -272,9 +272,8 @@ def main():
         sounding.longitude = np.ma.masked_invalid(sounding.longitude)
 
         # Calculate additional variables
-        e_sat = thermo.es(sounding.temperature, sounding.pressure*100)
         e = thermo.es(sounding.dewpoint, sounding.pressure*100)
-        sounding.relativehumidity = (e/e_sat)*100
+        sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
         sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
 
         # Ascent rate
