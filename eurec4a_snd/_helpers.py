@@ -265,10 +265,9 @@ def convert_json_to_arrays(json_flat, key_keys):
             try:
                 s.meta_data['bufr_msg'] = json_flat[key_key+'_value']
             except KeyError:
-                # Error probably caused, because there are several
-                # unexpandedDescriptors
-                # which seems to be only the case for dropsondes?!
-                s.meta_data['bufr_msg'] = 309053
+                descriptors = read_unexpandedDescriptors(key_key, json_flat)
+                msg_fmt = search_bufr_msg_format(descriptors)
+                s.meta_data['bufr_msg'] = msg_fmt
         elif json_flat[key_key+'_key'] == 'radiosondeOperatingFrequency':
             s.meta_data['sonde_frequency'] = str(json_flat[key_key+'_value']) + json_flat[key_key+'_units']
 
@@ -282,6 +281,41 @@ def convert_json_to_arrays(json_flat, key_keys):
                                         second)
 
     return s
+
+
+def read_unexpandedDescriptors(current_key, json_flat):
+    """
+    Reading unexpandedDescriptors in BUFR file.
+
+    unecpandedDescriptor contains the information which
+    bufr messages are included in the message
+    """
+
+    descriptors = []
+    i = int(current_key)
+    while True:
+        try:
+            _ = json_flat["{0:07g}_value".format(i)]
+            break
+        except KeyError:
+            try:
+                descriptors.append(json_flat['{0:07g}_'.format(i)])
+                i += 1
+            except KeyError:
+                break
+    return descriptors
+
+
+def search_bufr_msg_format(descriptors):
+    """
+    Search for common bufr message format in descriptors
+    """
+
+    common_descriptors = [309052, 309053, 309055, 309056, 309057]
+    for descriptor in descriptors:
+        if descriptor in common_descriptors:
+            return descriptor
+    return None
 
 
 def replace_missing_data(sounding):
@@ -423,8 +457,9 @@ def get_sounding_direction(bufr_msg):
     1: upward
     -1: downward
     """
-
-    if str(bufr_msg) == '309053':
+    if str(bufr_msg) == '309052':
+        return 1
+    elif str(bufr_msg) == '309053':
         return -1
     elif str(bufr_msg) == '309056':
         return -1
