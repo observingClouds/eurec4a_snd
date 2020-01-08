@@ -1,6 +1,6 @@
 # eurec4a_snd
 
-| :warning: **This is not yet the final version** Feel free to try and submit issues that you encounter. |
+| :warning: **Version 2.0.0 or higher should be used during the campaign** |
 | --- |
 
 This package is ment to help in establishing a common radiosonde output format.
@@ -110,9 +110,9 @@ or for quicklooks
   In case of a slow internet connection, the command `conda install some_package` might fail due to connection timeout. In this case it might be a good option to download the failing package manually.
 
   In this case the `eurec4a_snd` package for OSX is downloaded and installed manually:
-  <pre>wget -c https://anaconda.org/observingClouds/eurec4a_snd/v0.0.41/download/osx-64/eurec4a_snd-v0.0.41-py37_0.tar.bz2</pre>
+  <pre>wget -c https://anaconda.org/observingClouds/eurec4a_snd/v2.0.0/download/osx-64/eurec4a_snd-v2.0.0-py37_0.tar.bz2</pre>
 The path needs to be adapted depending on the operating system and the version that should be downloaded. You may actually see the path you need to download in the error message of `conda install eurec4a_snd`.
 
 The installation follows simply with
-  <pre>conda install -c observingClouds eurec4a_snd-v0.0.41-py37_0.tar.bz2</pre>
+  <pre>conda install -c observingClouds eurec4a_snd-v2.0.0-py37_0.tar.bz2</pre>
 </details>
