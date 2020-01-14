@@ -43,8 +43,14 @@ During the first execution, the `meta_information.ini` configuration file has to
 
 It is also possible to copy the `config/meta_information_template.ini` to one's favorite folder and change the files content accordingly. If the file is not renamed `meta_information.ini` and is in the home directory, the option `-c` has to be used during the call of `sounding_converter` otherwise it will not recognize the configuration.
 
+(macOS or linux)
 ```python
 sounding_converter -i your_sounding.bfr -c /your/path/to/meta_information.ini
+```
+
+(windows)
+```python
+sounding_converter.exe -i your_sounding.bfr -c /your/path/to/meta_information.ini
 ```
 
 ## Update
@@ -69,14 +75,27 @@ The converted dat files are netCDF files which conform to the CF-Conventions as 
 ### Simple Plotting
 The package also includes a few plotting routines that can be called with e.g.
 
+(macOS or linux)
 ```bash
 sounding_visualize -n converted/file/sounding.nc
 ```
 
+(windows)
+```bash
+sounding_visualize.exe -n converted/file/sounding.nc
+```
+
 ### SkewT Plotting
 A skewT diagram can be created with
+
+(macOS or linux)
 ```bash
 sounding_skewT -i converted/file/sounding.nc
+```
+
+(windows)
+```bash
+sounding_skewT.exe -i converted/file/sounding.nc
 ```
 Further examples on how to create a skewT diagram can be found in `eurec4a_snd/examples/visualizing`. Have a look at [Skew-T examples](eurec4a_snd/examples/visualizing/README.md)
 
