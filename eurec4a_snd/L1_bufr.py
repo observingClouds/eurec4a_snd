@@ -165,7 +165,7 @@ def main():
         git_module_version = sp.check_output(
             ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip()
         git_version_set = True
-    except sp.CalledProcessError:
+    except (sp.CalledProcessError, FileNotFoundError):
         logging.debug('No git-version could be found.')
         git_module_version = "--"
         git_version_set = False
