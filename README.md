@@ -116,3 +116,12 @@ The path needs to be adapted depending on the operating system and the version t
 The installation follows simply with
   <pre>conda install -c observingClouds eurec4a_snd-v2.0.0-py37_0.tar.bz2</pre>
 </details>
+
+<details>
+  <summary>ECCODES_DEFINITION_PATH defined incorrectly</summary>
+  <br>
+  In case there appears an error, that the variable ECCODES_DEFINITION_PATH is not defined or not correctly set, the easiest solution is to insert the following two lines at the beginning of the script L1_bufr.py.
+  <pre>import os</pre>
+  <pre>os.environ["ECCODES_DEFINITION_PATH"] = r"C:\Users\...\envs\field_campaign\Library\share\eccodes\definitions"</pre>
+  The path needs to be adapted to your environment of course.
+</details>
