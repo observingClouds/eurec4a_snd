@@ -333,19 +333,19 @@ def main():
                                    ['date=', 'inputncfile=', 'outputpath=',
                                     'inputpath=', 'help'])
     except getopt.GetoptError:
-        print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh>'
-              ' -n <inputncfile> -o <outputpath> ')
+        print('usage: python make_quicklooks_rs41.py -p <inputpath> -d <yymmddhh>'
+              ' -i <inputncfile> -o <outputpath> ')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt in ('-h', "--help"):  # help option
-            print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath>')
-            print('specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -i inputpath. ')
-            print('default inputpath: current directory. specify with -i option if different. if used together with -d, make sure -i is given first in call.')
+            print('usage: python make_quicklooks_rs41.py -p <inputpath> -d <yymmddhh> -i <inputncfile> -o <outputpath>')
+            print('specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -p inputpath. ')
+            print('default inputpath: current directory. specify with -p option if different. if used together with -d, make sure -p is given first in call.')
             print('default outputpath: current directory. if -o is specified, outputpath is created if not yet existant.')
             sys.exit()
 
-        elif opt in ("-i", "--inputpath"):
+        elif opt in ("-p", "--inputpath"):
             inputpath = arg
         elif opt in ("-d", "--date"):
             try:
@@ -354,7 +354,7 @@ def main():
                 logging.error('couldnt find your specified input: check date'
                               ' or/and inputpath selection.')
                 sys.exit()
-        elif opt in ("-n", "--inputncfile"):
+        elif opt in ("-i", "--inputncfile"):
             ncfile = arg
             if not os.path.isfile(ncfile):
                 logging.error('couldnt find your specified inputfile.')
