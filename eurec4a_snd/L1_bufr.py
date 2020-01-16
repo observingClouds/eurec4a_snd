@@ -145,9 +145,12 @@ def setup_logging(verbose):
         ])
 
 
-def main():
+def main(args={}):
     # Set up global configuration of BCO-MPI-GIT:
-    args = get_args()
+    try:
+        args = get_args()
+    except:
+        assert args!={}, "Arguments are missing"
 
     setup_logging(args['verbose'])
 
