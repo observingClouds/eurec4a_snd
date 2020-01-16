@@ -379,10 +379,10 @@ def main():
     radiosonde_data, radiosonde_specs = read_ncfile(ncfile)
 
     # make first quicklook: p, relh, T- profiles.
-    plot_ptrh(radiosonde_data, radiosonde_specs, outputpath)
+    #plot_ptrh(radiosonde_data, radiosonde_specs, outputpath)
 
     # now also plot wind speed and direction:
-    plot_wind(radiosonde_data, radiosonde_specs, outputpath)
+    #plot_wind(radiosonde_data, radiosonde_specs, outputpath)
 
     # also plot the sounding onto a map: REQUIRES BASEMAP-DATA-HIRES package
     # to be installed (e.g. through
