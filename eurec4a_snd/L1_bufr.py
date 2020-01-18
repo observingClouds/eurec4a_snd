@@ -108,7 +108,7 @@ def get_args():
                         required=False, default="INFO")
 
     # testing...
-    parser.add_argument('-f', '--force', metavar="Convert all",
+    parser.add_argument('-f', '--force', metavar="0",
                         help="Convert all files inside the '/inputpath'. "
                         "Default behavior is to convert only when the "
                         "destination files do not exist",
