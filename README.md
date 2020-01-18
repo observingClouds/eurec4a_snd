@@ -77,12 +77,12 @@ The package also includes a few plotting routines that can be called with e.g.
 
 (macOS or linux)
 ```bash
-sounding_visualize -n converted/file/sounding.nc
+sounding_visualize -i converted/file/sounding.nc
 ```
 
 (windows)
 ```bash
-sounding_visualize.exe -n converted/file/sounding.nc
+sounding_visualize.exe -i converted/file/sounding.nc
 ```
 
 ### SkewT Plotting
