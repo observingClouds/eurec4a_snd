@@ -247,8 +247,8 @@ def plot_map(data, specs, outputpath):
         date=specs['date']+'_'+specs['time'],
         tempres=specs['tempres'].replace(' ', ''))
 
-    fig = plt.figure(figsize=(8, 6))
-
+    #fig = plt.figure(figsize=(8, 6))
+    fig,ax = plt.subplots(1,figsize=(8,6))
     # determine the boundaries of the map from sounding lon and lat:
     maxlon = math.ceil(np.max(data['longitude'])/0.5)*0.5
     minlon = math.floor(np.min(data['longitude'])/0.5)*0.5
@@ -260,7 +260,7 @@ def plot_map(data, specs, outputpath):
     try:
         m = Basemap(projection='cyl', resolution='h', llcrnrlat=minlat,
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
-                    area_thresh=1)
+                    area_thresh=1,ax=ax)
     except OSError:
         logging.warning('High resolution map data has not been installed and'
                         ' the low resolution resolution will be used. For the'
@@ -268,7 +268,7 @@ def plot_map(data, specs, outputpath):
                         ' conda-forge basemap-data-hires')
         m = Basemap(projection='cyl', resolution='l', llcrnrlat=minlat,
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
-                    area_thresh=1)
+                    area_thresh=1,ax=ax)
     # plot a topography on top:
     m.etopo(alpha=0.4)
 
@@ -283,16 +283,19 @@ def plot_map(data, specs, outputpath):
 
     # plot balloon path:
     x, y = m(data['longitude'], data['latitude'])
-    m.plot(x, y, '-k')
+    sca = m.scatter(x,y,marker='.',c=data['altitude'],cmap='Reds',vmin=0.,vmax=30000.,zorder=10)
+    fig.subplots_adjust(right=0.75,left = 0.1)
+    cax = plt.axes([0.85, 0.27, 0.025, 0.45])
+    plt.colorbar(sca,cax=cax,label='Altitude [m]')
+    #m.plot(x, y, '-k')
 
     # plot launch position as red square:
     m.plot(float(data['longitude'][0]),
            float(data['latitude'][0]),
-           'sr',
-           markersize=5)
+           'sb', markersize=5,zorder=15)
 
     # and the figure title:
-    plt.title('%s, %s %sUTC' % (specs['location'], specs['date'],
+    ax.set_title('%s, %s %sUTC' % (specs['location'], specs['date'],
                                 data['time_of_launch_HHmmss'][:-2]))
 
     fig.savefig(outputpath+outputname)
