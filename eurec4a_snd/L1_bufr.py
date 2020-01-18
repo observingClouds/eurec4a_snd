@@ -107,6 +107,13 @@ def get_args():
                         ' WARNING, ERROR]',
                         required=False, default="INFO")
 
+    # testing...
+    parser.add_argument('-f', '--force', metavar="Convert all",
+                        help="Convert all files inside the '/inputpath'. "
+                        "Default behavior is to convert only when the "
+                        "destination files do not exist",
+                        required=False, default=0, type=int)
+
     parsed_args = vars(parser.parse_args())
 
     if (parsed_args["inputpath"] is not None) and (parsed_args["inputfile"] is not None):
@@ -145,12 +152,9 @@ def setup_logging(verbose):
         ])
 
 
-def main(args={}):
+def main():
     # Set up global configuration of BCO-MPI-GIT:
-    try:
-        args = get_args()
-    except:
-        assert args!={}, "Arguments are missing"
+    args = get_args()
 
     setup_logging(args['verbose'])
 
@@ -261,36 +265,8 @@ def main(args={}):
 
         sounding = expected_unit_check(sounding)
 
-        # after all needed header information is read, the reduced data field
-        # is masked for NaN values and an output file produced afterward:
-        logging.debug('Mask invalid sounding data')
-        sounding.time = np.ma.masked_invalid(sounding.time)
-        sounding.gpm = np.ma.masked_invalid(sounding.gpm)
-        sounding.pressure = np.ma.masked_invalid(sounding.pressure)
-        sounding.temperature = np.ma.masked_invalid(sounding.temperature)
-        sounding.dewpoint = np.ma.masked_invalid(sounding.dewpoint)
-        sounding.windspeed = np.ma.masked_invalid(sounding.windspeed)
-        sounding.winddirection = np.ma.masked_invalid(sounding.winddirection)
-        sounding.latitude = np.ma.masked_invalid(sounding.latitude)
-        sounding.longitude = np.ma.masked_invalid(sounding.longitude)
 
-        # Calculate additional variables
-        e = thermo.es(sounding.dewpoint, sounding.pressure*100)
-        sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
-        sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
-
-        # Ascent rate
-        sounding = calc_ascentrate(sounding)
-
-        # Sort sounding by flight time
-        sounding = sort_sounding_by_time(sounding)
-
-        # Remove 1000hPa reduced gpm
-        sounding = exclude_1000hPa_gpm(sounding)
-
-        # Find temporal resolution
-        time_resolution = calc_temporal_resolution(sounding)
-
+        #----------------------------------------------------------------------------
         # Create outputfile with time information from file
         sounding_date = sounding.sounding_start_time
         YYYYMMDDHHMM = sounding.sounding_start_time.strftime('%Y%m%d%H%M')
@@ -319,6 +295,44 @@ def main(args={}):
 
         if not outfile.parent.exists():
             os.makedirs(outfile.parent)
+
+        # Added on Jan 18 2020: Compute and create .nc file only if option force is True
+        # or the file does not exist in destination.
+        if not bool(args['force']):
+            if outfile.exists():
+                logging.info("File {} already exists in the destination".format(outfile))
+                continue
+        #----------------------------------------------------------------------------
+
+        # after all needed header information is read, the reduced data field
+        # is masked for NaN values and an output file produced afterward:
+        logging.debug('Mask invalid sounding data')
+        sounding.time = np.ma.masked_invalid(sounding.time)
+        sounding.gpm = np.ma.masked_invalid(sounding.gpm)
+        sounding.pressure = np.ma.masked_invalid(sounding.pressure)
+        sounding.temperature = np.ma.masked_invalid(sounding.temperature)
+        sounding.dewpoint = np.ma.masked_invalid(sounding.dewpoint)
+        sounding.windspeed = np.ma.masked_invalid(sounding.windspeed)
+        sounding.winddirection = np.ma.masked_invalid(sounding.winddirection)
+        sounding.latitude = np.ma.masked_invalid(sounding.latitude)
+        sounding.longitude = np.ma.masked_invalid(sounding.longitude)
+
+        # Calculate additional variables
+        e = thermo.es(sounding.dewpoint, sounding.pressure*100.)
+        sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
+        sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100.-e)*1000.
+
+        # Ascent rate
+        sounding = calc_ascentrate(sounding)
+
+        # Sort sounding by flight time
+        sounding = sort_sounding_by_time(sounding)
+
+        # Remove 1000hPa reduced gpm
+        sounding = exclude_1000hPa_gpm(sounding)
+
+        # Find temporal resolution
+        time_resolution = calc_temporal_resolution(sounding)
 
         # Creation of output NetCDF file
         fo = Dataset(outfile, 'w', format='NETCDF4')
