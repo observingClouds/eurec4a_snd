@@ -238,8 +238,8 @@ def plot_map(data, specs, outputpath):
     '''
     logging.info('now plotting map of sounding.........')
     # define outputname of .png-file:
-    variable = 'map'
-    outputname = '{platform}_{instrument}{direction}_{variable}_{date}_{tempres}.png' .format(
+    variable = 'trajectory'
+    outputname = '{platform}_{instrument}_{variable}_{date}_{tempres}.png' .format(
         platform=specs['platform_short'],
         instrument=specs['type'].replace(' ', '').replace('_', ''),
         direction=specs['direction'],
@@ -292,8 +292,9 @@ def plot_map(data, specs, outputpath):
            markersize=5)
 
     # and the figure title:
-    plt.title('%s, %s %sUTC' % (specs['location'], specs['date'],
-                                data['time_of_launch_HHmmss'][:-2]))
+    plt.title('%s, %s %sUTC %s' % (specs['location'], specs['date'],
+                                data['time_of_launch_HHmmss'][:-2],
+                                specs['direction']))
 
     fig.savefig(outputpath+outputname)
 
