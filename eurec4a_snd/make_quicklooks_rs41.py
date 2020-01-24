@@ -247,8 +247,8 @@ def plot_map(data, specs, outputpath):
         date=specs['date']+'_'+specs['time'],
         tempres=specs['tempres'].replace(' ', ''))
 
-    fig = plt.figure(figsize=(8, 6))
-
+    #fig = plt.figure(figsize=(8, 6))
+    fig,ax = plt.subplots(1,figsize=(8,6))
     # determine the boundaries of the map from sounding lon and lat:
     maxlon = math.ceil(np.max(data['longitude'])/0.5)*0.5
     minlon = math.floor(np.min(data['longitude'])/0.5)*0.5
@@ -260,7 +260,7 @@ def plot_map(data, specs, outputpath):
     try:
         m = Basemap(projection='cyl', resolution='h', llcrnrlat=minlat,
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
-                    area_thresh=1)
+                    area_thresh=1,ax=ax)
     except OSError:
         logging.warning('High resolution map data has not been installed and'
                         ' the low resolution resolution will be used. For the'
@@ -268,7 +268,7 @@ def plot_map(data, specs, outputpath):
                         ' conda-forge basemap-data-hires')
         m = Basemap(projection='cyl', resolution='l', llcrnrlat=minlat,
                     urcrnrlat=maxlat, llcrnrlon=minlon, urcrnrlon=maxlon,
-                    area_thresh=1)
+                    area_thresh=1,ax=ax)
     # plot a topography on top:
     m.etopo(alpha=0.4)
 
@@ -283,18 +283,21 @@ def plot_map(data, specs, outputpath):
 
     # plot balloon path:
     x, y = m(data['longitude'], data['latitude'])
-    m.plot(x, y, '-k')
+    sca = m.scatter(x,y,marker='.',c=data['altitude'],cmap='Reds',vmin=0.,vmax=30000.,zorder=10)
+    fig.subplots_adjust(right=0.75,left = 0.1)
+    cax = plt.axes([0.85, 0.27, 0.025, 0.45])
+    plt.colorbar(sca,cax=cax,label='Altitude [m]')
+    #m.plot(x, y, '-k')
 
     # plot launch position as red square:
     m.plot(float(data['longitude'][0]),
            float(data['latitude'][0]),
-           'sr',
-           markersize=5)
+           'sb', markersize=5,zorder=15)
 
     # and the figure title:
-    plt.title('%s, %s %sUTC %s' % (specs['location'], specs['date'],
-                                data['time_of_launch_HHmmss'][:-2],
-                                specs['direction']))
+    ax.set_title('%s, %s %sUTC %s' % (specs['location'], specs['date'],
+                                      data['time_of_launch_HHmmss'][:-2],
+                                      specs['direction']))
 
     fig.savefig(outputpath+outputname)
 
@@ -334,19 +337,19 @@ def main():
                                    ['date=', 'inputncfile=', 'outputpath=',
                                     'inputpath=', 'help'])
     except getopt.GetoptError:
-        print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh>'
-              ' -n <inputncfile> -o <outputpath> ')
+        print('usage: python make_quicklooks_rs41.py -p <inputpath> -d <yymmddhh>'
+              ' -i <inputncfile> -o <outputpath> ')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt in ('-h', "--help"):  # help option
-            print('usage: python make_quicklooks_rs41.py -i <inputpath> -d <yymmddhh> -n <inputncfile> -o <outputpath>')
-            print('specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -i inputpath. ')
-            print('default inputpath: current directory. specify with -i option if different. if used together with -d, make sure -i is given first in call.')
+            print('usage: python make_quicklooks_rs41.py -p <inputpath> -d <yymmddhh> -i <inputncfile> -o <outputpath>')
+            print('specify either complete input netcdf filename (-n) or date (-d) of sounding from which file be searched in -p inputpath. ')
+            print('default inputpath: current directory. specify with -p option if different. if used together with -d, make sure -p is given first in call.')
             print('default outputpath: current directory. if -o is specified, outputpath is created if not yet existant.')
             sys.exit()
 
-        elif opt in ("-i", "--inputpath"):
+        elif opt in ("-p", "--inputpath"):
             inputpath = arg
         elif opt in ("-d", "--date"):
             try:
@@ -355,7 +358,7 @@ def main():
                 logging.error('couldnt find your specified input: check date'
                               ' or/and inputpath selection.')
                 sys.exit()
-        elif opt in ("-n", "--inputncfile"):
+        elif opt in ("-i", "--inputncfile"):
             ncfile = arg
             if not os.path.isfile(ncfile):
                 logging.error('couldnt find your specified inputfile.')
@@ -380,10 +383,10 @@ def main():
     radiosonde_data, radiosonde_specs = read_ncfile(ncfile)
 
     # make first quicklook: p, relh, T- profiles.
-    plot_ptrh(radiosonde_data, radiosonde_specs, outputpath)
+    #plot_ptrh(radiosonde_data, radiosonde_specs, outputpath)
 
     # now also plot wind speed and direction:
-    plot_wind(radiosonde_data, radiosonde_specs, outputpath)
+    #plot_wind(radiosonde_data, radiosonde_specs, outputpath)
 
     # also plot the sounding onto a map: REQUIRES BASEMAP-DATA-HIRES package
     # to be installed (e.g. through
