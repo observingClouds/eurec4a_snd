@@ -120,7 +120,7 @@ def main():
     direction = find_direction_of_sounding(ascend_rate)
 
     # Create a new figure. The dimensions here give a good aspect ratio
-    fig = plt.figure(figsize=(9, 9))
+    fig = plt.figure(figsize=(9, 10))
     skew = SkewT(fig, rotation=30)
 
     # Plot the data using normal plotting functions, in this case using
@@ -148,7 +148,7 @@ def main():
 
     # Find nans in pressure
     # p_non_nan_idx = np.where(~np.isnan(pres_vals))
-    skew.plot_barbs(p_barbs, u_barbs, v_barbs)
+    skew.plot_barbs(p_barbs, u_barbs, v_barbs, xloc=1.06)
 
     skew.ax.set_ylim(1020, 100)
     skew.ax.set_xlim(-50, 40)
@@ -157,7 +157,7 @@ def main():
     skew.plot(lcl_pressure, lcl_temperature, 'ko', markerfacecolor='black')
 
     # Plot the parcel profile as a black line
-    skew.plot(pres_vals, parcel_prof, 'k', linewidth=2)
+    skew.plot(pres_vals, parcel_prof, 'k', linewidth=1.6)
 
     # Shade areas of CAPE and CIN
     skew.shade_cin(pres_vals, T, parcel_prof)
@@ -174,8 +174,8 @@ def main():
     # Create a hodograph
     # Create an inset axes object that is 40% width and height of the
     # figure and put it in the upper right hand corner.
-    ax_hod = inset_axes(skew.ax, '40%', '40%', loc=1)
-    h = Hodograph(ax_hod, component_range=80.)
+    ax_hod = inset_axes(skew.ax, '35%', '35%', loc=1)
+    h = Hodograph(ax_hod, component_range=75.)
     h.add_grid(increment=20)
     h.plot_colormapped(u, v, wind_speed)  # Plot a line colored by wind speed
 
