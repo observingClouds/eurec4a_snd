@@ -7,6 +7,7 @@ import sys
 import os.path
 import argparse
 import logging
+import datetime as dt
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
@@ -26,7 +27,8 @@ def get_args():
 
     parser.add_argument("-o", "--outputfile", metavar="/some/example/path/filename.pdf",
                         help="Output filename for skewT diagram (all file endings"\
-                             " of matplotlib are supported",
+                             " of matplotlib are supported. Formats can be used as well"\
+                             " ({platform}, {direction}, {resolution}, %%Y, %%m, %%d, ...",
                         default=None,
                         required=False)
 
@@ -51,6 +53,23 @@ def setup_logging(verbose):
         ])
 
 
+def find_direction_of_sounding(ascent_rate):
+    """
+    Calculate direction of sounding by calculating mean
+    ascend rate
+
+    Return
+    ------
+    direction : str
+        Direction of sounding (ascending or descending)
+    """
+    if np.nanmedian(ascent_rate) > 0:
+        direction = 'ascending'
+    elif np.nanmedian(ascent_rate) < 0:
+        direction = 'descending'
+    return direction
+
+
 def main():
     args = get_args()
     setup_logging(args['verbose'])
@@ -69,6 +88,12 @@ def main():
     Td = ds_sel.dewPoint.values
     wind_speed = ds_sel.windSpeed.values
     wind_dir = ds_sel.windDirection.values
+    ascend_rate = ds_sel.ascentRate.values
+
+    launch_time = ds_sel.launch_unixtime
+    launch_time = dt.datetime.utcfromtimestamp(launch_time)
+    platform = ds_sel.platform_name.split('(')[1][:-1].strip()
+    resolution = ds_sel.resolution.replace(' ', '')
 
     # Filter nans
     idx = np.where((np.isnan(T)+np.isnan(Td)+np.isnan(p)+
@@ -91,6 +116,8 @@ def main():
     lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
 
     parcel_prof = mpcalc.parcel_profile(p, T[0], Td[0]).to('degC')
+
+    direction = find_direction_of_sounding(ascend_rate)
 
     # Create a new figure. The dimensions here give a good aspect ratio
     fig = plt.figure(figsize=(9, 9))
@@ -155,11 +182,19 @@ def main():
     # Set title
     sounding_name = ds_sel.sounding.values
     sounding_name_str = str(sounding_name.astype('str'))
-    skew.ax.set_title('{sounding}'.format(
-        sounding=sounding_name_str))
+    skew.ax.set_title('{sounding}_{direction}'.format(
+        sounding=sounding_name_str,
+        direction=direction))
 
     if output is None:
-        output = str(os.path.basename(file).split('.')[0])+'.pdf'
+        filename_fmt = '{platform}_SoundingProfile_skewT_%Y%m%d_%H%M_{res}.png'.format(platform=platform,
+                                                                                       res=resolution)
+        filename_fmt = launch_time.strftime(filename_fmt)
+        output = filename_fmt
+    else:
+        output = output.format(platform=platform, direction=direction,
+            resolution=resolution)
+        output = launch_time.strftime(output)
     logging.info('Write output to {}'.format(output))
     plt.savefig(output)
 
