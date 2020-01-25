@@ -239,7 +239,7 @@ def plot_map(data, specs, outputpath):
     logging.info('now plotting map of sounding.........')
     # define outputname of .png-file:
     variable = 'trajectory'
-    outputname = '{platform}_{instrument}_{variable}_{date}_{tempres}.png' .format(
+    outputname = '{platform}_SoundingProfile_{variable}_{date}_{tempres}.png' .format(
         platform=specs['platform_short'],
         instrument=specs['type'].replace(' ', '').replace('_', ''),
         direction=specs['direction'],
