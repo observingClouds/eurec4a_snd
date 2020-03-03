@@ -27,6 +27,8 @@ setuptools.setup(
     entry_points={'console_scripts':
                     ['sounding_converter=eurec4a_snd.L1_bufr:main',
                      'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main',
-                     'sounding_skewT=eurec4a_snd.visualize.make_skewT_metpy:main']},
+                     'sounding_skewT=eurec4a_snd.visualize.make_skewT_metpy:main',
+                     'sounding_converter_mwx=eurec4a_snd.L1_mwx.py:main'
+                     ]},
     package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini"]}
 )
