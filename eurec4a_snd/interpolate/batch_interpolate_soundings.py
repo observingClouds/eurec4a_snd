@@ -122,6 +122,7 @@ for subfolder in ['MET','MER','BCO','ATL','RBR']:
     for f, file in tqdm.tqdm(enumerate(files)):
         ds = xr.open_dataset(file)
         ds = ds.isel({'sounding':0})
+        ds_input = ds.copy()
 
         # Remove standard pressure levels (extendedVerticalSoundingSignificance)
         ## extendedVerticalSoundingSignificance == 65536
@@ -182,6 +183,13 @@ for subfolder in ['MET','MER','BCO','ATL','RBR']:
         ds_interp = ds_new.interp(altitude=np.arange(0,30000,10))
         wind_direction = np.rad2deg(np.arctan2(-1*ds_interp.isel({'sounding':0})['wind_u'],-1*ds_interp.isel({'sounding':0})['wind_v']))%360
         ds_interp['wind_direction'] = xr.DataArray([np.array(wind_direction.values)],
+                                                   dims = ['sounding', 'altitude'],
+                                                   coords={'altitude':ds_interp.altitude.values})
+        ds_input = ds_input.sortby('altitude')
+        ds_input.altitude.load()
+        ds_input.pressure.load()
+        interp_pres = pressure_interpolation(ds.pressure.values, ds.altitude.values, ds_interp.altitude.values)
+        ds_interp['pressure'] = xr.DataArray([np.array(interp_pres)],
                                                    dims = ['sounding', 'altitude'],
                                                    coords={'altitude':ds_interp.altitude.values})
 

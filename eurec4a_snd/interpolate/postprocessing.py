@@ -5,6 +5,7 @@ Functions for post-processing data
 import numpy as np
 import metpy.calc
 from metpy.units import units
+import metpy.interpolate as mpinterp
 
 def calc_saturation_pressure(temperature_K, method='hardy1988'):
     """
@@ -143,4 +144,72 @@ def calc_ascentrate(height, time):
     ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
     return ascent_rate
 
+
+def pressure_interpolation(pressures, altitudes, output_altitudes, convergence_error = 0.05):
+    """
+    Interpolates pressure on altitude grid
+
+    The pressure is interpolated logarithmically.
+
+    Input
+    -----
+    pressure : array
+        pressures in hPa
+    altitudes : array
+        altitudes in m belonging to pressure values
+    output_altitudes : array
+        altitudes (m) on which the pressure should
+        be interpolated to
+    convergence_error : float
+        Error that needs to be reached to stop
+        convergence iteration
+
+    Returns
+    -------
+    pressure_interpolated : array
+        array of interpolated pressure values
+        on altitudes
+    """
+    import pdb; pdb.set_trace()
+    new_alt = output_altitudes
+    pressure_interpolated = np.empty(len(output_altitudes))
+    pressure_interpolated[:] = np.nan
+
+    # Exclude heights outside of the intersection of measurements heights
+    # and output_altitudes
+    altitudes_above_measurements = (new_alt > max(altitudes))
+    range_of_alt_max = np.min(np.where(altitudes_above_measurements | (new_alt == new_alt[-1]))) - 1
+
+    altitudes_below_measurements = (new_alt < min(altitudes))
+    range_of_alt_min = np.max(np.where(altitudes_below_measurements | (new_alt == new_alt[0]))) + 1
+
+    for i in range(range_of_alt_min,range_of_alt_max):
+
+        target_h = new_alt[i]
+
+        lower_idx = np.nanmax(np.where(altitudes <= target_h))
+        upper_idx = np.nanmin(np.where(altitudes >= target_h))
+
+        p1 = pressures[lower_idx]  # pressure at lower altitude
+        p2 = pressures[upper_idx]  # pressure at higher altitude
+        a1 = altitudes[lower_idx]  # lower altitude
+        a2 = altitudes[upper_idx]  # higher altitude
+
+        xp = np.array([p1,p2])
+        arr = np.array([a1,a2])
+
+        err = 10
+
+        if a2 - a1 < 100 :
+            while err > convergence_error :
+                x = np.mean([p1,p2])
+                ah = mpinterp.log_interpolate_1d(x, xp, arr, fill_value=np.nan)
+                if ah > target_h :
+                    p2 = x
+                else :
+                    p1 = x
+                err = abs(ah - target_h)
+            pressure_interpolated[i] = x
+
+    return pressure_interpolated
 
