@@ -150,8 +150,8 @@ for subfolder in ['MET','MER','BCO','ATL','RBR']:
 
         # Prepare some data that cannot be linearly interpolated
         wind_dir_rad = np.deg2rad(ds.windDirection.values)
-        ds['wind_u'] = ds.windSpeed.values * np.cos(wind_dir_rad)
-        ds['wind_v'] = ds.windSpeed.values * np.sin(wind_dir_rad)
+        ds['wind_u'] = -1*ds.windSpeed.values * np.sin(wind_dir_rad)
+        ds['wind_v'] = -1*ds.windSpeed.values * np.cos(wind_dir_rad)
 
         mixing_ratio = np.array(calc_mixing_ratio_hardy(ds['dewPoint'].values+273.15,
                                                         ds['pressure'].values*100))*1000
@@ -180,7 +180,7 @@ for subfolder in ['MET','MER','BCO','ATL','RBR']:
 
         # Interpolation
         ds_interp = ds_new.interp(altitude=np.arange(0,30000,10))
-        wind_direction = np.rad2deg(np.arctan2(ds_interp.isel({'sounding':0})['wind_v'], ds_interp.isel({'sounding':0})['wind_u']))%360
+        wind_direction = np.rad2deg(np.arctan2(-1*ds_interp.isel({'sounding':0})['wind_u'],-1*ds_interp.isel({'sounding':0})['wind_v']))%360
         ds_interp['wind_direction'] = xr.DataArray([np.array(wind_direction.values)],
                                                    dims = ['sounding', 'altitude'],
                                                    coords={'altitude':ds_interp.altitude.values})
