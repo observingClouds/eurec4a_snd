@@ -40,6 +40,7 @@ for subfolder in ['MET','MER','BCO','ATL','RBR']:
                                    '_FillValue' : default_fillvals['f4']
                                   },
                       'pressure': {'long_name': 'pressure',
+                                   'units': 'hPa',
                                    'coordinates': 'flight_time longitude latitude altitude',
                                    '_FillValue' : default_fillvals['f4']
                                   },
