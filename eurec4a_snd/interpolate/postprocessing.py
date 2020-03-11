@@ -7,7 +7,7 @@ import metpy.calc
 from metpy.units import units
 import metpy.interpolate as mpinterp
 
-def calc_saturation_pressure(temperature_K, method='hardy1988'):
+def calc_saturation_pressure(temperature_K, method='hardy1998'):
     """
     Calculate saturation water vapor pressure
     
@@ -17,7 +17,7 @@ def calc_saturation_pressure(temperature_K, method='hardy1988'):
         array of temperature in Kevlin or dew point temperature for actual vapor pressure
     method : str
         Formula used for calculating the saturation pressure
-            'hardy1988' : ITS-90 Formulations for Vapor Pressure, Frostpoint Temperature,
+            'hardy1998' : ITS-90 Formulations for Vapor Pressure, Frostpoint Temperature,
                 Dewpoint Temperature, and Enhancement Factors in the Range –100 to +100 C,
                 Bob Hardy, Proceedings of the Third International Symposium on Humidity and Moisture,
                 1998 (same as used in Aspen software after May 2018)
@@ -36,7 +36,7 @@ def calc_saturation_pressure(temperature_K, method='hardy1988'):
     array([  611.2129107 ,  2339.26239586,   125.58350529])
     """
 
-    if method == 'hardy1988':
+    if method == 'hardy1998':
         g = np.empty(8)
         g[0] = -2.8365744*10**3
         g[1] = -6.028076559*10**3
