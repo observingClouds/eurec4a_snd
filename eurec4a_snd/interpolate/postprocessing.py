@@ -170,7 +170,6 @@ def pressure_interpolation(pressures, altitudes, output_altitudes, convergence_e
         array of interpolated pressure values
         on altitudes
     """
-    import pdb; pdb.set_trace()
     new_alt = output_altitudes
     pressure_interpolated = np.empty(len(output_altitudes))
     pressure_interpolated[:] = np.nan
