@@ -298,7 +298,6 @@ def main(args={}):
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
-        import pdb; pdb.set_trace()
         ds_interp = ds_new.interp(altitude=np.arange(0, 30000, 10))
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
@@ -323,7 +322,7 @@ def main(args={}):
         specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
         relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
           specific_humidity, ds_interp.temperature.values * units.degC,
-          ds_interp.pressure.values * units['hPa'])
+          ds_interp.pressure.values * units.hPa)
 
         ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
                                                       dims=dims_2d,
