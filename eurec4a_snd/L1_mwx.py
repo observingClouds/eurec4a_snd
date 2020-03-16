@@ -176,8 +176,8 @@ def main(args={}):
     try:
         args = get_args()
     except:
-        assert args!={}, "Arguments are missing"
-    
+        sys.exit() 
+
     setup_logging(args['verbose'])
 
     logging.debug('Gathering version information')
