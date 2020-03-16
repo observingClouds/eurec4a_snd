@@ -103,6 +103,12 @@ Further examples on how to create a skewT diagram can be found in `eurec4a_snd/e
 
 Examples of the input `.bfr` files and the converted `.nc` file can be found in `examples/data`.
 
+## Interpolation
+To concatenate the soundings and for an easier analysis, the converted soundings (output of `sounding_converter`) can be interpolated on a common altitude grid by
+```bash
+sounding_interpolate -i /path/to/converted/soundings*.nc
+```
+
 ## Trouble shooting
 
 <details>
