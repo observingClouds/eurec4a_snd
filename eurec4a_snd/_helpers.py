@@ -415,7 +415,7 @@ def calc_temporal_resolution(sounding):
     """
     time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
     time_differences_counts = np.bincount(time_differences.astype(int))
-    most_common_diff = time_differences[np.argmax(time_differences_counts)]
+    most_common_diff = np.argmax(time_differences_counts)
     temporal_resolution = most_common_diff
     return temporal_resolution
 
