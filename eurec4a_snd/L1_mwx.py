@@ -175,8 +175,8 @@ def main(args={}):
     try:
         args = get_args()
     except:
-        assert args!={}, "Arguments are missing"
-    
+        sys.exit() 
+
     setup_logging(args['verbose'])
 
     logging.debug('Gathering version information')
@@ -191,7 +191,7 @@ def main(args={}):
 
     try:
         git_module_version = sp.check_output(
-            ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip()
+            ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip().decode()
         git_version_set = True
     except (sp.CalledProcessError, FileNotFoundError):
         logging.debug('No git-version could be found.')
