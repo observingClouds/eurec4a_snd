@@ -42,7 +42,6 @@ output_filename_format = '{campaign}_{platform_short}_sounding_{direction}_%Y%m%
 
 json_config_fn = 'mwx_config.json'
 
-
 def load_configuration(configuration_file=None):
     """
     Loads the configuration file PATH.ini.
@@ -316,14 +315,15 @@ def main(args={}):
         # Read SynchronizedSoundingData.xml with processed sounding data
         itemlist = read_xml(sync_filename)
         sounding_dict = {}
-        for i, item in enumerate(itemlist):
-            level_dict = {}
-            for var in sync_sounding_values:
-                try:
+        try:
+            for i, item in enumerate(itemlist):
+                level_dict = {}
+                for var in sync_sounding_values:
                     level_dict[var] = item.attributes[var].value
-                except:
-                    logging.warning('Key {} not found in file {}'.format(var, mwx_file))
-            sounding_dict[i] = level_dict
+                sounding_dict[i] = level_dict
+        except:
+            logging.warning('Key {} not found in file {}'.format(var, mwx_file))
+            continue
         pd_snd = pd.DataFrame.from_dict(sounding_dict, orient='index', dtype=float)
 
         # Read StdPressureLevels.xml to include measurements interpolated to std-levels
@@ -358,6 +358,9 @@ def main(args={}):
 
         # Write output
         for sounding in [pd_snd_asc, pd_snd_dsc]:
+            if len(sounding) < 2:
+                logging.warning('Sounding does not contain data. Skip {}'.format(mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
+                continue
             xr_snd = xr.Dataset.from_dataframe(sounding)
 
             # Calc extra variables
