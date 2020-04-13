@@ -102,6 +102,15 @@ def get_args():
                         default=None,
                         required=False)
 
+    parser.add_argument("-a", "--additional-variables",
+                        help="Provide further additional variables from the BUFR file that\n"
+                             "should be included in the output file.\n"
+                             "currently supported are:\n"
+                             "\t extendedVerticalSoundingSignificance\n",
+                        default=[],
+                        nargs='+',
+                        required=False)
+
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -483,6 +492,14 @@ def main(args={}):
         nc_long.standard_name = 'longitude'
         nc_long.units = 'degrees_east'
         nc_long.axis = 'X'
+        if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
+            nc_evss = fo.createVariable(
+                'extendedVerticalSoundingSignificance', 'i4', ('sounding', 'levels'),
+                fill_value=0,
+                zlib=True)
+            nc_evss.long_name = 'extended vertical soudning significance'
+            nc_evss.description = 'see BUFR code flag table to decode'
+            nc_evss.units = '-'
 
         sounding_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
                         format(platform=config['PLATFORM']['platform_name_short'],
@@ -508,7 +525,8 @@ def main(args={}):
         nc_vdir[0, :] = sounding.winddirection
         nc_lat[0, :] = sounding.latitude
         nc_long[0, :] = sounding.longitude
-
+        if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
+            nc_evss[0, :] = sounding.extendedVerticalSoundingSignificance
         fo.close()
         logging.info('DONE: {input} converted to {output}'.format(
             input=filelist[ifile],
