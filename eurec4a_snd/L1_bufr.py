@@ -359,7 +359,7 @@ def main(args={}):
         # Instrument metadata
         fo.instrument = config['INSTRUMENT']['instrument_description']
         fo.number_of_Probe = serial
-        fo.sonde_type = sondetype
+        fo.sonde_type = str(sondetype)
         fo.sonde_frequency = sondefreq
 
         # Information about launch
