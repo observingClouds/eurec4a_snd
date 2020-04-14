@@ -114,6 +114,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.displacement_lat_unit = None
             self.displacement_lon = []
             self.displacement_lon_unit = None
+            self.extendedVerticalSoundingSignificance = []
             self.meta_data = {}
 
     def _ensure_measurement_integrity(self):
@@ -157,6 +158,8 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.winddirection.append(np.nan)
         if len(self.time) > len(self.displacement_lat):
             self.displacement_lat.append(np.nan)
+        if len(self.time) > len(self.extendedVerticalSoundingSignificance):
+            self.extendedVerticalSoundingSignificance.append(0)
         return
 
     s = Sounding()
@@ -190,6 +193,8 @@ def convert_json_to_arrays(json_flat, key_keys):
             elif s.winddirection_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.winddirection_unit,
                                                                             json_flat[key_key+'_units']))
+        elif json_flat[key_key+'_key'] == 'extendedVerticalSoundingSignificance':
+            s.extendedVerticalSoundingSignificance.append(json_flat[key_key+'_value'])
         elif json_flat[key_key+'_key'] == 'nonCoordinateGeopotentialHeight':
             s.gpm.append(json_flat[key_key+'_value'])
             if s.gpm_unit is None:
@@ -345,7 +350,8 @@ def convert_list_to_array(sounding):
     Convert datatype of sounding
     """
     variables = ['displacement_lat', 'displacement_lon', 'pressure', 'windspeed',
-                 'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
+                 'winddirection', 'temperature', 'dewpoint', 'gpm', 'time',
+                 'extendedVerticalSoundingSignificance']
 
     for var in variables:
         sounding.__dict__[var] = np.array(sounding.__dict__[var])
@@ -624,6 +630,7 @@ def sort_sounding_by_time(sounding):
     sounding.winddirection = sounding.winddirection[sorter]
     sounding.latitude = sounding.latitude[sorter]
     sounding.longitude = sounding.longitude[sorter]
+    sounding.extendedVerticalSoundingSignificance = sounding.extendedVerticalSoundingSignificance[sorter]
 
     return sounding
 
@@ -654,4 +661,6 @@ def exclude_1000hPa_gpm(sounding):
     sounding.winddirection = sounding.winddirection[nan_mask]
     sounding.latitude = sounding.latitude[nan_mask]
     sounding.longitude = sounding.longitude[nan_mask]
+    sounding.extendedVerticalSoundingSignificance = sounding.extendedVerticalSoundingSignificance[nan_mask]
+
     return sounding
