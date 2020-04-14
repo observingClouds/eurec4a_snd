@@ -772,7 +772,6 @@ def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, signi
     but does not exclude e.g. the levels [], [1,4], [3,5], [1,4,8,..], ....
     """
     # Get levels where extendedVerticalSoundingSignificance is not 0
-    import pdb; pdb.set_trace()
     significance_levels = np.where(sounding.extendedVerticalSoundingSignificance != 0)[0]
     to_delete_mask = np.zeros(len(sounding.time), dtype=bool)
     for significance_level in significance_levels:
