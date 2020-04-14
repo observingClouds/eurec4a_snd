@@ -246,6 +246,7 @@ def main(args={}):
         os.makedirs(args['outputfolder'])
 
     for f, file in tqdm.tqdm(enumerate(filelist)):
+        logging.info(f'Process file {file}')
         ds = xr.open_dataset(file)
         ds = ds.isel({'sounding': 0})
         ds_input = ds.copy()
@@ -263,6 +264,11 @@ def main(args={}):
         # here the first occurance is used
         _, uniq_altitude_idx = np.unique(ds.altitude.values, return_index=True)
         ds = ds.isel({'levels': uniq_altitude_idx})
+
+        # Check if platform is known
+        if ds.platform_name not in platform_rename_dict.keys():
+            logging.error('The platform {} is not known. Please choose one of {}'.format(ds.platform_name, platform_rename_dict.keys()))
+            sys.exit()
 
         # Consistent platform test
         if f == 0:
