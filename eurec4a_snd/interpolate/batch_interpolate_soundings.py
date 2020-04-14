@@ -46,7 +46,7 @@ def get_args():
                              "\t\t or self defined date format with\n"
                              "\t\t %%Y%%m%%d %%H%%M and so on\n"
                              "\t\t and others to format the output folder dynamically.",
-                        default=None,
+                        default='./',
                         required=False)
 
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
@@ -241,6 +241,10 @@ def main(args={}):
         filelist = glob.glob(args['inputfile'])
     filelist = sorted(filelist)
 
+    # Create outputfolder if necessary
+    if not os.path.exists(args['outputfolder']):
+        os.makedirs(args['outputfolder'])
+
     for f, file in tqdm.tqdm(enumerate(filelist)):
         ds = xr.open_dataset(file)
         ds = ds.isel({'sounding': 0})
@@ -390,6 +394,7 @@ def main(args={}):
         time_fmt = time_dt.strftime('%Y%m%d%H%M')
         platform_filename = platform_rename_dict[platform]
         write_dataset(ds_interp, 'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt))
+        write_dataset(ds_interp, args['outputfolder']+'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt))
 
 
 if __name__ == '__main__':
