@@ -285,7 +285,13 @@ def main(args={}):
 
         # Calculate additional variables
         e = thermo.es(sounding.dewpoint, sounding.pressure*100)
-        sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
+        if sondetype == 123:
+            sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
+        elif sondetype == 177:
+            sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding, 'MeteoModem')
+        else:
+            logging.error('Sonde type {} is not known. Unknown how to retrieve measured RH'.format(sondetype))
+            sys.exit()
         sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
 
         # Ascent rate

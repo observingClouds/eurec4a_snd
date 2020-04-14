@@ -511,7 +511,7 @@ def calc_relative_humidity(sounding):
     return relative_humidity
 
 
-def convert_Tdew_to_measuredRH(sounding):
+def convert_Tdew_to_measuredRH(sounding, manufacturer='Vaisala'):
     """
     Convert dewpoint temperatures to relative
     humidity
@@ -534,13 +534,31 @@ def convert_Tdew_to_measuredRH(sounding):
     dewpoint temperature back to the measured relative humidity
     might not be exact.
     """
-    dewpoint_depr = sounding.temperature - sounding.dewpoint
-    temperature_K = celsius_to_kelvin(sounding.temperature)
-    dewpoint_K = celsius_to_kelvin(sounding.dewpoint)
-    a = 4 * (temperature_K - 273.15) * dewpoint_depr - 2 * 2711.5 * dewpoint_depr
-    b = temperature_K * 30 - dewpoint_K*temperature_K - dewpoint_K * 30
-    rh_measured = 100 * np.exp(-a / b)
+    if manufacturer == 'Vaisala':
+        dewpoint_depr = sounding.temperature - sounding.dewpoint
+        temperature_K = celsius_to_kelvin(sounding.temperature)
+        dewpoint_K = celsius_to_kelvin(sounding.dewpoint)
+        a = 4 * (temperature_K - 273.15) * dewpoint_depr - 2 * 2711.5 * dewpoint_depr
+        b = temperature_K * 30 - dewpoint_K*temperature_K - dewpoint_K * 30
+        rh_measured = 100 * np.exp(-a / b)
+    elif manufacturer == 'MeteoModem':
+        # Following Tetens, 1930
+        T = sounding.temperature
+        Td = sounding.dewpoint
+        e = vapor_pressure(Td)
+        es = vapor_pressure(T)
+        rh_measured = e/es * 100
     return rh_measured
+
+
+def vapor_pressure(T, formula='Tetens1930'):
+    """
+    Calculate vapor pressure according to
+    given formula
+    """
+    if formula == 'Tetens1930':
+        e = 6.11 * 10**((7.5*T)/(237.3+T))
+    return e
 
 
 def calc_vapor_pressure(sounding):
