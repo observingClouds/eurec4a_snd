@@ -345,6 +345,62 @@ def replace_missing_data(sounding):
     return sounding
 
 
+def decode_extendedVerticalSoundingSignificance(decimal):
+    """
+    Decode the extendedVerticalSoudingSignificance
+
+    The extededVerticalSoundingSignificance is indicating
+    specific height levels and values in an atmospheric
+    sounding.
+    These height levels might be original levels or slighlty
+    interpolated once to describe for example the atmospheric
+    conditions at the standard pressure levels.
+
+    This indicator might be a combination of the following
+    for a single level:
+
+    1  Surface
+    2  Standard level
+    3  Tropopause level
+    4  Maximum wind level
+    5  Significant temperature level
+    6  Significant humidity level
+    7  Significant wind level
+    8  Beginning of missing temperature data
+    9  End of missing temperature data
+    10 Beginning of missing humidity data
+    11 End of missing humidity data
+    12 Beginning of missing wind data
+    13 End of missing wind data
+    14 Top of wind sounding
+    15 Level determined by regional decision
+    16 Reserved
+    17 Pressure level originally indicated by height as the vertical coordinate
+    18 Missing value
+
+    Input
+    -----
+    decimal : integer
+        extendedVerticalSoundingSignificance as decimal
+
+    Result
+    ------
+    bits : array
+        list of Significances that are set
+
+    Example
+    -------
+    >>> decode_extendedVerticalSoundingSignificance(16384)
+    array([4])
+
+    >>> decode_extendedVerticalSoundingSignificance(20)
+    array([14, 16])
+    """
+    mask = np.array("{0:018b}".format(decimal),dtype='c').astype(bool)
+    bits = np.where(mask)[0]+1
+    return bits
+
+
 def convert_list_to_array(sounding):
     """
     Convert datatype of sounding
@@ -667,6 +723,15 @@ def exclude_1000hPa_gpm(sounding):
     dimension.
     """
     nan_mask = ~np.isnan(sounding.time)
+    sounding = exclude_sounding_level(sounding, nan_mask)
+
+    return sounding
+
+
+def exclude_sounding_level(sounding, nan_mask):
+    """
+    Function to exclude sounding
+    """
     sounding.time = sounding.time[nan_mask]
     sounding.ascentrate = sounding.ascentrate[nan_mask]
     sounding.gpm = sounding.gpm[nan_mask]
@@ -680,5 +745,40 @@ def exclude_1000hPa_gpm(sounding):
     sounding.latitude = sounding.latitude[nan_mask]
     sounding.longitude = sounding.longitude[nan_mask]
     sounding.extendedVerticalSoundingSignificance = sounding.extendedVerticalSoundingSignificance[nan_mask]
+
+    return sounding
+
+def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, significance_bits):
+    """
+    Exclude levels with specific extendedVerticalSoundingSignificance
+
+    Exclude sounding levels that contain one or more signficance bits
+    and no additional one.
+
+    Input
+    -----
+    sounding : sounding object
+        sounding
+
+    significance_bits : array like
+        signficance bits that should trigger removal of sounding level
+
+    Note: Only those levels will be excluded, where all significance bits
+          that are set are also included in significance_bits.
+
+    Example:
+    exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, [1,3])
+    would exclude the level with the bits [1], [1,3] and [3],
+    but does not exclude e.g. the levels [], [1,4], [3,5], [1,4,8,..], ....
+    """
+    # Get levels where extendedVerticalSoundingSignificance is not 0
+    import pdb; pdb.set_trace()
+    significance_levels = np.where(sounding.extendedVerticalSoundingSignificance != 0)[0]
+    to_delete_mask = np.zeros(len(sounding.time), dtype=bool)
+    for significance_level in significance_levels:
+        current_level = sounding.extendedVerticalSoundingSignificance[significance_level]
+        current_level = set(decode_extendedVerticalSoundingSignificance(current_level))
+        to_delete_mask[significance_level] = current_level.issubset(significance_bits)
+    sounding = exclude_sounding_level(sounding, ~to_delete_mask)
 
     return sounding

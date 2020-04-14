@@ -111,6 +111,11 @@ def get_args():
                         nargs='+',
                         required=False)
 
+    parser.add_argument('-s', '--significant_levels', metavar=[1,...,18],
+                        help='Define extendedVerticalSoundingSignificance types that should\n'
+                             'not be included in the converted files.',
+                        required=False, default=[], nargs='+', type=int)
+
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -299,6 +304,9 @@ def main(args={}):
 
         # Sort sounding by flight time
         sounding = sort_sounding_by_time(sounding)
+
+        # Remove unwanted expandedVerticalSoundingSignificance levels
+        sounding = exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, args['significant_levels'])
 
         # Remove 1000hPa reduced gpm
         sounding = exclude_1000hPa_gpm(sounding)
