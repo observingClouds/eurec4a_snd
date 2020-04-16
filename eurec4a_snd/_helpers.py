@@ -733,7 +733,7 @@ def exclude_sounding_level(sounding, nan_mask):
     Function to exclude sounding
     """
     sounding.time = sounding.time[nan_mask]
-    sounding.ascentrate = sounding.ascentrate[nan_mask]
+    #sounding.ascentrate = sounding.ascentrate[nan_mask]
     sounding.gpm = sounding.gpm[nan_mask]
     sounding.pressure = sounding.pressure[nan_mask]
     sounding.temperature = sounding.temperature[nan_mask]

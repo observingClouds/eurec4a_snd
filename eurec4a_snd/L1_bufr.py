@@ -299,17 +299,17 @@ def main(args={}):
             sys.exit()
         sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
 
-        # Ascent rate
-        sounding = calc_ascentrate(sounding)
-
-        # Sort sounding by flight time
-        sounding = sort_sounding_by_time(sounding)
-
         # Remove unwanted expandedVerticalSoundingSignificance levels
         sounding = exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, args['significant_levels'])
 
         # Remove 1000hPa reduced gpm
         sounding = exclude_1000hPa_gpm(sounding)
+
+        # Ascent rate
+        sounding = calc_ascentrate(sounding)
+
+        # Sort sounding by flight time
+        sounding = sort_sounding_by_time(sounding)
 
         # Find temporal resolution
         time_resolution = calc_temporal_resolution(sounding)
