@@ -436,8 +436,8 @@ def main(args={}):
             'altitude', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
-        nc_alti.standard_name = 'altitude'
-        nc_alti.units = 'm'
+        nc_alti.standard_name = 'geopotential_height'
+        nc_alti.units = 'gpm'
         nc_alti.coordinates = "flight_time longitude latitude pressure"
         nc_pres = fo.createVariable(
             'pressure', 'f4', ('sounding', 'levels'),
