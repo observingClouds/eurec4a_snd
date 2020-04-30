@@ -457,7 +457,7 @@ def main(args={}):
                                               direction=direction_dict[sounding.Dropping.values[0]])
             filename = launch_time_dt.strftime(filename)
             xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
-
+            logging.info('File converted to {}'.format(filename))
 
         tmpdir_obj.cleanup()
 
