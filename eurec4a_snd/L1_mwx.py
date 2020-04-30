@@ -342,8 +342,11 @@ def main(args={}):
         for i, item in enumerate(itemlist):
             assert i == 0, 'further entries were found, meaning soundings meta data could be mixed up'
             for var in radiosondes_values:
-                sounding_meta_dict[var] = item.attributes[var].value
-
+                try:
+                    sounding_meta_dict[var] = item.attributes[var].value
+                except KeyError:
+                    logging.error('Attribute {} could not found and is assumed to be RS41-SGP'.format(var))
+                    sounding_meta_dict[var] = 'RS41-SGP'
         # Create flight time
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
 
