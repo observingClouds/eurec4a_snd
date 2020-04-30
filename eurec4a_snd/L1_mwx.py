@@ -396,9 +396,9 @@ def main(args={}):
             xr_output['flight_time'] = xr.DataArray([flight_time_unix], dims = ['sounding', 'levels'])
             xr_output['sounding_id'] = xr.DataArray([sounding_id], dims = ['sounding'])
             xr_output['ascentRate'] = xr.DataArray([ascent_rate], dims = ['sounding', 'levels'])
-            xr_output['altitude'] = xr.DataArray([xr_snd.GeometricHeight.values], dims = ['sounding', 'levels']) # This is different to BUFR
+            #xr_output['altitude'] = xr.DataArray([xr_snd.GeometricHeight.values], dims = ['sounding', 'levels']) # This is different to BUFR
             xr_output['pressure'] = xr.DataArray([xr_snd.Pressure.values], dims = ['sounding', 'levels'])
-            xr_output['geopotenialHeight'] = xr.DataArray([xr_snd.Height.values], dims = ['sounding', 'levels'])
+            xr_output['altitude'] = xr.DataArray([xr_snd.Height.values], dims = ['sounding', 'levels'])
             xr_output['temperature'] = xr.DataArray([xr_snd.Temperature.values - 273.15], dims = ['sounding', 'levels'])
             xr_output['humidity'] = xr.DataArray([xr_snd.Humidity.values], dims = ['sounding', 'levels'])
             xr_output['dewPoint'] = xr.DataArray([dewpoint - 273.15], dims = ['sounding', 'levels'])
