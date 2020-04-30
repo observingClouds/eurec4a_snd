@@ -360,7 +360,6 @@ def main(args={}):
         pd_snd_dsc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 1]
 
         # Write output
-        direction_dict = {0:'up',1:'down'}
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
             if len(sounding) < 2:
                 logging.warning('Sounding ({}) does not contain data. Skip sounding-direction of{}'.format(direction_dict[s], mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
