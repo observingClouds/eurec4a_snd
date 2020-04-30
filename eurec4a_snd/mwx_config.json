@@ -23,13 +23,6 @@
            "coordinates": "flight_time longitude latitude pressure",
            "description": "ascent rate is positive/ descent rate is negative",
            "units": "m/s", "_FillValue": 9.969209968386869e+36},
-      "altitude":
-          {"long_name": "altitude above msl",
-           "units": "m",
-           "axis": "Y",
-           "standard_name": "altitude",
-           "coordinates": "flight_time longitude latitude pressure",
-           "_FillValue": 9.969209968386869e+36},
       "pressure":
           {"long_name": "pressure",
            "coordinates": "flight_time longitude latitude pressure",
@@ -62,4 +55,4 @@
        "ascent_flag": {"long_name": "indicator of vertical flight direction", "flag_values": "1, 0", "flag_meanings": "ascending descending", "valid_range": "0, 1"},
        "platform": {"long_name": "platform identifier", "units": "-", "description": "1: BCO, 2: Meteor, 3: RH-Brown, 4: MS-Merian, 5: Atalante"},
        "sounding_id": {"cf_role": "trajectory_id", "long_name": "sounding identifier", "description": "unique string describing the soundings origin"},
-       "geopotenialHeight": {"standard_name": "geopotenial_height", "long_name": "geopotential height retrieved from PTU", "units": "gpm", "_FillValue": 9.969209968386869e+36}}}
+       "altitude": {"standard_name": "geopotenial_height", "long_name": "geopotential height retrieved from PTU", "units": "gpm", "coordinates": "flight_time longitude latitude pressure", "_FillValue": 9.969209968386869e+36}}}
