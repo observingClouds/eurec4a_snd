@@ -1,5 +1,5 @@
 {"sync_sounding_items": ["SoundingIdPk", "RadioRxTimePk", "DataSrvTime", "Pressure", "Temperature", "Humidity", "WindDir",
-                         "WindSpeed", "WindNorth", "WindEast", "Height", "GeometricHeight", "PtuStatus", "WindInterpolated",
+                         "WindSpeed", "WindNorth", "WindEast", "Height", "PtuStatus", "WindInterpolated",
                          "Latitude", "Longitude", "North", "East", "Up", "Altitude", "Dropping"],
 	"std_sounding_items": ["SoundingIdPk", "RadioRxTime", "DataSrvTime", "PressurePk", "Temperature", "Humidity",
                            "WindDirection", "WindSpeed", "Height", "Latitude", "Longitude", "DroppingPk"],
