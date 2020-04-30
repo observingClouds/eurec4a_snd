@@ -266,7 +266,7 @@ def main(args={}):
 #     mwx_files = sorted(glob.glob(mwx_file_fmt))
     logging.debug('Create filelist')
     if args['inputfile'] is None:
-        mwx_files = args['inputpath'].glob('*.mwx')
+        mwx_files = sorted(glob.glob(os.fspath(os.path.join(args['inputpath'],'*.mwx'))))  # ,args['inputpath'].glob('*.mwx')
     else:
         mwx_files = sorted(glob.glob(os.fspath(args['inputfile'])))
     mwx_files = sorted(mwx_files)
