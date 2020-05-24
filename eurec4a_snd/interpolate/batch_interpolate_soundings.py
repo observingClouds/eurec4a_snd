@@ -186,12 +186,12 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
 platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Barbados Cloud Observatory (BCO)': 'BCO',
                         'Maria S Merian (MER)': 'MS-Merian',
-                        'FS_Meteor (M161)': 'Meteor',
+                        'FS_METEOR (MET)': 'Meteor',
                         'Research Vessel Ronald H. Brown (WTEC) (RHB)': 'RH-Brown'}
 platform_number_dict = {'Atalante (ATL)': 5,
                         'Barbados Cloud Observatory (BCO)': 1,
                         'Maria S Merian (MER)': 4,
-                        'FS_Meteor (M161)': 2,
+                        'FS_METEOR (MET)': 2,
                         'Research Vessel Ronald H. Brown (WTEC) (RHB)': 3}
 std_pressures = [1000.00, 925.00, 850.00, 700.00, 500.00, 400.00, 300.00,
                  250.00, 200.00, 150.00, 100.00, 70.00, 50.00]
