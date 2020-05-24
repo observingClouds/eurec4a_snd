@@ -17,9 +17,9 @@ from _mwx_helpers import *
 import datetime as dt
 import tqdm
 
-sim_mwx_fmt = sys.argv[0]  # '../EUREC4Asoundings/level0_surf_corrected/DWD_sfc_sim/*.mwx'
-orig_mwx_fmt = sys.argv[1]  # '../EUREC4Asoundings/level0_surf_corrected/METEOR-DWD*.mwx'
-output_path = sys.argv[2]
+sim_mwx_fmt = sys.argv[1]  # '../EUREC4Asoundings/level0_surf_corrected/DWD_sfc_sim/*.mwx'
+orig_mwx_fmt = sys.argv[2]  # '../EUREC4Asoundings/level0_surf_corrected/METEOR-DWD*.mwx'
+output_path = sys.argv[3]
 
 # Get time information from original mwx files
 sounding_date_serial_dict = {}
@@ -32,9 +32,6 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(orig_mwx_fmt))):
     snd_filename = decompressed_files[snd_mask][0]
     radio_mask = [f_radio(file) for file in decompressed_files]
     radio_filename = decompressed_files[radio_mask][0]
-    obs_mask = [f_obs(file) for file in decompressed_files]
-    obs_filename = decompressed_files[obs_mask][0]
-
 
     ## Get launch time and look up correct surface values
     # Finding surface values from DSHIP data closest to launch time
