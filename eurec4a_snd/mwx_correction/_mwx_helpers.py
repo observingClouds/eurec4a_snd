@@ -6,7 +6,6 @@ import numpy as np
 import subprocess
 import shutil
 
-
 class SondeTypeNotImplemented(Exception):
     pass
 
@@ -109,7 +108,6 @@ f_para = lambda file: 'SoundingParameters.xml' in file
 f_std = lambda file: 'StdPressureLevels.xml' in file
 f_obs = lambda file: 'SurfaceObservations.xml' in file
 f_radio = lambda file: 'Radiosondes.xml' in file
-f_meta = lambda file: 'SoundingMetadata.xml' in file
 
 def compress(folder, compressed_file):
     """
