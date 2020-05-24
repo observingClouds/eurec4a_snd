@@ -55,6 +55,7 @@ def convert_RH_to_dewpoint(T_K, RH):
     following the formula used by the Vaisala
     M41 sounding system
     """
+    assert np.any(T_K > 100), ('Temperature seems to be not given in Kelvin')
     K = 15*np.log(100/RH) - 2*(T_K-273.15) + 2711.5
     Tdew = T_K*2*K/(T_K*np.log(100/RH)+2*K)
     
@@ -65,7 +66,12 @@ def calc_vapor_pressure(sounding):
     """
     Calculate water vapor pressure
     """
-    vapor_pressure = (sounding.Humidity/100.) * (611.2 * np.exp((17.62 * (sounding.Temperature))/(243.12 + sounding.Temperature)))
+    if np.any(sounding.Temperature > 100):
+        print('Temperature does not seem to be given in Celsius (assume Kelvin and autoconvert to Celsius)')
+        t = sounding.Temperature.values -273.15
+    else:
+        t = sounding.Temperature.values
+    vapor_pressure = (sounding.Humidity/100.) * (611.2 * np.exp((17.62 * t)/(243.12 + t)))
     return vapor_pressure
 
 
