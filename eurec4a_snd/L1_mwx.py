@@ -298,8 +298,14 @@ def main(args={}):
             continue
         sync_filename = decompressed_files[sync_mask][0]
         snd_mask = [f_snd(file) for file in decompressed_files]
+        if np.sum(snd_mask) == 0:
+            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
+            continue
         snd_filename = decompressed_files[snd_mask][0]
         std_mask = [f_std(file) for file in decompressed_files]
+        if np.sum(std_mask) == 0:
+            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
+            continue
         std_filename = decompressed_files[std_mask][0]
         radio_mask = [f_radio(file) for file in decompressed_files]
         radio_filename = decompressed_files[radio_mask][0]
