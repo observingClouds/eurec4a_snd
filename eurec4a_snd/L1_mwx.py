@@ -358,6 +358,10 @@ def main(args={}):
                 except KeyError:
                     logging.error('Attribute {} could not found and is assumed to be RS41-SGP'.format(var))
                     sounding_meta_dict[var] = 'RS41-SGP'
+
+        # Convert missing values (-32768) to nan
+        pd_snd = pd_snd.replace(-32768, np.nan)
+
         # Create flight time
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
 
