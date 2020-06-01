@@ -399,7 +399,6 @@ def main(args={}):
                            "seconds since 1970-01-01 00:00:00")
         time_fmt = time_dt.strftime('%Y%m%d%H%M')
         platform_filename = platform_rename_dict[platform]
-        write_dataset(ds_interp, 'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt))
         write_dataset(ds_interp, args['outputfolder']+'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt))
 
 
