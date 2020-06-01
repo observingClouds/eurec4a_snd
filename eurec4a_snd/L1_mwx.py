@@ -224,7 +224,7 @@ def main(args={}):
                             " This is not recommended!")
             pass
     else:
-        if args["inputpath"] is None:
+        if (args["inputpath"] is None) and (args["inputfile"] is None):
             args["inputpath"] = config["FILES"]["INPUT_MWX"]
         if args["outputfolder"] is None:
             args["outputfolder"] = config["FILES"]["OUTPUT_MWX2NC"]
