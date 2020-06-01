@@ -131,6 +131,11 @@ def get_args():
                         default=None,
                         required=False,
                         type=str)
+    parser.add_argument("--round-like-BUFR", metavar='BOOLEAN',
+                        help="Switch on/off rounding of output values as output in BUFR files",
+                        default=False,
+                        required=False,
+                        type=bool)
 
     parsed_args = vars(parser.parse_args())
 
@@ -357,8 +362,13 @@ def main(args={}):
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
 
         # Round sounding measurements similar to BUFR message
-        pd_snd_rnd = pd_snd.round(decimals={'Humidity':2, 'WindDir':0, 'Height':1, 'Temperature':2,
-                               'Latitude':5, 'Longitude':5, 'WindSpeed': 1, 'Pressure': 2, 'Altitude': 1})
+        if args['round_like_BUFR']:
+            logging.debug('Data is rounded similar to BUFR message output')
+            pd_snd_rnd = pd_snd.round(decimals={'Humidity':2, 'WindDir':0, 'Height':1, 'Temperature':2,
+                                   'Latitude':5, 'Longitude':5, 'WindSpeed': 1, 'Pressure': 2, 'Altitude': 1})
+        else:
+            logging.debug('Data is not rounded')
+            pd_snd_rnd = pd_snd
 
         # Split ascending and descending sounding
         direction_dict = {0: 'ascent', 1: 'descent'}
