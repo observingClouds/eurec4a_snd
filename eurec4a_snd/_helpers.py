@@ -114,6 +114,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.displacement_lat_unit = None
             self.displacement_lon = []
             self.displacement_lon_unit = None
+            self.extendedVerticalSoundingSignificance = []
             self.meta_data = {}
 
     def _ensure_measurement_integrity(self):
@@ -157,6 +158,8 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.winddirection.append(np.nan)
         if len(self.time) > len(self.displacement_lat):
             self.displacement_lat.append(np.nan)
+        if len(self.time) > len(self.extendedVerticalSoundingSignificance):
+            self.extendedVerticalSoundingSignificance.append(0)
         return
 
     s = Sounding()
@@ -190,6 +193,8 @@ def convert_json_to_arrays(json_flat, key_keys):
             elif s.winddirection_unit != json_flat[key_key+'_units']:
                 raise UnitChangedError('{} and {} are not same unit'.format(s.winddirection_unit,
                                                                             json_flat[key_key+'_units']))
+        elif json_flat[key_key+'_key'] == 'extendedVerticalSoundingSignificance':
+            s.extendedVerticalSoundingSignificance.append(json_flat[key_key+'_value'])
         elif json_flat[key_key+'_key'] == 'nonCoordinateGeopotentialHeight':
             s.gpm.append(json_flat[key_key+'_value'])
             if s.gpm_unit is None:
@@ -340,12 +345,69 @@ def replace_missing_data(sounding):
     return sounding
 
 
+def decode_extendedVerticalSoundingSignificance(decimal):
+    """
+    Decode the extendedVerticalSoudingSignificance
+
+    The extededVerticalSoundingSignificance is indicating
+    specific height levels and values in an atmospheric
+    sounding.
+    These height levels might be original levels or slighlty
+    interpolated once to describe for example the atmospheric
+    conditions at the standard pressure levels.
+
+    This indicator might be a combination of the following
+    for a single level:
+
+    1  Surface
+    2  Standard level
+    3  Tropopause level
+    4  Maximum wind level
+    5  Significant temperature level
+    6  Significant humidity level
+    7  Significant wind level
+    8  Beginning of missing temperature data
+    9  End of missing temperature data
+    10 Beginning of missing humidity data
+    11 End of missing humidity data
+    12 Beginning of missing wind data
+    13 End of missing wind data
+    14 Top of wind sounding
+    15 Level determined by regional decision
+    16 Reserved
+    17 Pressure level originally indicated by height as the vertical coordinate
+    18 Missing value
+
+    Input
+    -----
+    decimal : integer
+        extendedVerticalSoundingSignificance as decimal
+
+    Result
+    ------
+    bits : array
+        list of Significances that are set
+
+    Example
+    -------
+    >>> decode_extendedVerticalSoundingSignificance(16384)
+    array([4])
+
+    >>> decode_extendedVerticalSoundingSignificance(20)
+    array([14, 16])
+    """
+    mask = np.array("{0:018b}".format(decimal),dtype='c').astype(bool)
+    bits = np.where(mask)[0]+1
+    return bits
+
+
 def convert_list_to_array(sounding):
     """
     Convert datatype of sounding
     """
     variables = ['displacement_lat', 'displacement_lon', 'pressure', 'windspeed',
-                 'winddirection', 'temperature', 'dewpoint', 'gpm', 'time']
+                 'winddirection', 'temperature', 'dewpoint', 'gpm', 'time',
+                 'extendedVerticalSoundingSignificance']
 
     for var in variables:
         sounding.__dict__[var] = np.array(sounding.__dict__[var])
@@ -415,7 +477,7 @@ def calc_temporal_resolution(sounding):
     """
     time_differences = np.abs(np.diff(np.ma.compressed(sounding.time)))
     time_differences_counts = np.bincount(time_differences.astype(int))
-    most_common_diff = time_differences[np.argmax(time_differences_counts)]
+    most_common_diff = np.argmax(time_differences_counts)
     temporal_resolution = most_common_diff
     return temporal_resolution
 
@@ -505,7 +567,7 @@ def calc_relative_humidity(sounding):
     return relative_humidity
 
 
-def convert_Tdew_to_measuredRH(sounding):
+def convert_Tdew_to_measuredRH(sounding, manufacturer='Vaisala'):
     """
     Convert dewpoint temperatures to relative
     humidity
@@ -528,13 +590,31 @@ def convert_Tdew_to_measuredRH(sounding):
     dewpoint temperature back to the measured relative humidity
     might not be exact.
     """
-    dewpoint_depr = sounding.temperature - sounding.dewpoint
-    temperature_K = celsius_to_kelvin(sounding.temperature)
-    dewpoint_K = celsius_to_kelvin(sounding.dewpoint)
-    a = 4 * (temperature_K - 273.15) * dewpoint_depr - 2 * 2711.5 * dewpoint_depr
-    b = temperature_K * 30 - dewpoint_K*temperature_K - dewpoint_K * 30
-    rh_measured = 100 * np.exp(-a / b)
+    if manufacturer == 'Vaisala':
+        dewpoint_depr = sounding.temperature - sounding.dewpoint
+        temperature_K = celsius_to_kelvin(sounding.temperature)
+        dewpoint_K = celsius_to_kelvin(sounding.dewpoint)
+        a = 4 * (temperature_K - 273.15) * dewpoint_depr - 2 * 2711.5 * dewpoint_depr
+        b = temperature_K * 30 - dewpoint_K*temperature_K - dewpoint_K * 30
+        rh_measured = 100 * np.exp(-a / b)
+    elif manufacturer == 'MeteoModem':
+        # Following Tetens, 1930
+        T = sounding.temperature
+        Td = sounding.dewpoint
+        e = vapor_pressure(Td)
+        es = vapor_pressure(T)
+        rh_measured = e/es * 100
     return rh_measured
+
+
+def vapor_pressure(T, formula='Tetens1930'):
+    """
+    Calculate vapor pressure according to
+    given formula
+    """
+    if formula == 'Tetens1930':
+        e = 6.11 * 10**((7.5*T)/(237.3+T))
+    return e
 
 
 def calc_vapor_pressure(sounding):
@@ -624,6 +704,7 @@ def sort_sounding_by_time(sounding):
     sounding.winddirection = sounding.winddirection[sorter]
     sounding.latitude = sounding.latitude[sorter]
     sounding.longitude = sounding.longitude[sorter]
+    sounding.extendedVerticalSoundingSignificance = sounding.extendedVerticalSoundingSignificance[sorter]
 
     return sounding
 
@@ -642,8 +723,17 @@ def exclude_1000hPa_gpm(sounding):
     dimension.
     """
     nan_mask = ~np.isnan(sounding.time)
+    sounding = exclude_sounding_level(sounding, nan_mask)
+
+    return sounding
+
+
+def exclude_sounding_level(sounding, nan_mask):
+    """
+    Function to exclude sounding
+    """
     sounding.time = sounding.time[nan_mask]
-    sounding.ascentrate = sounding.ascentrate[nan_mask]
+    #sounding.ascentrate = sounding.ascentrate[nan_mask]
     sounding.gpm = sounding.gpm[nan_mask]
     sounding.pressure = sounding.pressure[nan_mask]
     sounding.temperature = sounding.temperature[nan_mask]
@@ -654,4 +744,40 @@ def exclude_1000hPa_gpm(sounding):
     sounding.winddirection = sounding.winddirection[nan_mask]
     sounding.latitude = sounding.latitude[nan_mask]
     sounding.longitude = sounding.longitude[nan_mask]
+    sounding.extendedVerticalSoundingSignificance = sounding.extendedVerticalSoundingSignificance[nan_mask]
+
+    return sounding
+
+def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, significance_bits):
+    """
+    Exclude levels with specific extendedVerticalSoundingSignificance
+
+    Exclude sounding levels that contain one or more signficance bits
+    and no additional one.
+
+    Input
+    -----
+    sounding : sounding object
+        sounding
+
+    significance_bits : array like
+        signficance bits that should trigger removal of sounding level
+
+    Note: Only those levels will be excluded, where all significance bits
+          that are set are also included in significance_bits.
+
+    Example:
+    exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, [1,3])
+    would exclude the level with the bits [1], [1,3] and [3],
+    but does not exclude e.g. the levels [], [1,4], [3,5], [1,4,8,..], ....
+    """
+    # Get levels where extendedVerticalSoundingSignificance is not 0
+    significance_levels = np.where(sounding.extendedVerticalSoundingSignificance != 0)[0]
+    to_delete_mask = np.zeros(len(sounding.time), dtype=bool)
+    for significance_level in significance_levels:
+        current_level = sounding.extendedVerticalSoundingSignificance[significance_level]
+        current_level = set(decode_extendedVerticalSoundingSignificance(current_level))
+        to_delete_mask[significance_level] = current_level.issubset(significance_bits)
+    sounding = exclude_sounding_level(sounding, ~to_delete_mask)
+
     return sounding

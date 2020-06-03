@@ -1,14 +1,10 @@
 # eurec4a_snd
 
-| :warning: **Version 2.0.0 or higher should be used during the campaign** |
-| --- |
+[![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146)
 
-This package is ment to help in establishing a common radiosonde output format.
-During the EUREC4A/ATOMIC campaign many radiosondes will be launched and an unique fileformat incl. unique variables names will hopefully help the community.
+During the EUREC4A/ATOMIC campaign many radiosondes were launched from different platforms and partners. This collection of scripts has been used to convert, visualize and interpolate the data in a common way.
 
-Currently, this package contains scripts to convert and visualize sonde data in the BUFR format to netCDF files.
-
-Simply run `sounding_converter -i your_sounding.bfr` after the installation. During the first execution you will be asked to give meta-information which will be included in the output files.
+To convert BUFR files, simply run `sounding_converter -i your_sounding.bfr` after the installation. During the first execution you will be asked to give meta-information which will be included in the output files.
 
 These include e.g. `contact_person` and `platform` name which are probably helpful after the exchange of these files with other scientists.
 
@@ -102,6 +98,12 @@ Further examples on how to create a skewT diagram can be found in `eurec4a_snd/e
 ## Example
 
 Examples of the input `.bfr` files and the converted `.nc` file can be found in `examples/data`.
+
+## Interpolation
+To concatenate the soundings and for an easier analysis, the converted soundings (output of `sounding_converter`) can be interpolated on a common altitude grid by
+```bash
+sounding_interpolate -i /path/to/converted/soundings*.nc
+```
 
 ## Trouble shooting
 

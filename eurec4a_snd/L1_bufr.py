@@ -102,6 +102,20 @@ def get_args():
                         default=None,
                         required=False)
 
+    parser.add_argument("-a", "--additional-variables",
+                        help="Provide further additional variables from the BUFR file that\n"
+                             "should be included in the output file.\n"
+                             "currently supported are:\n"
+                             "\t extendedVerticalSoundingSignificance\n",
+                        default=[],
+                        nargs='+',
+                        required=False)
+
+    parser.add_argument('-s', '--significant_levels', metavar=[1,...,18],
+                        help='Define extendedVerticalSoundingSignificance types that should\n'
+                             'not be included in the converted files.',
+                        required=False, default=[], nargs='+', type=int)
+
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -276,17 +290,26 @@ def main(args={}):
 
         # Calculate additional variables
         e = thermo.es(sounding.dewpoint, sounding.pressure*100)
-        sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
+        if sondetype == 123:
+            sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding)
+        elif sondetype == 177:
+            sounding.relativehumidity = convert_Tdew_to_measuredRH(sounding, 'MeteoModem')
+        else:
+            logging.error('Sonde type {} is not known. Unknown how to retrieve measured RH'.format(sondetype))
+            sys.exit()
         sounding.mixingratio = (thermo.Rd/thermo.Rv)*e/(sounding.pressure*100-e)*1000
+
+        # Remove unwanted expandedVerticalSoundingSignificance levels
+        sounding = exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, args['significant_levels'])
+
+        # Remove 1000hPa reduced gpm
+        sounding = exclude_1000hPa_gpm(sounding)
 
         # Ascent rate
         sounding = calc_ascentrate(sounding)
 
         # Sort sounding by flight time
         sounding = sort_sounding_by_time(sounding)
-
-        # Remove 1000hPa reduced gpm
-        sounding = exclude_1000hPa_gpm(sounding)
 
         # Find temporal resolution
         time_resolution = calc_temporal_resolution(sounding)
@@ -336,7 +359,7 @@ def main(args={}):
         # Instrument metadata
         fo.instrument = config['INSTRUMENT']['instrument_description']
         fo.number_of_Probe = serial
-        fo.sonde_type = sondetype
+        fo.sonde_type = str(sondetype)
         fo.sonde_frequency = sondefreq
 
         # Information about launch
@@ -413,8 +436,8 @@ def main(args={}):
             'altitude', 'f4', ('sounding', 'levels'),
             fill_value=fillval,
             zlib=True)
-        nc_alti.standard_name = 'altitude'
-        nc_alti.units = 'm'
+        nc_alti.standard_name = 'geopotential_height'
+        nc_alti.units = 'gpm'
         nc_alti.coordinates = "flight_time longitude latitude pressure"
         nc_pres = fo.createVariable(
             'pressure', 'f4', ('sounding', 'levels'),
@@ -483,6 +506,14 @@ def main(args={}):
         nc_long.standard_name = 'longitude'
         nc_long.units = 'degrees_east'
         nc_long.axis = 'X'
+        if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
+            nc_evss = fo.createVariable(
+                'extendedVerticalSoundingSignificance', 'i4', ('sounding', 'levels'),
+                fill_value=0,
+                zlib=True)
+            nc_evss.long_name = 'extended vertical soudning significance'
+            nc_evss.description = 'see BUFR code flag table to decode'
+            nc_evss.units = '-'
 
         sounding_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
                         format(platform=config['PLATFORM']['platform_name_short'],
@@ -508,7 +539,8 @@ def main(args={}):
         nc_vdir[0, :] = sounding.winddirection
         nc_lat[0, :] = sounding.latitude
         nc_long[0, :] = sounding.longitude
-
+        if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
+            nc_evss[0, :] = sounding.extendedVerticalSoundingSignificance
         fo.close()
         logging.info('DONE: {input} converted to {output}'.format(
             input=filelist[ifile],
