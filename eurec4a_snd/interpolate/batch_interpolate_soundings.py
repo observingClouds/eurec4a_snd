@@ -251,6 +251,12 @@ def main(args={}):
         ds = ds.isel({'sounding': 0})
         ds_input = ds.copy()
 
+        # Check monotonic ascent/descent
+        if np.all(np.diff(ds.altitude) > 0) or np.all(np.diff(ds.altitude) < 0):
+            logging.debug('Sounding is monotonic ascending/descending')
+        else:
+            logging.warning('Sounding is not monotonic ascending/descending. The ascent rate will be artificial')
+
         # Remove standard pressure levels (extendedVerticalSoundingSignificance)
         # extendedVerticalSoundingSignificance == 65536
         non_std_level_mask = ~np.isin(ds.pressure, std_pressures)
