@@ -12,6 +12,7 @@ import tqdm
 import numpy as np
 import xarray as xr
 import metpy
+import metpy.calc as mpcalc
 from metpy.units import units
 import netCDF4
 from netCDF4 import num2date, default_fillvals
@@ -84,7 +85,7 @@ variables_dict = {'temperature': 'temperature', 'dewPoint': 'dew_point',
                   'flight_time': 'flight_time',  'launch_time': 'launch_time',
                   'windSpeed': 'wind_speed', 'pressure': 'pressure',
                   'wind_u': 'wind_u', 'wind_v': 'wind_v',
-                  'latitude': 'latitude', 'longitude': 'longitude'}
+                  'latitude': 'latitude', 'longitude': 'longitude', 'mixingRatio': 'mixingRatio'}
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
                     'longitude', 'latitude', 'mixing_ratio', 'launch_time',
@@ -294,9 +295,25 @@ def main(args={}):
 
         dewPoint_K = ds['dewPoint'].values+273.15
         pressure_Pa = ds['pressure'].values*100
-        mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
-                                                        pressure_Pa))*1000
-        da_w = xr.DataArray([mixing_ratio],
+        
+        theta = calc_theta_from_T(ds['temperature'].values, ds['pressure'].values)
+        #dp = mpcalc.dewpoint_from_relative_humidity(
+        #ds.temperature.values * units.degC, ds.humidity.values / 100).magnitude
+        q = calc_q_from_rh(ds['dewPoint'].values, ds['pressure'].values)
+        e_s = calc_saturation_pressure(ds['temperature'].values+273.15)
+        w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds['pressure'].values*units.hPa).magnitude
+        w = ds['humidity'].values/100.*w_s
+        q = w/(1+w)
+        #mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
+        #                                                pressure_Pa))*1000
+        #q = mpcalc.specific_humidity_from_mixing_ratio(mixing_ratio/1000)
+        da_w = xr.DataArray([w],
+                            dims=['sounding', 'altitude'],
+                            coords={'altitude': ds.altitude.values})
+        da_theta = xr.DataArray([theta],
+                                dims=['sounding', 'altitude'],
+                                coords={'altitude': ds.altitude.values})
+        da_q = xr.DataArray([q],
                             dims=['sounding', 'altitude'],
                             coords={'altitude': ds.altitude.values})
 
@@ -313,6 +330,8 @@ def main(args={}):
                                                          )
             ds_new[variable_name_out].attrs = ds[variable_name_in].attrs  # Copy attributes from input
         ds_new['mixing_ratio'] = da_w
+        ds_new['theta'] = da_theta
+        ds_new['specific_humidity'] = da_q
 
         ds_new = ds_new.dropna(dim='altitude',
                                subset=output_variables,
@@ -343,17 +362,17 @@ def main(args={}):
                                              coords=coords_1d)
 
         # Calculations after interpolation
-        specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
-        relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
-          specific_humidity, ds_interp.temperature.values * units.degC,
-          ds_interp.pressure.values * units.hPa)
+        #specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
+        #relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
+        #  specific_humidity, ds_interp.temperature.values * units.degC,
+        #  ds_interp.pressure.values * units.hPa)
 
-        ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
-                                                      dims=dims_2d,
-                                                      coords=coords_1d)
-        ds_interp['relative_humidity'] = xr.DataArray(np.array(relative_humidity)*100,
-                                                      dims=dims_2d,
-                                                      coords=coords_1d)
+        #ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
+        #                                              dims=dims_2d,
+        #                                              coords=coords_1d)
+        #ds_interp['relative_humidity'] = xr.DataArray(np.array(relative_humidity)*100,
+        #                                              dims=dims_2d,
+        #                                              coords=coords_1d)
         ds_interp['launch_time'] = xr.DataArray([ds_interp.isel({'sounding': 0}).launch_time.item()/1e9],
                                                 dims=['sounding'])
         ds_interp['platform'] = xr.DataArray([platform_number_dict[platform]],
@@ -362,6 +381,25 @@ def main(args={}):
                                                                  ds_interp.isel({'sounding': 0}).flight_time.values)],
                                                 dims=dims_2d,
                                                 coords=coords_1d)
+
+        # Recalculate temperature and relative humidity from theta and q
+        temperature = calc_T_from_theta(ds_interp['theta'].values, ds_interp['pressure'].values)
+        ds_interp['temperature_re'] = xr.DataArray(np.array(temperature),
+                                                   dims=dims_2d,
+                                                   coords=coords_1d)
+
+        w = ds_interp.isel(sounding=0)['specific_humidity'].values/(1-ds_interp.isel(sounding=0)['specific_humidity'].values)
+        e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature_re'].values+273.15)
+        w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds_interp.isel(sounding=0)['pressure'].values*units.hPa).magnitude
+        relative_humidity = w/w_s*100
+        #relative_humidity = calc_rh_from_q(ds_interp['q'].values, ds_interp['temperature_re'].values, ds_interp['pressure'].values)
+        #saturation_p = calc_saturation_pressure(ds_interp['temperature_re'].values[0,:]+273.15)
+        #w_s = mpcalc.mixing_ratio(saturation_p * units.Pa, ds_interp['pressure'].values * units.hPa).magnitude
+        #relative_humidity = (ds_interp['specific_humidity']/1000)/((1-ds_interp['specific_humidity']/1000)*w_s)*100
+ 
+        ds_interp['relative_humidity_re'] = xr.DataArray([np.array(relative_humidity)],
+                                                   dims=dims_2d,
+                                                   coords=coords_1d)
 
         direction = get_direction(ds_interp, ds)
         if direction == 'ascending':
@@ -393,7 +431,7 @@ def main(args={}):
         for variable in ['temperature', 'dew_point', 'wind_speed', 'pressure',
                          'wind_u', 'wind_v', 'latitude', 'longitude',
                          'mixing_ratio', 'altitude', 'wind_direction',
-                         'specific_humidity', 'relative_humidity',
+                         'specific_humidity', 'relative_humidity_re',
                          'ascent_rate'
                          ]:
     #             ds_interp[variable].values = np.round(ds_interp[variable].values, 2)
