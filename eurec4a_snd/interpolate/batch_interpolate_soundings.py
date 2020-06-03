@@ -322,7 +322,7 @@ def main(args={}):
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
-        ds_interp = ds_new.interp(altitude=np.arange(0, 30000, 10))
+        ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
 
