@@ -33,11 +33,7 @@ sys.path.append('.')
 from _mwx_helpers import *
 
 # User-configuration
-# mwx_file_fmt = '../level0_allsoundings/bco_mwx_data/BCO_20200123_*.mwx'
 campaign = 'EUREC4A'
-# platform_name_long = "Barbados Cloud Observatory"
-# platform_name_short = "BCO"
-# location = "Deebles Point, Barbados, West Indies"
 output_filename_format = '{campaign}_{platform_short}_sounding_{direction}_%Y%m%d_%H%M.nc'  # including path
 
 json_config_fn = 'mwx_config.json'
