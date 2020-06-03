@@ -20,6 +20,7 @@ them to be corrected. The modified mwx files still need to be
 imported in the Vaisala sounding software and be recalculated.
 """
 import os
+import sys
 import tqdm
 import glob
 import numpy as np
@@ -29,6 +30,7 @@ import xarray as xr
 import logging
 import argparse
 
+sys.path.append('../')
 from _mwx_helpers import *
 
 parser = argparse.ArgumentParser()
