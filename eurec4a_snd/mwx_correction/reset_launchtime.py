@@ -1,15 +1,24 @@
 """
-Script to reset the launchtime in a simulated sounding.
+Script to reset the launch time in a simulated sounding.
 
-USESAGE
--------
+Corrections to the station parameters e.g. station altitude,
+barometer offset etc. can make it necessary to simulate a
+previous sounding as a simple recalculation does not take
+changes of the station parameters into account.
+
+Because simulated soundings are treated by the Vaisala MW41
+software as new soundings, they loose there original times.
+
+These times are restored to the best possible degree by
+executing this script.
+
+USAGE
+-----
 python reset_launchtime.py simulated*.mwx originial*.mwx output_path
 """
 
-import xarray as xr
 import numpy as np
 import os
-import shutil
 import glob
 import sys
 sys.path.append('./')
@@ -17,9 +26,9 @@ from _mwx_helpers import *
 import datetime as dt
 import tqdm
 
-sim_mwx_fmt = sys.argv[1]  # '../EUREC4Asoundings/level0_surf_corrected/DWD_sfc_sim/*.mwx'
-orig_mwx_fmt = sys.argv[2]  # '../EUREC4Asoundings/level0_surf_corrected/METEOR-DWD*.mwx'
-output_path = sys.argv[3]
+sim_mwx_fmt = sys.argv[0]
+orig_mwx_fmt = sys.argv[1]
+output_path = sys.argv[2]
 
 # Get time information from original mwx files
 sounding_date_serial_dict = {}
@@ -33,9 +42,6 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(orig_mwx_fmt))):
     radio_mask = [f_radio(file) for file in decompressed_files]
     radio_filename = decompressed_files[radio_mask][0]
 
-    ## Get launch time and look up correct surface values
-    # Finding surface values from DSHIP data closest to launch time
-
     # Read Soundings.xml to get launch time
     itemlist = read_xml(snd_filename)
     for i, item in enumerate(itemlist):
@@ -44,6 +50,8 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(orig_mwx_fmt))):
     itemlist = read_xml(radio_filename)
     for i, item in enumerate(itemlist):
         serial_nb_orig = item.attributes['SerialNbr'].value
+
+    # Input and output files are matched by the sonde serial number
     sounding_date_serial_dict[serial_nb_orig] = {'BeginTime': begin_time_str,
                                                  'RadioResetTime': radio_reset_time_str}
     tmpdir_obj.cleanup()
@@ -58,10 +66,6 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(sim_mwx_fmt))):
     snd_filename = decompressed_files[snd_mask][0]
     radio_mask = [f_radio(file) for file in decompressed_files]
     radio_filename = decompressed_files[radio_mask][0]
-
-
-    ## Get launch time and look up correct surface values
-    # Finding surface values from DSHIP data closest to launch time
 
     # Read Soundings.xml to get launch time
     itemlist = read_xml(radio_filename)

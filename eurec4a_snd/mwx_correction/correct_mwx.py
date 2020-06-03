@@ -3,17 +3,23 @@
 
 """
 Correct mwx files
-- correct station paramters (e.g. barometer offset, station altitutde)
+- correct station parameters (e.g. barometer offset, station altitude)
 - correct offset of surface meteorology ( can be off by e.g. 30 min)
 - correct launch position
 
-ATTENTION: This script does not correct the mwx files. It prepares
-them to be corrected. The modified mwx files still need to be
-imported in the Vaisala sounding software and recalculated.
-"""
+NOTE
+----
+This script is not dynamically programmed and is currently
+only meant to correct the soundings made onboard the RV Meteor
+during the EUREC4A campaign
 
+ATTENTION
+---------
+This script does not correct the mwx files. It prepares
+them to be corrected. The modified mwx files still need to be
+imported in the Vaisala sounding software and be recalculated.
+"""
 import os
-import shutil
 import tqdm
 import glob
 import numpy as np
@@ -35,35 +41,35 @@ parser.add_argument('-m', '--meteorology', required=True,
 args = vars(parser.parse_args())
 
 ## Setup
-mwx_fn_fmt = args['inputfilefmt']  # '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/METEOR_*.mwx'  # File format that resolves to raw files that need correction
-file_dship = args['meteorology']  # 'EUREC4A_Meteor_DSHIP.nc'  # File containing the recorded meteorology
-output_dir = args['outputfolder']  # '/scratch/m/m300408/corrected_mwx/'
+mwx_fn_fmt = args['inputfilefmt']  # File format that resolves to raw files that need correction
+file_dship = args['meteorology']  # File containing the recorded meteorology
+output_dir = args['outputfolder']  # Output folder
 
 setup_dict = {'nonDWD1':
-		{'StationAltitude':16.9,
-		 'GPSAntOffset':2.5,
-		 'LaunchSiteOffset':-11.5,
-		 'BarometerOffset':-16.9
-		},
+                  {'StationAltitude':16.9,
+                   'GPSAntOffset':2.5,
+                   'LaunchSiteOffset':-11.5,
+                   'BarometerOffset':-16.9
+                   },
               'nonDWD2':
-	 	{'StationAltitude':16.9,
-		 'GPSAntOffset':2.5,
-		 'LaunchSiteOffset':-14.2,
-		 'BarometerOffset':-16.9
-		},
-	      'DWD1':
-		{'StationAltitude':5.4,
-		 'GPSAntOffset':3,
-		 'LaunchSiteOffset':0.0,
-		 'BarometerOffset':-5.4
-		},
-	      'DWD2':
-		{'StationAltitude':5.4,
-		 'GPSAntOffset':3,
-		 'LaunchSiteOffset':-2.7,
-		 'BarometerOffset':-5.4
-		}
-	     }
+                  {'StationAltitude':16.9,
+                   'GPSAntOffset':2.5,
+                   'LaunchSiteOffset':-14.2,
+                   'BarometerOffset':-16.9
+                   },
+              'DWD1':
+                  {'StationAltitude':5.4,
+                   'GPSAntOffset':3,
+                   'LaunchSiteOffset':0.0,
+                   'BarometerOffset':-5.4
+                   },
+              'DWD2':
+                  {'StationAltitude':5.4,
+                   'GPSAntOffset':3,
+                   'LaunchSiteOffset':-2.7,
+                   'BarometerOffset':-5.4
+                   }
+              }
 
 # Start logging
 logging.basicConfig(filename="correct_mwx.log", level=logging.INFO)
@@ -94,23 +100,23 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(mwx_fn_fmt))):
         logging.error('File not found in {}'.format(decompressed_files))
         continue
 
-
     ## Get launch time and look up correct surface values
-    # Finding surface values from DSHIP data closest to launch time
+    ### Finding surface values from DSHIP data closest to launch time
 
-    # Read Soundings.xml to get launch time
+    #### Read Soundings.xml to get launch time
     itemlist = read_xml(snd_filename)
     for i, item in enumerate(itemlist):
         begin_time = item.attributes['BeginTime'].value
     begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
 
-    # Decide which corrections apply
+    #### Decide which corrections apply
+    ##### The launch site has changed during the cruise
     if (begin_time_dt < dt.datetime(2020,2,9,18,0)) or (begin_time_dt > dt.datetime(2020,2,20,0,0)):
         mode = '1'
     else:
         mode = '2'
 
-    # Read DSHIP data
+    #### Read DSHIP data
     ds_DSHIP = xr.open_dataset(file_dship, decode_times=False)
     ds_DSHIP = ds_DSHIP.sortby('time')
 
@@ -158,8 +164,8 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(mwx_fn_fmt))):
     xml_handle.writexml(open(obs_filename, 'w'))
 
 
-    # ### Station parameters
-    # Sounding.xml
+    # Station parameters
+    ## Sounding.xml
     itemlist, xml_handle = read_xml(snd_filename, return_handle=True)
 
     item = itemlist[0]
@@ -198,7 +204,6 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(mwx_fn_fmt))):
     xml_handle.writexml(open(snd_filename, 'w'))
 
     ## SoundingParameters.xml
-
     itemlist, xml_handle = read_xml(para_filename, return_handle=True)
     param_new_dict = {
         'Sounding.Station.Type':'2',
@@ -224,8 +229,6 @@ for mwx_file in tqdm.tqdm(sorted(glob.glob(mwx_fn_fmt))):
     # Write changed SurfaceObservations.xml back to file
     xml_handle.writexml(open(para_filename, 'w'))
 
-
     ## Compress files again to mwx file
     compress(tmpdir, output_dir+os.path.basename(mwx_file))
     tmpdir_obj.cleanup()
-

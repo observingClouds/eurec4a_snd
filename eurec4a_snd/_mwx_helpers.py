@@ -1,9 +1,10 @@
+import os
 import tempfile
 from xml.dom import minidom
 import glob
 import numpy as np
 import subprocess
-
+import shutil
 
 class SondeTypeNotImplemented(Exception):
     pass
@@ -34,10 +35,22 @@ def decompress(file, tmp_folder):
     return decompressed_files
 
 
-def read_xml(filename):
+def compress(folder, compressed_file):
+    """
+    Compress folder to compressed file
+    """
+    archive = shutil.make_archive(compressed_file, 'zip', folder)
+    os.rename(archive, compressed_file)
+    return
+
+
+def read_xml(filename, return_handle=False):
     xmldoc = minidom.parse(filename)
     itemlist = xmldoc.getElementsByTagName('Row')
-    return itemlist
+    if return_handle == True:
+        return itemlist, xmldoc
+    else:
+        return itemlist
 
 
 def calc_asent_rate(sounding):
@@ -108,5 +121,9 @@ def calc_temporal_resolution(time):
     temporal_resolution = most_common_diff
     return temporal_resolution
 
-
-
+f_sync = lambda file: 'SynchronizedSoundingData.xml' in file
+f_snd = lambda file: 'Soundings.xml' in file
+f_para = lambda file: 'SoundingParameters.xml' in file
+f_std = lambda file: 'StdPressureLevels.xml' in file
+f_obs = lambda file: 'SurfaceObservations.xml' in file
+f_radio = lambda file: 'Radiosondes.xml' in file
