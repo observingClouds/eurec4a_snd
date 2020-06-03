@@ -50,6 +50,11 @@ def get_args():
                         default='./',
                         required=False)
 
+    parser.add_argument('-m', '--method', metavar='METHOD',
+                        help="Interpolation method ('bin', 'linear' (default))",
+                        default='linear',
+                        required=False)
+    
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -341,7 +346,12 @@ def main(args={}):
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
-        ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
+        if args['method'] == 'linear':
+            ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
+        elif args['method'] == 'bin':
+            ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).mean()
+            ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
+            ds_interp['launch_time'] = ds_new['launch_time']
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
 
@@ -383,8 +393,8 @@ def main(args={}):
                                                 coords=coords_1d)
 
         # Recalculate temperature and relative humidity from theta and q
-        temperature = calc_T_from_theta(ds_interp['theta'].values, ds_interp['pressure'].values)
-        ds_interp['temperature_re'] = xr.DataArray(np.array(temperature),
+        temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
+        ds_interp['temperature_re'] = xr.DataArray([np.array(temperature)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
 
@@ -400,6 +410,15 @@ def main(args={}):
         ds_interp['relative_humidity_re'] = xr.DataArray([np.array(relative_humidity)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
+
+        # Interpolate NaNs
+        ## max_gap is the maximum gap of NaNs in meters that will be still interpolated
+        ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+        ds_interp['data_count'] = xr.DataArray(ds_new.pressure.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).count().values,
+                                  dims=dims_2d,
+                                  coords=coords_1d)
+        data_avail_or_interp = np.where(~np.isnan(ds_interp.pressure), 0, np.nan)
+        ds_interp['data_count'].values[0,:] = np.nanmax(np.vstack([ds_interp.data_count.values[0,:], data_avail_or_interp[0,:]]),axis=0)
 
         direction = get_direction(ds_interp, ds)
         if direction == 'ascending':
