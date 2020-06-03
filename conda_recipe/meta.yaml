@@ -24,3 +24,4 @@ requirements:
     - eccodes
     - metpy
     - basemap-data-hires
+    - tqdm

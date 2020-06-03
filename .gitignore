@@ -12,6 +12,7 @@
 
 # Output files
 /*/*.nc
+**.nc
 
 # Mac
 *.DS_Store

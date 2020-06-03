@@ -23,11 +23,13 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=['pillow>=6.0.0', 'matplotlib>=3.1.0', 'basemap>=1.2.0',
-                      'numpy>=1.15.0', 'netCDF4>=1.4.0', 'metpy>=0.10.0'],
+                      'numpy>=1.15.0', 'netCDF4>=1.4.0', 'metpy>=0.10.0', 'tqdm>=4.0.0'],
     entry_points={'console_scripts':
                     ['sounding_converter=eurec4a_snd.L1_bufr:main',
                      'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main',
                      'sounding_skewT=eurec4a_snd.visualize.make_skewT_metpy:main',
-                     'sounding_interpolate=eurec4a_snd.interpolate.batch_interpolate_soundings:main']},
+                     'sounding_interpolate=eurec4a_snd.interpolate.batch_interpolate_soundings:main',
+                     'sounding_converter_mwx=eurec4a_snd.L1_mwx.py:main'
+                     ]},
     package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini"]}
 )
