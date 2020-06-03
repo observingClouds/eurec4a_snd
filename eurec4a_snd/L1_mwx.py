@@ -257,17 +257,11 @@ def main(args={}):
     meta_data_dict = j['meta_data']
 
     # Function definitions
-    f_sync = lambda file: 'SynchronizedSoundingData.xml' in file
-    f_snd = lambda file: 'Soundings.xml' in file
-    f_std = lambda file: 'StdPressureLevels.xml' in file
-    f_radio = lambda file: 'Radiosondes.xml' in file
-
     f_flighttime = lambda radiorx: begin_time_dt + timedelta(seconds=radiorx-float(launch_time))
 
-#     mwx_files = sorted(glob.glob(mwx_file_fmt))
     logging.debug('Create filelist')
     if args['inputfile'] is None:
-        mwx_files = sorted(glob.glob(os.fspath(os.path.join(args['inputpath'],'*.mwx'))))  # ,args['inputpath'].glob('*.mwx')
+        mwx_files = sorted(glob.glob(os.fspath(os.path.join(args['inputpath'],'*.mwx'))))
     else:
         mwx_files = sorted(glob.glob(os.fspath(args['inputfile'])))
     mwx_files = sorted(mwx_files)
@@ -384,7 +378,7 @@ def main(args={}):
 
             # Calc extra variables
             ## Ascent rate
-            ascent_rate = calc_asent_rate(xr_snd)
+            ascent_rate = calc_ascent_rate(xr_snd)
             ## Dew point temperature
             dewpoint = convert_RH_to_dewpoint(xr_snd.Temperature.values, xr_snd.Humidity.values)
             ## Mixing ratio

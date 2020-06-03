@@ -53,7 +53,7 @@ def read_xml(filename, return_handle=False):
         return itemlist
 
 
-def calc_asent_rate(sounding):
+def calc_ascent_rate(sounding):
     """
     Calculate ascent rate
     """
