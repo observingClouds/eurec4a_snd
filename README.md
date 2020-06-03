@@ -4,9 +4,12 @@
 
 During the EUREC4A/ATOMIC campaign many radiosondes were launched from different platforms and partners. This collection of scripts has been used to convert, visualize and interpolate the data in a common way.
 
-To convert BUFR files, simply run `sounding_converter -i your_sounding.bfr` after the installation. During the first execution you will be asked to give meta-information which will be included in the output files.
+This repository has been created before the start of the campaign and evolved further in the postprocessing phase. It therefore contains scripts to
+- convert and visualize BUFR and Vaisala MW41 rawdata (`.mwx`)
+- interpolate sounding data
+- correct and quality control soundings
 
-These include e.g. `contact_person` and `platform` name which are probably helpful after the exchange of these files with other scientists.
+While most of the scripts can be applied to every sounding that exists in the BUFR or mwx format, some of the postprocessing scripts are specific to the EUREC4A campaign and can only serve as a guidence for other studies.
 
 ## Installation
 
@@ -34,8 +37,9 @@ conda install -c observingclouds -c conda-forge eurec4a_snd
 ```
 
 ## First execution
+To convert BUFR files, simply run `sounding_converter -i your_sounding.bfr` after the installation. During the first execution you will be asked to give meta-information which will be included in the output files.
 
-During the first execution, the `meta_information.ini` configuration file has to be created. The user is prompted some questions on the command line before the file will be written to the users home directory.
+These include e.g. `contact_person` and `platform` name which are probably helpful after the exchange of these files with other scientists.
 
 It is also possible to copy the `config/meta_information_template.ini` to one's favorite folder and change the files content accordingly. If the file is not renamed `meta_information.ini` and is in the home directory, the option `-c` has to be used during the call of `sounding_converter` otherwise it will not recognize the configuration.
 
