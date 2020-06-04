@@ -251,7 +251,7 @@ def main(args={}):
     if not os.path.exists(args['outputfolder']):
         os.makedirs(args['outputfolder'])
 
-    for f, file in tqdm.tqdm(enumerate(filelist)):
+    for f, file in enumerate(tqdm.tqdm(filelist)):
         logging.info(f'Process file {file}')
         ds = xr.open_dataset(file)
         ds = ds.isel({'sounding': 0})
