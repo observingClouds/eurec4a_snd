@@ -227,8 +227,13 @@ def calc_ascentrate(height, time):
     soundning : obj
         sounding including the ascent rate
     """
-    ascent_rate = np.diff(height)/(np.diff(time))
-    ascent_rate = np.ma.concatenate(([0], ascent_rate))  # 0 at first measurement
+    import pdb; pdb.set_trace()
+    ascent_rate_tmp = np.diff(height)/np.diff(time)
+    ascent_rate = np.empty_like(height, dtype=float)
+    ascent_rate.fill(np.nan)
+    first_height_w_data = np.where(~np.isnan(ascent_rate_tmp))[0][0]
+    ascent_rate[first_height_w_data+1:] = ascent_rate_tmp[first_height_w_data:]
+    ascent_rate[first_height_w_data] = 0
     return ascent_rate
 
 
