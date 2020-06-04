@@ -51,6 +51,9 @@ git checkout master
 #python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/RHB/ -o /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/ --platform_name_long "Research Vessel Ronald H. Brown (WTEC)" --platform_name_short RHB --platform_location NA
 #python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/BCO/ -o /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/ --platform_name_long "Barbados Cloud Observatory" --platform_name_short BCO --platform_location "Deebles Point, Barbados, West Indies"
 
+# Remove short soundings (less than 30 levels)
+#python remove_short_soundings.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A*sounding*.nc' -t 30 -d True
+
 # Convert Level1 to Level2 (interpolate)
 git checkout interpolation_method
 python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_MET_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
