@@ -86,7 +86,7 @@ def setup_logging(verbose):
         ])
 
 
-variables_dict = {'temperature': 'temperature', 'dewPoint': 'dew_point',
+variables_dict = {'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
                   'flight_time': 'flight_time',  'launch_time': 'launch_time',
                   'windSpeed': 'wind_speed', 'pressure': 'pressure',
                   'wind_u': 'wind_u', 'wind_v': 'wind_v',
@@ -94,7 +94,7 @@ variables_dict = {'temperature': 'temperature', 'dewPoint': 'dew_point',
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
                     'longitude', 'latitude', 'mixing_ratio', 'launch_time',
-                    'flight_time']
+                    'flight_time', 'ascent_rate']
 meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'units': 'seconds since 1970-01-01 00:00:00 UTC',
                                   'coordinates': 'flight_time longitude latitude altitude',
@@ -387,10 +387,10 @@ def main(args={}):
                                                 dims=['sounding'])
         ds_interp['platform'] = xr.DataArray([platform_number_dict[platform]],
                                              dims=['sounding'])
-        ds_interp['ascent_rate'] = xr.DataArray([calc_ascentrate(ds_interp.isel({'sounding': 0}).altitude.values,
-                                                                 ds_interp.isel({'sounding': 0}).flight_time.values)],
-                                                dims=dims_2d,
-                                                coords=coords_1d)
+        #ds_interp['ascent_rate'] = xr.DataArray([calc_ascentrate(ds_interp.isel({'sounding': 0}).altitude.values,
+        #                                                         ds_interp.isel({'sounding': 0}).flight_time.values)],
+        #                                        dims=dims_2d,
+        #                                        coords=coords_1d)
 
         # Recalculate temperature and relative humidity from theta and q
         temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
