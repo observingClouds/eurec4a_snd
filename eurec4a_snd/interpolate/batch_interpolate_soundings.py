@@ -407,7 +407,7 @@ def main(args={}):
         #w_s = mpcalc.mixing_ratio(saturation_p * units.Pa, ds_interp['pressure'].values * units.hPa).magnitude
         #relative_humidity = (ds_interp['specific_humidity']/1000)/((1-ds_interp['specific_humidity']/1000)*w_s)*100
  
-        ds_interp['relative_humidity_re'] = xr.DataArray([np.array(relative_humidity)],
+        ds_interp['relative_humidity'] = xr.DataArray([np.array(relative_humidity)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
 
@@ -450,7 +450,7 @@ def main(args={}):
         for variable in ['temperature', 'dew_point', 'wind_speed', 'pressure',
                          'wind_u', 'wind_v', 'latitude', 'longitude',
                          'mixing_ratio', 'altitude', 'wind_direction',
-                         'specific_humidity', 'relative_humidity_re',
+                         'specific_humidity', 'relative_humidity',
                          'ascent_rate'
                          ]:
     #             ds_interp[variable].values = np.round(ds_interp[variable].values, 2)
