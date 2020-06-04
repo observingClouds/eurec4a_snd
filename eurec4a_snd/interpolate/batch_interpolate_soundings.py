@@ -419,7 +419,7 @@ def main(args={}):
                                   coords=coords_1d)
         data_avail_or_interp = np.where(~np.isnan(ds_interp.pressure), 0, np.nan)
         stacked_data_counts = np.vstack([ds_interp.data_count.values[0,:], data_avail_or_interp[0,:]])
-        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0], np.isnan(stacked_data_counts[1]))
+        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
         data_counts_combined = np.empty(len(stacked_data_counts[0]))
         data_counts_combined.fill(np.nan)
         data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,nan_idx_both], axis=0)
