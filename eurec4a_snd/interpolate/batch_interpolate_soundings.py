@@ -422,7 +422,7 @@ def main(args={}):
         nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
         data_counts_combined = np.empty(len(stacked_data_counts[0]))
         data_counts_combined.fill(np.nan)
-        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,nan_idx_both], axis=0)
+        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,~nan_idx_both], axis=0)
         ds_interp['data_count'].values[0,:] = data_counts_combined
 
         direction = get_direction(ds_interp, ds)
