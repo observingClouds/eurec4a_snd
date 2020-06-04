@@ -383,7 +383,6 @@ def main(args={}):
             ## Dew point temperature
             dewpoint = convert_RH_to_dewpoint(xr_snd.Temperature.values, xr_snd.Humidity.values)
             ## Mixing ratio
-            import pdb; pdb.set_trace()
             e_s = calc_saturation_pressure(xr_snd.Temperature.values)  # calc_vapor_pressure(xr_snd, method='hardy')
             mixing_ratio = calc_wv_mixing_ratio(xr_snd, e_s)*xr_snd.Humidity.values/100.
             ## Launch time as type(datetime)
