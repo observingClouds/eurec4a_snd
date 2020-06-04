@@ -86,11 +86,11 @@ def setup_logging(verbose):
         ])
 
 
-variables_dict = {'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
-                  'flight_time': 'flight_time',  'launch_time': 'launch_time',
-                  'windSpeed': 'wind_speed', 'pressure': 'pressure',
-                  'wind_u': 'wind_u', 'wind_v': 'wind_v',
-                  'latitude': 'latitude', 'longitude': 'longitude', 'mixingRatio': 'mixingRatio'}
+variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
+                  'pressure':'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
+                  'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
+                  'windSpeed': 'wind_speed',
+                  'wind_u': 'wind_u', 'wind_v': 'wind_v'}
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
                     'longitude', 'latitude', 'mixing_ratio', 'launch_time',
