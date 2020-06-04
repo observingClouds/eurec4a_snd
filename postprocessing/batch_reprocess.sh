@@ -56,24 +56,24 @@ git checkout master
 
 # Convert Level1 to Level2 (interpolate)
 git checkout interpolation_method
-python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_MET_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
-python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_RHB_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
-python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_MER_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
-python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_BCO_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
+#python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_MET_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
+#python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_RHB_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
+#python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_MER_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
+#python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_BCO_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
 python ./interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A_ATL_sounding*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/'
 
 # Concatenate Level2 files by platform
 module load nco
-rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Meteor_soundings.nc
-ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*Meteor_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Meteor_soundings.nc
-rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_BCO_soundings.nc
-ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*BCO_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_BCO_soundings.nc
+#rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Meteor_soundings.nc
+#ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*Meteor_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Meteor_soundings.nc
+#rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_BCO_soundings.nc
+#ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*BCO_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_BCO_soundings.nc
 rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Atalante_soundings_Vaisala.nc
 ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*Atalante_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_Atalante_soundings_Vaisala.nc
-rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_MS-Merian_soundings.nc
-ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*Merian_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_MS-Merian_soundings.nc
-rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_RH-Brown_soundings.nc
-ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*RH-Brown_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_RH-Brown_soundings.nc
+#rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_MS-Merian_soundings.nc
+#ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*Merian_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_MS-Merian_soundings.nc
+#rm /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_RH-Brown_soundings.nc
+#ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/*RH-Brown_soundings_20*.nc /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level2_mwx/EUREC4A_RH-Brown_soundings.nc
 
 # Checks
 python ./tests/sounding_graphical_comparison.py
