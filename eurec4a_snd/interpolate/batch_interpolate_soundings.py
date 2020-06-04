@@ -352,6 +352,10 @@ def main(args={}):
             ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).mean()
             ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
             ds_interp['launch_time'] = ds_new['launch_time']
+
+        ## Interpolation NaN
+        ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
 
@@ -413,7 +417,7 @@ def main(args={}):
 
         # Interpolate NaNs
         ## max_gap is the maximum gap of NaNs in meters that will be still interpolated
-        ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+        #ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
         ds_interp['data_count'] = xr.DataArray(ds_new.pressure.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).count().values,
                                   dims=dims_2d,
                                   coords=coords_1d)
