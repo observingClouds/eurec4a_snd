@@ -410,12 +410,12 @@ def main(args={}):
 
         # Recalculate temperature and relative humidity from theta and q
         temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
-        ds_interp['temperature_re'] = xr.DataArray([np.array(temperature)],
+        ds_interp['temperature'] = xr.DataArray([np.array(temperature)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
 
         w = ds_interp.isel(sounding=0)['specific_humidity'].values/(1-ds_interp.isel(sounding=0)['specific_humidity'].values)
-        e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature_re'].values+273.15)
+        e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature'].values+273.15)
         w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds_interp.isel(sounding=0)['pressure'].values*units.hPa).magnitude
         relative_humidity = w/w_s*100
         #relative_humidity = calc_rh_from_q(ds_interp['q'].values, ds_interp['temperature_re'].values, ds_interp['pressure'].values)
