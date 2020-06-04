@@ -466,6 +466,12 @@ def main(args={}):
         ds_interp['ascent_flag'].encoding = {'dtype': 'bool'}
         ds_interp['platform'].encoding = {'dtype': 'uint8'}
 
+        # Transpose dataset if necessary
+        for variable in ds_interp.data_vars:
+             dims = ds_interp[variable].dims
+             if (len(dims) == 2) and (dims[0] != 'sounding'):
+                 ds_interp[variable] = ds_interp[variable].T
+
         time_dt = num2date(ds_interp.isel({'sounding': 0}).launch_time,
                            "seconds since 1970-01-01 00:00:00")
         time_fmt = time_dt.strftime('%Y%m%d%H%M')
