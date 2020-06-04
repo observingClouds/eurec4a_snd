@@ -271,7 +271,7 @@ def main(args={}):
         ds_input = ds.copy()
 
         # Check monotonic ascent/descent
-        if np.all(np.diff(ds.altitude) > 0) or np.all(np.diff(ds.altitude) < 0):
+        if np.all(np.diff(ds.isel(levels=slice(20,-1)).altitude.values) > 0) or np.all(np.diff(ds.isel(levels=slice(20,-1)).altitude.values) < 0):
             logging.debug('Sounding is monotonic ascending/descending')
         else:
             logging.warning('Sounding is not monotonic ascending/descending. The ascent rate will be artificial')
