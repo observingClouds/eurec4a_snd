@@ -338,15 +338,14 @@ def main(args={}):
         ds_new['theta'] = da_theta
         ds_new['specific_humidity'] = da_q
 
-        ds_new = ds_new.dropna(dim='altitude',
-                               subset=output_variables,
-                               how='any')
-
         flight_time_unix = ds_new.flight_time.astype(float)/1e9
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
         if args['method'] == 'linear':
+            ds_new = ds_new.dropna(dim='altitude',
+                                   subset=output_variables,
+                                   how='any')
             ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
         elif args['method'] == 'bin':
             ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).mean()
