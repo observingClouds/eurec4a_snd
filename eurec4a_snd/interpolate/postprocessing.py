@@ -281,6 +281,10 @@ def pressure_interpolation(pressures, altitudes, output_altitudes, convergence_e
         a1 = altitudes[lower_idx]  # lower altitude
         a2 = altitudes[upper_idx]  # higher altitude
 
+        if a1 == a2:  # Target height already reached
+            pressure_interpolated[i] = p1
+            continue
+
         xp = np.array([p1,p2])
         arr = np.array([a1,a2])
 
