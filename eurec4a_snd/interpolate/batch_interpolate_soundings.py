@@ -140,7 +140,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                         },
                   'specific_humidity': {'long_name': 'specific humidity',
                                         'standard_name': 'specific_humidity',
-                                        'units': 'kg/kg',
+                                        'units': 'g/kg',
                                         'coordinates': 'flight_time longitude latitude altitude',
                                         '_FillValue': default_fillvals['f4']
                                         },
@@ -151,7 +151,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                 '_FillValue': default_fillvals['f4']},
                   'mixing_ratio': {'long_name': 'water vapor mixing ratio',
                                    'coordinates': 'flight_time longitude latitude altitude',
-                                   'units': 'kg/kg',
+                                   'units': 'g/kg',
                                    'standard_name': 'humidity_mixing_ratio',
                                    '_FillValue': default_fillvals['f4']
                                    },
@@ -325,13 +325,13 @@ def main(args={}):
         #mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
         #                                                pressure_Pa))*1000
         #q = mpcalc.specific_humidity_from_mixing_ratio(mixing_ratio/1000)
-        da_w = xr.DataArray([w],
+        da_w = xr.DataArray([w*1000],
                             dims=['sounding', 'altitude'],
                             coords={'altitude': ds.altitude.values})
         da_theta = xr.DataArray([theta],
                                 dims=['sounding', 'altitude'],
                                 coords={'altitude': ds.altitude.values})
-        da_q = xr.DataArray([q],
+        da_q = xr.DataArray([q*1000],
                             dims=['sounding', 'altitude'],
                             coords={'altitude': ds.altitude.values})
 
@@ -414,7 +414,7 @@ def main(args={}):
                                                    dims=dims_2d,
                                                    coords=coords_1d)
 
-        w = ds_interp.isel(sounding=0)['specific_humidity'].values/(1-ds_interp.isel(sounding=0)['specific_humidity'].values)
+        w = (ds_interp.isel(sounding=0)['specific_humidity'].values/1000)/(1-ds_interp.isel(sounding=0)['specific_humidity'].values/1000.)
         e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature'].values+273.15)
         w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds_interp.isel(sounding=0)['pressure'].values*units.hPa).magnitude
         relative_humidity = w/w_s*100
