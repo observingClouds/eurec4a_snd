@@ -15,6 +15,7 @@ source activate new_campaign
 
 cd ~/GITHUB/eurec4a_snd/eurec4a_snd/
 git checkout master
+
 # Correct mwx files from the Meteor
 ## Get surface values from the DSHIP data
 ### Download DSHIP data
@@ -29,13 +30,13 @@ git checkout master
 #mkdir -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_torecalculate/
 
 #### DWD
-#python ./mwx_correction/correct_mwx.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/DWD/*.mwx' -m './DSHIP/EUREC4A_METEOR_DSHIP.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_tosimulate/'
+#python ../postprocessing/mwx_correction/correct_mwx.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/DWD/*.mwx' -m './DSHIP/EUREC4A_METEOR_DSHIP.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_tosimulate/'
 #echo 'Please simulate the files in the Vaisala MW41 software to apply surface value corrections and retrieve the measured 1s resolution'
 #echo 'Please put the simulated files into the folder /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_simulated/MET/')
 ##### Reset sounding time back to the original one (simulated soundings get time of simulation)
-#python ./mwx_correction/reset_launchtime.py '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_simulated/MET/*.mwx' '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/DWD/*.mwx' '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_corrected/MET/'
+#python ../postprocessing/mwx_correction/reset_launchtime.py '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_simulated/MET/*.mwx' '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/DWD/*.mwx' '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_corrected/MET/'
 #### non-DWD
-#python ./mwx_correction/correct_mwx.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/*.mwx' -m './DSHIP/EUREC4A_METEOR_DSHIP.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_torecalculate/MET/'
+#python ../postprocessing/mwx_correction/correct_mwx.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/MET/MWX/*.mwx' -m './DSHIP/EUREC4A_METEOR_DSHIP.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_torecalculate/MET/'
 #echo 'Please reprocess the files in the Vaisala MW41 software to apply surface value corrections'
 #echo 'Please put the reprocessed files into the folder /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level0_corrected/MET/'
 
