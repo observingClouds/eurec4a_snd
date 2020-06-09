@@ -12,6 +12,7 @@ import tqdm
 import numpy as np
 import xarray as xr
 import metpy
+import metpy.calc as mpcalc
 from metpy.units import units
 import netCDF4
 from netCDF4 import num2date, default_fillvals
@@ -49,6 +50,11 @@ def get_args():
                         default='./',
                         required=False)
 
+    parser.add_argument('-m', '--method', metavar='METHOD',
+                        help="Interpolation method ('bin', 'linear' (default))",
+                        default='linear',
+                        required=False)
+    
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -80,15 +86,15 @@ def setup_logging(verbose):
         ])
 
 
-variables_dict = {'temperature': 'temperature', 'dewPoint': 'dew_point',
-                  'flight_time': 'flight_time',  'launch_time': 'launch_time',
-                  'windSpeed': 'wind_speed', 'pressure': 'pressure',
-                  'wind_u': 'wind_u', 'wind_v': 'wind_v',
-                  'latitude': 'latitude', 'longitude': 'longitude'}
+variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
+                  'pressure':'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
+                  'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
+                  'windSpeed': 'wind_speed',
+                  'wind_u': 'wind_u', 'wind_v': 'wind_v'}
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
                     'longitude', 'latitude', 'mixing_ratio', 'launch_time',
-                    'flight_time']
+                    'flight_time', 'ascent_rate']
 meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'units': 'seconds since 1970-01-01 00:00:00 UTC',
                                   'coordinates': 'flight_time longitude latitude altitude',
@@ -116,9 +122,16 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                },
                   'temperature': {'long_name': 'dry bulb temperature',
                                   'standard_name': 'air_temperature',
+                                  'units': 'degrees Celsius',
                                   'coordinates': 'flight_time longitude latitude altitude',
                                   '_FillValue': default_fillvals['f4']
                                   },
+                  'theta': {'long_name': 'potential temperature',
+                            'standard_name': 'air_potential_temperature',
+                            'units': 'K',
+                            'coordinates': 'flight_time longitude latitude altitude',
+                            '_FillValue': default_fillvals['f4']
+                            }, 
                   'relative_humidity': {'long_name': 'relative_humidity',
                                         'standard_name': 'relative_humidity',
                                         'coordinates': 'flight_time longitude latitude altitude',
@@ -128,10 +141,12 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                   'specific_humidity': {'long_name': 'specific humidity',
                                         'standard_name': 'specific_humidity',
                                         'units': 'g/kg',
+                                        'coordinates': 'flight_time longitude latitude altitude',
                                         '_FillValue': default_fillvals['f4']
                                         },
                   'dew_point': {'long_name': 'dew point temperature',
                                 'standard_name': 'dew_point_temperature',
+                                'units': 'degrees Celsius',
                                 'coordinates': 'flight_time longitude latitude altitude',
                                 '_FillValue': default_fillvals['f4']},
                   'mixing_ratio': {'long_name': 'water vapor mixing ratio',
@@ -142,6 +157,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                    },
                   'wind_speed': {'long_name': 'wind speed',
                                  'standard_name': 'wind_speed',
+                                 'units': 'm/s',
                                  'coordinates': 'flight_time longitude latitude altitude',
                                  '_FillValue': default_fillvals['f4']
                                  },
@@ -181,7 +197,10 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                   'platform': {'long_name': 'platform identifier',
                                'units': '-',
                                'description': '1: BCO, 2: Meteor, 3: RH-Brown, 4: MS-Merian, 5: Atalante'
-                               }
+                               },
+                   'data_count': {'description': 'number of measurements that have been used to derive level 2 data point average',
+                                  'flag_values':'np.nan, 0 , 1+',
+                                  'flag_meanings':'no data, linear interpolation, averaging'}
                   }
 platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Barbados Cloud Observatory (BCO)': 'BCO',
@@ -245,11 +264,17 @@ def main(args={}):
     if not os.path.exists(args['outputfolder']):
         os.makedirs(args['outputfolder'])
 
-    for f, file in tqdm.tqdm(enumerate(filelist)):
+    for f, file in enumerate(tqdm.tqdm(filelist)):
         logging.info(f'Process file {file}')
         ds = xr.open_dataset(file)
         ds = ds.isel({'sounding': 0})
         ds_input = ds.copy()
+
+        # Check monotonic ascent/descent
+        if np.all(np.diff(ds.isel(levels=slice(20,-1)).altitude.values) > 0) or np.all(np.diff(ds.isel(levels=slice(20,-1)).altitude.values) < 0):
+            logging.debug('Sounding is monotonic ascending/descending')
+        else:
+            logging.warning('Sounding is not monotonic ascending/descending. The ascent rate will be artificial')
 
         # Remove standard pressure levels (extendedVerticalSoundingSignificance)
         # extendedVerticalSoundingSignificance == 65536
@@ -288,9 +313,25 @@ def main(args={}):
 
         dewPoint_K = ds['dewPoint'].values+273.15
         pressure_Pa = ds['pressure'].values*100
-        mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
-                                                        pressure_Pa))*1000
-        da_w = xr.DataArray([mixing_ratio],
+        
+        theta = calc_theta_from_T(ds['temperature'].values, ds['pressure'].values)
+        #dp = mpcalc.dewpoint_from_relative_humidity(
+        #ds.temperature.values * units.degC, ds.humidity.values / 100).magnitude
+        q = calc_q_from_rh(ds['dewPoint'].values, ds['pressure'].values)
+        e_s = calc_saturation_pressure(ds['temperature'].values+273.15)
+        w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds['pressure'].values*units.hPa).magnitude
+        w = ds['humidity'].values/100.*w_s
+        q = w/(1+w)
+        #mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
+        #                                                pressure_Pa))*1000
+        #q = mpcalc.specific_humidity_from_mixing_ratio(mixing_ratio/1000)
+        da_w = xr.DataArray([w*1000],
+                            dims=['sounding', 'altitude'],
+                            coords={'altitude': ds.altitude.values})
+        da_theta = xr.DataArray([theta],
+                                dims=['sounding', 'altitude'],
+                                coords={'altitude': ds.altitude.values})
+        da_q = xr.DataArray([q*1000],
                             dims=['sounding', 'altitude'],
                             coords={'altitude': ds.altitude.values})
 
@@ -307,16 +348,26 @@ def main(args={}):
                                                          )
             ds_new[variable_name_out].attrs = ds[variable_name_in].attrs  # Copy attributes from input
         ds_new['mixing_ratio'] = da_w
-
-        ds_new = ds_new.dropna(dim='altitude',
-                               subset=output_variables,
-                               how='any')
+        ds_new['theta'] = da_theta
+        ds_new['specific_humidity'] = da_q
 
         flight_time_unix = ds_new.flight_time.astype(float)/1e9
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
-        ds_interp = ds_new.interp(altitude=np.arange(0, 30000, 10))
+        if args['method'] == 'linear':
+            ds_new = ds_new.dropna(dim='altitude',
+                                   subset=output_variables,
+                                   how='any')
+            ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
+        elif args['method'] == 'bin':
+            ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).mean()
+            ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
+            ds_interp['launch_time'] = ds_new['launch_time']
+
+        ## Interpolation NaN
+        ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
 
@@ -337,25 +388,58 @@ def main(args={}):
                                              coords=coords_1d)
 
         # Calculations after interpolation
-        specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
-        relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
-          specific_humidity, ds_interp.temperature.values * units.degC,
-          ds_interp.pressure.values * units.hPa)
+        #specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
+        #relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
+        #  specific_humidity, ds_interp.temperature.values * units.degC,
+        #  ds_interp.pressure.values * units.hPa)
 
-        ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
-                                                      dims=dims_2d,
-                                                      coords=coords_1d)
-        ds_interp['relative_humidity'] = xr.DataArray(np.array(relative_humidity)*100,
-                                                      dims=dims_2d,
-                                                      coords=coords_1d)
+        #ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
+        #                                              dims=dims_2d,
+        #                                              coords=coords_1d)
+        #ds_interp['relative_humidity'] = xr.DataArray(np.array(relative_humidity)*100,
+        #                                              dims=dims_2d,
+        #                                              coords=coords_1d)
         ds_interp['launch_time'] = xr.DataArray([ds_interp.isel({'sounding': 0}).launch_time.item()/1e9],
                                                 dims=['sounding'])
         ds_interp['platform'] = xr.DataArray([platform_number_dict[platform]],
                                              dims=['sounding'])
-        ds_interp['ascent_rate'] = xr.DataArray([calc_ascentrate(ds_interp.isel({'sounding': 0}).altitude.values,
-                                                                 ds_interp.isel({'sounding': 0}).flight_time.values)],
-                                                dims=dims_2d,
-                                                coords=coords_1d)
+        #ds_interp['ascent_rate'] = xr.DataArray([calc_ascentrate(ds_interp.isel({'sounding': 0}).altitude.values,
+        #                                                         ds_interp.isel({'sounding': 0}).flight_time.values)],
+        #                                        dims=dims_2d,
+        #                                        coords=coords_1d)
+
+        # Recalculate temperature and relative humidity from theta and q
+        temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
+        ds_interp['temperature'] = xr.DataArray([np.array(temperature)],
+                                                   dims=dims_2d,
+                                                   coords=coords_1d)
+
+        w = (ds_interp.isel(sounding=0)['specific_humidity'].values/1000)/(1-ds_interp.isel(sounding=0)['specific_humidity'].values/1000.)
+        e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature'].values+273.15)
+        w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds_interp.isel(sounding=0)['pressure'].values*units.hPa).magnitude
+        relative_humidity = w/w_s*100
+        #relative_humidity = calc_rh_from_q(ds_interp['q'].values, ds_interp['temperature_re'].values, ds_interp['pressure'].values)
+        #saturation_p = calc_saturation_pressure(ds_interp['temperature_re'].values[0,:]+273.15)
+        #w_s = mpcalc.mixing_ratio(saturation_p * units.Pa, ds_interp['pressure'].values * units.hPa).magnitude
+        #relative_humidity = (ds_interp['specific_humidity']/1000)/((1-ds_interp['specific_humidity']/1000)*w_s)*100
+ 
+        ds_interp['relative_humidity'] = xr.DataArray([np.array(relative_humidity)],
+                                                   dims=dims_2d,
+                                                   coords=coords_1d)
+
+        # Interpolate NaNs
+        ## max_gap is the maximum gap of NaNs in meters that will be still interpolated
+        #ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+        ds_interp['data_count'] = xr.DataArray(ds_new.pressure.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).count().values,
+                                  dims=dims_2d,
+                                  coords=coords_1d)
+        data_avail_or_interp = np.where(~np.isnan(ds_interp.pressure), 0, np.nan)
+        stacked_data_counts = np.vstack([ds_interp.data_count.values[0,:], data_avail_or_interp[0,:]])
+        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
+        data_counts_combined = np.empty(len(stacked_data_counts[0]))
+        data_counts_combined.fill(np.nan)
+        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,~nan_idx_both], axis=0)
+        ds_interp['data_count'].values[0,:] = data_counts_combined
 
         direction = get_direction(ds_interp, ds)
         if direction == 'ascending':
@@ -395,11 +479,19 @@ def main(args={}):
         ds_interp['ascent_flag'].encoding = {'dtype': 'bool'}
         ds_interp['platform'].encoding = {'dtype': 'uint8'}
 
+        # Transpose dataset if necessary
+        for variable in ds_interp.data_vars:
+             dims = ds_interp[variable].dims
+             if (len(dims) == 2) and (dims[0] != 'sounding'):
+                 ds_interp[variable] = ds_interp[variable].T
+
         time_dt = num2date(ds_interp.isel({'sounding': 0}).launch_time,
                            "seconds since 1970-01-01 00:00:00")
         time_fmt = time_dt.strftime('%Y%m%d%H%M')
         platform_filename = platform_rename_dict[platform]
-        write_dataset(ds_interp, args['outputfolder']+'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt))
+        outfile = args['outputfolder']+'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt)
+        logging.info('Write output to {}'.format(outfile))
+        write_dataset(ds_interp, outfile)
 
 
 if __name__ == '__main__':

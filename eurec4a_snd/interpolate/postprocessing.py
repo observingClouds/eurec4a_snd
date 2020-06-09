@@ -4,6 +4,7 @@ Functions for post-processing data
 
 import numpy as np
 import metpy.calc
+import metpy.calc as mpcalc
 from metpy.units import units
 import metpy.interpolate as mpinterp
 
@@ -59,6 +60,92 @@ def calc_mixing_ratio_hardy(dew_point_K, pressure_Pa):
     e_s = calc_saturation_pressure(dew_point_K)
     mixing_ratio = metpy.calc.mixing_ratio(e_s * units.pascal, pressure_Pa * units.pascal)
     return mixing_ratio
+
+def calc_q_from_rh(dp, p):
+    """
+    Input :
+        dp : dew point (deg Celius)
+        p : pressure (hPa) 
+    Output :
+        q : Specific humidity values
+    
+    Function to estimate specific humidity from the relative humidity,
+    temperature and pressure in the given dataset. This function uses MetPy's
+    functions to get q:
+    (i) mpcalc.dewpoint_from_relative_humidity()
+    (ii) mpcalc.specific_humidity_from_dewpoint()
+                        
+    """
+    q = mpcalc.specific_humidity_from_dewpoint(
+        dp * units.degC, p * units.hPa
+    ).magnitude
+
+    return q
+
+
+def calc_theta_from_T(T, p):
+    """
+    Input :
+        T : temperature (deg Celsius)
+        p : pressure (hPa)
+    Output :
+        theta : Potential temperature values 
+    Function to estimate potential temperature from the
+    temperature and pressure in the given dataset. This function uses MetPy's
+    functions to get theta:
+    (i) mpcalc.potential_temperature()
+    
+    """
+    theta = mpcalc.potential_temperature(
+        p * units.hPa, T * units.degC
+    ).magnitude
+
+    return theta
+
+
+def calc_T_from_theta(theta, p):
+    """
+    Input :
+        theta : potential temperature (K)
+        p : pressure (hPa)
+    Output :
+        T : Temperature values 
+    Function to estimate temperature from potential temperature and pressure,
+    in the given dataset. This function uses MetPy's
+    functions to get T:
+    (i) mpcalc.temperature_from_potential_temperature()
+    
+    """
+    T = (
+        mpcalc.temperature_from_potential_temperature(
+            p * units.hPa, theta * units.kelvin,
+        ).magnitude
+        - 273.15
+    )
+
+    return T
+
+
+def calc_rh_from_q(q, T, p):
+    """
+    Input :
+        q : specific humidity
+        T : Temperature values estimated from interpolated potential_temperature;
+        p : pressure (hPa)
+    Output :
+        rh : Relative humidity values 
+    Function to estimate relative humidity from specific humidity, temperature
+    and pressure in the given dataset. This function uses MetPy's
+    functions to get rh:
+    (i) mpcalc.relative_humidity_from_specific_humidity()
+    
+    """
+    rh = mpcalc.relative_humidity_from_specific_humidity(
+        q, T * units.degC, p * units.hPa,
+    ).magnitude*100
+
+    return rh
+
 
 
 def set_global_attributes(ds, global_attrs_dict):
@@ -193,6 +280,10 @@ def pressure_interpolation(pressures, altitudes, output_altitudes, convergence_e
         p2 = pressures[upper_idx]  # pressure at higher altitude
         a1 = altitudes[lower_idx]  # lower altitude
         a2 = altitudes[upper_idx]  # higher altitude
+
+        if a1 == a2:  # Target height already reached
+            pressure_interpolated[i] = p1
+            continue
 
         xp = np.array([p1,p2])
         arr = np.array([a1,a2])
