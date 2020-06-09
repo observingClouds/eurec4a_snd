@@ -31,6 +31,7 @@ import xarray as xr
 import sys
 sys.path.append('.')
 from _mwx_helpers import *
+from _helpers import calc_saturation_pressure
 
 # User-configuration
 campaign = 'EUREC4A'
@@ -382,8 +383,8 @@ def main(args={}):
             ## Dew point temperature
             dewpoint = convert_RH_to_dewpoint(xr_snd.Temperature.values, xr_snd.Humidity.values)
             ## Mixing ratio
-            vapor_pres = calc_vapor_pressure(xr_snd)
-            mixing_ratio = calc_wv_mixing_ratio(xr_snd, vapor_pres)
+            e_s = calc_saturation_pressure(xr_snd.Temperature.values)  # calc_vapor_pressure(xr_snd, method='hardy')
+            mixing_ratio = calc_wv_mixing_ratio(xr_snd, e_s)*xr_snd.Humidity.values/100.
             ## Launch time as type(datetime)
             flight_time_unix = sounding.flight_time.values.astype(float)/1e9
             launch_time_unix = flight_time_unix[0]
