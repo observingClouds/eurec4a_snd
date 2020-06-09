@@ -7,7 +7,6 @@ sounding system to netCDF
 """
 
 import os
-import platform
 from pathlib import Path, PureWindowsPath
 import subprocess as sp
 import configparser
@@ -31,47 +30,13 @@ import xarray as xr
 import sys
 sys.path.append('.')
 from _mwx_helpers import *
-from _helpers import calc_saturation_pressure
+from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration
 
 # User-configuration
 campaign = 'EUREC4A'
 output_filename_format = '{campaign}_{platform_short}_sounding_{direction}_%Y%m%d_%H%M.nc'  # including path
 
 json_config_fn = 'mwx_config.json'
-
-def load_configuration(configuration_file=None):
-    """
-    Loads the configuration file PATH.ini.
-    1. If provided load configuration_file
-    2. Attempt to load from home directory
-    3. Attempt to load from relative path inside BCO-git structure
-
-    Args:
-        configuration_file: optional: complete path to the configuration file.
-
-    Returns:
-        instance of ConfigParser class with extended interpolation.
-    """
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    ini_path = "/".join(dir_path.split("/")[:-1]) + "/eurec4a_snd/config/meta_information.ini"
-    if not isinstance(configuration_file, str):
-        possible_file_in_userdir = Path("~/meta_information.ini").expanduser()
-        if os.path.isfile(possible_file_in_userdir):
-            configuration_file = possible_file_in_userdir
-        elif os.path.isfile(ini_path):
-            configuration_file = ini_path
-        if configuration_file is None or not os.path.isfile(configuration_file):
-            raise FileNotFoundError(
-                "No Configuration File 'meta_information.ini' found. Please create one"
-                " in your home directory "
-                "or provide the path via the argument parsing -c.")
-        else:
-            logging.info("Using configuration file: %s" % configuration_file)
-
-    conf = configparser.ConfigParser(interpolation=ExtendedInterpolation())
-    conf.read(configuration_file)
-    return conf
-
 
 def get_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -147,29 +112,6 @@ def get_args():
             "for several files and --inputfile for single ones.")
 
     return parsed_args
-
-
-def unixpath(path_in):
-    """
-    Convert windows path to unix path syntax
-    depending on the used OS
-    """
-    if platform.system() == 'Windows':
-        path_out = Path(PureWindowsPath(path_in))
-    else:
-        path_out = Path(path_in)
-    return path_out
-
-
-def setup_logging(verbose):
-    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
-    logging.basicConfig(
-        level=logging.getLevelName(verbose),
-        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
-        handlers=[
-            logging.FileHandler("{}.log".format(__file__)),
-            logging.StreamHandler()
-        ])
 
 
 def main(args={}):

@@ -1,11 +1,15 @@
 """
-Helper functions for bufr import
+Helper functions
 """
 import tempfile
 import os
+import inspect
+import platform
 import json
 import datetime as dt
 import numpy as np
+import logging
+from pathlib import Path, PureWindowsPath
 
 
 class UnitChangedError(Exception):
@@ -14,6 +18,68 @@ class UnitChangedError(Exception):
 
 class UnexpectedUnit(Exception):
     pass
+
+
+def unixpath(path_in):
+    """
+    Convert windows path to unix path syntax
+    depending on the used OS
+    """
+    if platform.system() == 'Windows':
+        path_out = Path(PureWindowsPath(path_in))
+    else:
+        path_out = Path(path_in)
+    return path_out
+
+
+def setup_logging(verbose):
+    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
+    logging.basicConfig(
+        level=logging.getLevelName(verbose),
+        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
+        handlers=[
+            logging.FileHandler("{}.log".format(__file__)),
+            logging.StreamHandler()
+        ])
+
+
+def load_configuration(configuration_file=None):
+    """
+    Loads the configuration file PATH.ini.
+    1. If provided load configuration_file
+    2. Attempt to load from home directory
+    3. Attempt to load from relative path inside BCO-git structure
+
+    Args:
+        configuration_file: optional: complete path to the configuration file.
+
+    Returns:
+        instance of ConfigParser class with extended interpolation.
+    """
+    # Get filename of calling script
+    frame = inspect.stack()[1]
+    module = inspect.getmodule(frame[0])
+    filename = module.__file__
+
+    dir_path = os.path.dirname(os.path.realpath(filename))
+    ini_path = "/".join(dir_path.split("/")[:-1]) + "/eurec4a_snd/config/meta_information.ini"
+    if not isinstance(configuration_file, str):
+        possible_file_in_userdir = Path("~/meta_information.ini").expanduser()
+        if os.path.isfile(possible_file_in_userdir):
+            configuration_file = possible_file_in_userdir
+        elif os.path.isfile(ini_path):
+            configuration_file = ini_path
+        if configuration_file is None or not os.path.isfile(configuration_file):
+            raise FileNotFoundError(
+                "No Configuration File 'meta_information.ini' found. Please create one"
+                " in your home directory "
+                "or provide the path via the argument parsing -c.")
+        else:
+            logging.info("Using configuration file: %s" % configuration_file)
+
+    conf = configparser.ConfigParser(interpolation=ExtendedInterpolation())
+    conf.read(configuration_file)
+    return conf
 
 
 def convert_bufr_to_json(bufr_fn, logger=None):
