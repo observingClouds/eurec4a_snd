@@ -193,7 +193,6 @@ def main(args={}):
     # Loading standard config file
     with open(json_config_fn, 'r') as f:
         j=json.load(f)
-
     sync_sounding_values = j['sync_sounding_items']
     std_sounding_values =  j['std_sounding_items']
     radiosondes_values = j['radiosondes_sounding_items']
@@ -226,27 +225,15 @@ def main(args={}):
     for mwx_file in tqdm.tqdm(mwx_files):
 
         # Decompress/open mwx file
-        tmpdir, tmpdir_obj = getTmpDir()
-        decompressed_files = np.array(decompress(mwx_file, tmpdir+'/'))
+        decompressed_files = open_mwx(mwx_file)
 
         # Get the files SynchronizedSoundingData.xml, Soundings.xml, ...
-        sync_mask = [f_sync(file) for file in decompressed_files]
-        if np.sum(sync_mask) == 0:
+        a1, sync_filename = check_availability(decompressed_files, 'SynchronizedSoundingData.xml', True)
+        a2, snd_filename = check_availability(decompressed_files, 'Soundings.xml', True)
+        a3, radio_filename = check_availability(decompressed_files, 'Radiosondes.xml', True)
+        if np.any([~a1, ~a2, ~a3]):
             logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
             continue
-        sync_filename = decompressed_files[sync_mask][0]
-        snd_mask = [f_snd(file) for file in decompressed_files]
-        if np.sum(snd_mask) == 0:
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
-        snd_filename = decompressed_files[snd_mask][0]
-        std_mask = [f_std(file) for file in decompressed_files]
-        if np.sum(std_mask) == 0:
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
-        std_filename = decompressed_files[std_mask][0]
-        radio_mask = [f_radio(file) for file in decompressed_files]
-        radio_filename = decompressed_files[radio_mask][0]
 
         # Read Soundings.xml to get base time
         itemlist = read_xml(snd_filename)
@@ -256,44 +243,12 @@ def main(args={}):
             altitude = item.attributes['Altitude'].value
         begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
 
-        # Read SynchronizedSoundingData.xml with processed sounding data
-        itemlist = read_xml(sync_filename)
-        sounding_dict = {}
-        try:
-            for i, item in enumerate(itemlist):
-                level_dict = {}
-                for var in sync_sounding_values:
-                    level_dict[var] = item.attributes[var].value
-                sounding_dict[i] = level_dict
-        except:
-            logging.warning('Key {} not found in file {}'.format(var, mwx_file))
-            continue
-        pd_snd = pd.DataFrame.from_dict(sounding_dict, orient='index', dtype=float)
-
-        # Read StdPressureLevels.xml to include measurements interpolated to std-levels
-        itemlist = read_xml(std_filename)
-        sounding_std_dict = {}
-        for i, item in enumerate(itemlist):
-            level_dict = {}
-            for var in std_sounding_values:
-                level_dict[var] = item.attributes[var].value
-            sounding_std_dict[i] = level_dict
-        pd_std = pd.DataFrame.from_dict(sounding_std_dict, orient='index', dtype=float)
+        # Read sounding data
+        pd_snd = get_sounding_profile(sync_filename, sync_sounding_values)
+        pd_std = get_sounding_profile(std_filename, std_sounding_values)
 
         # Read Radiosounding.xml to get sounding metadata
-        itemlist = read_xml(radio_filename)
-        sounding_meta_dict = {}
-        for i, item in enumerate(itemlist):
-            assert i == 0, 'further entries were found, meaning soundings meta data could be mixed up'
-            for var in radiosondes_values:
-                try:
-                    sounding_meta_dict[var] = item.attributes[var].value
-                except KeyError:
-                    logging.error('Attribute {} could not found and is assumed to be RS41-SGP'.format(var))
-                    sounding_meta_dict[var] = 'RS41-SGP'
-
-        # Convert missing values (-32768) to nan
-        pd_snd = pd_snd.replace(-32768, np.nan)
+        sounding_meta_dict = get_sounding_metadata(radio_filename, radiosondes_values)
 
         # Create flight time
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
