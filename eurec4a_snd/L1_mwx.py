@@ -9,8 +9,6 @@ sounding system to netCDF
 import os
 from pathlib import Path, PureWindowsPath
 import subprocess as sp
-import configparser
-from configparser import ExtendedInterpolation
 import argparse
 import logging
 import tempfile
