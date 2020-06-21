@@ -185,7 +185,7 @@ def main(args={}):
             args["inputpath"] = config["FILES"]["INPUT_MWX"]
         if args["outputfolder"] is None:
             args["outputfolder"] = config["FILES"]["OUTPUT_MWX2NC"]
-    
+
     output_folder = args['outputfolder']
     basename = os.path.basename(output_folder)
     dirname = os.path.dirname(output_folder)
@@ -287,7 +287,7 @@ def main(args={}):
         # Write output
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
             if len(sounding) < 2:
-                logging.warning('Sounding ({}) does not contain data. Skip sounding-direction of{}'.format(direction_dict[s], mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
+                logging.warning('Sounding ({}) does not contain data. Skip sounding-direction of {}'.format(direction_dict[s], mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
                 continue
             xr_snd = xr.Dataset.from_dataframe(sounding)
 
