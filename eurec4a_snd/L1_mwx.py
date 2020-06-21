@@ -389,7 +389,7 @@ def main(args={}):
             else:
                 version = git_module_version
             filename = output_format.format(campaign=campaign,
-                                            platform_short=platform_name_short,
+                                            platform_short=platform_id,
                                             direction=direction_dict[sounding.Dropping.values[0]],
                                             instrument_id=args["instrument_id"],
                                             version=version,
