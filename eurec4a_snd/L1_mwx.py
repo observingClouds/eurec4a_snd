@@ -29,7 +29,7 @@ from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_con
 
 # User-configuration
 level = 'L1'
-output_filename_format = '{campaign}_{platform_short}_{instrument_id}_{direction}_{level}_%Y%m%d_%H%M_{version}.nc'  # including path
+output_filename_format = '{campaign}_{platform_short}_{instrument_id}_{direction}_{level}_%Y%m%dT%H%M_{version}.nc'  # including path
 
 json_config_fn = 'mwx_config.json'
 

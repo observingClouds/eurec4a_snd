@@ -574,7 +574,7 @@ def main(args={}):
 
         time_dt = num2date(ds_interp.isel({'sounding': 0}).launch_time,
                            "seconds since 1970-01-01 00:00:00")
-        time_fmt = time_dt.strftime('%Y%m%d%H%M')
+        time_fmt = time_dt.strftime('%Y%m%dT%H%M')
         platform_filename = platform  # platform_rename_dict[platform]
         outfile = args['outputfolder']+'{campaign}_{platform}_{instrument_id}_{level}_{date}_{version}.nc'.format(campaign=ds.campaign_id,
                                                                                                                   platform=platform_filename,
