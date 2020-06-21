@@ -393,6 +393,7 @@ def main(args={}):
                                             direction=direction_dict[sounding.Dropping.values[0]],
                                             instrument_id=args["instrument_id"],
                                             version=version,
+                                            level=level
                                             )
             filename = launch_time_dt.strftime(filename)
             xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
