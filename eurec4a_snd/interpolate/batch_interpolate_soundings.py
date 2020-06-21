@@ -390,7 +390,7 @@ def main(args={}):
         theta = calc_theta_from_T(ds['temperature'].values, ds['pressure'].values)
         #dp = mpcalc.dewpoint_from_relative_humidity(
         #ds.temperature.values * units.degC, ds.humidity.values / 100).magnitude
-        q = calc_q_from_rh(ds['dewPoint'].values, ds['pressure'].values)
+        # q = calc_q_from_rh(ds['dewPoint'].values, ds['pressure'].values)
         e_s = calc_saturation_pressure(ds['temperature'].values+273.15)
         w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds['pressure'].values*units.hPa).magnitude
         w = ds['humidity'].values/100.*w_s
@@ -434,7 +434,9 @@ def main(args={}):
                                    how='any')
             ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
         elif args['method'] == 'bin':
-            ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).mean()
+            ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10),
+                                            labels=np.arange(0,31000,10),
+                                            restore_coord_dims=True).mean()
             ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
             ds_interp['launch_time'] = ds_new['launch_time']
 
