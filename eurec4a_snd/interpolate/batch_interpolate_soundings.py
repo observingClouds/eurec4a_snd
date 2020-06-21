@@ -23,7 +23,7 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(pwd)
 from postprocessing import *
 sys.path.append(pwd+'/../')
-from _helpers import get_global_attrs
+from _helpers import get_global_attrs, setup_logging
 
 
 def get_args():
@@ -77,17 +77,6 @@ def get_args():
             "for several files and --inputfile for single ones.")
 
     return parsed_args
-
-
-def setup_logging(verbose):
-    assert verbose in ["DEBUG", "INFO", "WARNING", "ERROR"]
-    logging.basicConfig(
-        level=logging.getLevelName(verbose),
-        format="%(levelname)s - %(name)s - %(funcName)s - %(message)s",
-        handlers=[
-            logging.FileHandler("{}.log".format(__file__)),
-            logging.StreamHandler()
-        ])
 
 
 variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
@@ -360,9 +349,9 @@ def main(args={}):
             break
 
         # Prepare some data that cannot be linearly interpolated
-        wind_dir_rad = np.deg2rad(ds.windDirection.values)
-        ds['wind_u'] = xr.DataArray(-1*ds.windSpeed.values * np.sin(wind_dir_rad), dims=['levels'])
-        ds['wind_v'] = xr.DataArray(-1*ds.windSpeed.values * np.cos(wind_dir_rad), dims=['levels'])
+        u, v = get_wind_components(ds.windDirection.values, ds.windSpeed.values)
+        ds['wind_u'] = xr.DataArray(u, dims=['levels'])
+        ds['wind_v'] = xr.DataArray(v, dims=['levels'])
 
         if 'altitude_WGS84' in ds.keys():
             # Convert lat, lon, alt to cartesian coordinates
@@ -435,12 +424,11 @@ def main(args={}):
 
         wind_u = ds_interp.isel({'sounding': 0})['wind_u']
         wind_v = ds_interp.isel({'sounding': 0})['wind_v']
-        wind_direction = np.rad2deg(np.arctan2(-1*wind_u, -1*wind_v)) % 360
-        wind_speed = np.sqrt(wind_u**2+wind_v**2)
-        ds_interp['wind_direction'] = xr.DataArray([np.array(wind_direction.values)],
+        dir, wsp = get_directional_wind(wind_u, wind_v)
+        ds_interp['wind_direction'] = xr.DataArray([np.array(dir)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
-        ds_interp['wind_speed'] = xr.DataArray([np.array(wind_speed.values)],
+        ds_interp['wind_speed'] = xr.DataArray([np.array(wsp)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
         if 'altitude_WGS84' in ds.keys():
