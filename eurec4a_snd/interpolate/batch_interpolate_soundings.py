@@ -96,7 +96,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'coordinates': 'flight_time longitude latitude altitude',
                                   '_FillValue': default_fillvals['f8'],
                                   'ancillary_variables': 'N_ptu',
-                                  'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                  'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                                   },
                   'launch_time': {'long_name': 'time at which the sounding started',
                                   'units': 'seconds since 1970-01-01 00:00:00 UTC',
@@ -108,7 +108,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'units': 'm/s',
                                   '_FillValue': default_fillvals['f4'],
                                   'ancillary_variables': 'N_ptu',
-                                  'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                  'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                                   },
                   'altitude': {'long_name': 'geopotential height',
                                'standard_name': 'geopotential_height',
@@ -123,14 +123,14 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                'coordinates': 'longitude latitude flight_time sounding_id',
                                '_FillValue': default_fillvals['f4'],
                                'ancillary_variables': 'N_ptu',
-                               'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                               'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                                },
                   'temperature': {'long_name': 'dry bulb temperature',
                                   'standard_name': 'air_temperature',
                                   'units': 'degrees Celsius',
                                   'coordinates': 'longitude latitude flight_time sounding_id',
                                   '_FillValue': default_fillvals['f4'],
-                                  'cell_method': 'alt: point (derived from averaged theta)'
+                                  'cell_methods': 'alt: point (derived from averaged theta)'
                                   },
                   'theta': {'long_name': 'potential temperature',
                             'standard_name': 'air_potential_temperature',
@@ -138,14 +138,14 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                             'coordinates': 'flight_time longitude latitude sounding_id',
                             '_FillValue': default_fillvals['f4'],
                             'ancillary_variables': 'N_ptu',
-                            'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                            'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                             }, 
                   'relative_humidity': {'long_name': 'relative_humidity',
                                         'standard_name': 'relative_humidity',
                                         'coordinates': 'flight_time longitude latitude sounding_id',
                                         'units': '%',
                                         '_FillValue': default_fillvals['f4'],
-                                        'cell_method': 'alt: point (derived from averaged q, T, p)'
+                                        'cell_methods': 'alt: point (derived from averaged q, T, p)'
                                         },
                   'specific_humidity': {'long_name': 'specific humidity',
                                         'standard_name': 'specific_humidity',
@@ -153,7 +153,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                         'coordinates': 'flight_time longitude latitude sounding_id',
                                         '_FillValue': default_fillvals['f4'],
                                         'ancillary_variables': 'N_ptu',
-                                        'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                        'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                                         },
                   'dew_point': {'long_name': 'dew point temperature',
                                 'standard_name': 'dew_point_temperature',
@@ -161,7 +161,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                 'coordinates': 'flight_time longitude latitude sounding_id',
                                 '_FillValue': default_fillvals['f4'],
                                 'ancillary_variables': 'N_ptu',
-                                'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                'cell_methods': 'alt: mean (interval=10m comment: N_ptu)'
                                 },
                   'mixing_ratio': {'long_name': 'water vapor mixing ratio',
                                    'coordinates': 'flight_time longitude latitude sounding_id',
@@ -169,21 +169,21 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                    'standard_name': 'humidity_mixing_ratio',
                                    '_FillValue': default_fillvals['f4'],
                                    'ancillary_variables': 'N_ptu',
-                                   'cell_method': 'alt: point (derived from averaged q)'
+                                   'cell_methods': 'alt: point (derived from averaged q)'
                                    },
                   'wind_speed': {'long_name': 'wind speed',
                                  'standard_name': 'wind_speed',
                                  'units': 'm/s',
                                  'coordinates': 'flight_time longitude latitude sounding_id',
                                  '_FillValue': default_fillvals['f4'],
-                                 'cell_method': 'alt: point (derived from averaged u, v)'
+                                 'cell_methods': 'alt: point (derived from averaged u, v)'
                                  },
                   'wind_direction': {'long_name': 'wind direction',
                                      'coordinates': 'flight_time longitude latitude sounding_id',
                                      'standard_name': 'wind_from_direction',
-                                     'units': 'degrees',
+                                     'units': 'degree',
                                      '_FillValue': default_fillvals['f4'],
-                                     'cell_method': 'alt: point (derived from averaged u, v)'
+                                     'cell_methods': 'alt: point (derived from averaged u, v)'
                                      },
                   'wind_u': {'long_name': 'u-component of the wind',
                              'standard_name': 'eastward_wind',
@@ -191,7 +191,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                              'coordinates': 'flight_time longitude latitude sounding_id',
                              '_FillValue': default_fillvals['f4'],
                              'ancillary_variables': 'N_gps',
-                             'cell_method': 'alt: mean (interval=10m comment: N_gps)'
+                             'cell_methods': 'alt: mean (interval=10m comment: N_gps)'
                              },
                   'wind_v': {'long_name': 'v-component of the wind',
                              'standard_name': 'northward_wind',
@@ -199,21 +199,21 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                              'coordinates': 'flight_time longitude latitude sounding_id',
                              '_FillValue': default_fillvals['f4'],
                              'ancillary_variables': 'N_gps',
-                             'cell_method': 'alt: mean (interval=10m comment: N_gps)'
+                             'cell_methods': 'alt: mean (interval=10m comment: N_gps)'
                              },
                   'latitude': {'long_name': 'latitude',
                                'standard_name': 'latitude',
                                'units': 'degrees_north',
                                '_FillValue': default_fillvals['f4'],
                                'ancillary_variables': 'N_gps',
-                               'cell_method': 'alt: mean (interval=10m comment: N_gps)'
+                               'cell_methods': 'alt: mean (interval=10m comment: N_gps)'
                                },
                   'longitude': {'long_name': 'longitude',
                                 'standard_name': 'longitude',
                                 'units': 'degrees_east',
                                 '_FillValue': default_fillvals['f4'],
                                 'ancillary_variables': 'N_gps',
-                                'cell_method': 'alt: mean (interval=10m comment: N_gps)',
+                                'cell_methods': 'alt: mean (interval=10m comment: N_gps)',
                                 },
                   'ascent_flag': {'long_name': 'indicator of vertical flight direction',
                                   'flag_values': np.array([1, 0],dtype=np.int8),
