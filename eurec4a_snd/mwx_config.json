@@ -137,6 +137,13 @@
       "positive": "up",
       "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
+    },
+    "altitude_WGS84": {
+      "standard_name": "height_above_reference_ellipsoid",
+      "positive": "up",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "units": "m",
+      "_FillValue": 9.969209968386869e+36
     }
   },
   "global_meta_data":{
@@ -150,7 +157,8 @@
       "campaign_id": "EUREC4A",
       "doi": "pending",
       "institution": "Max Planck Institute for Meteorology, Hamburg, Germany",
-      "references": "Stephan et al. (2020)"
+      "references": "Stephan et al. (2020)",
+      "acknowledgement": "The MPI-M is listed as the institute of first contact. Investigators, Institutions and Agencies who contributed to this dataset are numerous and are acknowledged in the reference publication"
     },
     "EUREC4A_Atalante_.*?_.*?":{
       "platform_id": "Atalante",
