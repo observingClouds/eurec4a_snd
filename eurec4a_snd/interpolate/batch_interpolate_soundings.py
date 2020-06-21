@@ -115,8 +115,13 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                'units': 'm',
                                'axis': 'Z',
                                'positive': 'up',
-                               # '_FillValue': default_fillvals['f4']
+                               'bounds': 'alt_bnds',
+                               '_FillValue': False
                                },
+                  'alt_bnds': {
+                      '_FillValue': False,
+                      'comment': '(lower bound, upper bound]',
+                      },
                   'pressure': {'long_name': 'pressure',
                                'standard_name': 'air_pressure',
                                'units': 'hPa',
@@ -252,7 +257,7 @@ std_pressures = [1000.00, 925.00, 850.00, 700.00, 500.00, 400.00, 300.00,
                  250.00, 200.00, 150.00, 100.00, 70.00, 50.00]
 
 interpolation_grid = np.arange(0, 31000, 10)  # meters
-interpolation_bins = np.arange(-5,31005,10)  # meters
+interpolation_bins = np.arange(-5,31005,10).astype('int')  # Bins len(interpolation_grid)+1; (a,b]; (meters)
 max_gap_fill = 50  # Maximum data gap size that should be filled by interpolation (meters)
 
 json_config_fn = pwd+'/../mwx_config.json'
@@ -414,6 +419,12 @@ def main(args={}):
                                             restore_coord_dims=True).mean()
             ds_interp = ds_interp.transpose()
             ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
+            # Create bounds variable
+            ds_interp['alt_bnds'] = xr.DataArray(np.array([interpolation_bins[:-1],interpolation_bins[1:]]).T,
+                                                 dims=['altitude','nv'],
+                                                 coords={'altitude': ds_interp.altitude.values}
+                                                 )
+
             ds_interp['launch_time'] = ds_new['launch_time']
 
         ## Interpolation NaN
@@ -551,9 +562,12 @@ def main(args={}):
             ds_interp[variable].encoding['dtype'] = 'f4'
         ds_interp['ascent_flag'].encoding['dtype'] = 'int8'
         ds_interp['platform'].encoding['dtype'] = 'uint8'
+        ds_interp['alt_bnds'].encoding['dtype'] = 'int64'
+        # del ds_interp['alt_bnds'].encoding['_FillValue']
 
         # Transpose dataset if necessary
         for variable in ds_interp.data_vars:
+             if variable == 'alt_bnds': continue
              dims = ds_interp[variable].dims
              if (len(dims) == 2) and (dims[0] != 'sounding'):
                  ds_interp[variable] = ds_interp[variable].T
