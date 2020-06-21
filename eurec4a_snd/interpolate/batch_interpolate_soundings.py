@@ -423,6 +423,7 @@ def main(args={}):
             ds_interp = ds_new.groupby_bins('altitude', interpolation_bins,
                                             labels=interpolation_grid,
                                             restore_coord_dims=True).mean()
+            ds_interp = ds_interp.transpose()
             ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
             ds_interp['launch_time'] = ds_new['launch_time']
 
@@ -444,13 +445,12 @@ def main(args={}):
                                                    coords=coords_1d)
         if 'altitude_WGS84' in ds.keys():
             lon, lat, alt = pyproj.transform(ecef, lla,
-                                             ds_interp['x'].values,
-                                             ds_interp['y'].values,
-                                             ds_interp['z'].values,
+                                             ds_interp['x'].values[0],
+                                             ds_interp['y'].values[0],
+                                             ds_interp['z'].values[0],
                                              radians=False)
-
             for var, val in {'latitude':lat, 'longitude':lon, 'altitude_WGS84': alt}.items():
-                ds_interp[var] = xr.DataArray(val, dims=dims_2d, coords=coords_1d)
+                ds_interp[var] = xr.DataArray([val], dims=dims_2d, coords=coords_1d)
 
             del ds_interp['x']
             del ds_interp['y']
