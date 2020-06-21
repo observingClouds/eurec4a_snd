@@ -225,7 +225,7 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'flag_meanings': 'ascending descending',
                                   'valid_range': np.array([0, 1],dtype=np.int8)
                                   },
-                  'platform': {'long_name': 'platform identifier',
+                  'platform_id': {'long_name': 'platform identifier',
                                'units': '1',
                                'description': '1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante'
                                },
@@ -338,15 +338,15 @@ def main(args={}):
         ds = ds.isel({'levels': uniq_altitude_idx})
 
         # Check if platform is known
-        # if ds.platform_name not in platform_rename_dict.keys():
-        #     logging.error('The platform {} is not known. Please choose one of {}'.format(ds.platform_name, platform_rename_dict.keys()))
+        # if ds.platform_id not in platform_rename_dict.keys():
+        #     logging.error('The platform {} is not known. Please choose one of {}'.format(ds.platform_id, platform_rename_dict.keys()))
         #     sys.exit()
 
         # Consistent platform test
         if f == 0:
-            platform = ds.platform_name
+            platform = ds.platform_id
         else:
-            assert ds.platform_name == platform, 'The platform seems to change from {} to {}'.format(platform, ds.platform_name)
+            assert ds.platform_id == platform, 'The platform seems to change from {} to {}'.format(platform, ds.platform_id)
 
         # Unique levels test
         if len(ds.altitude) != len(np.unique(ds.altitude)):
@@ -468,7 +468,7 @@ def main(args={}):
 
         ds_interp['launch_time'] = xr.DataArray([ds_interp.isel({'sounding': 0}).launch_time.item()/1e9],
                                                 dims=['sounding'])
-        ds_interp['platform'] = xr.DataArray([platform_number_dict[platform]],
+        ds_interp['platform_id'] = xr.DataArray([platform_number_dict[platform]],
                                              dims=['sounding'])
 
         # Calculations after interpolation
@@ -526,7 +526,7 @@ def main(args={}):
         script_basename = os.path.basename(__file__)
         script_modification_time = time.ctime(os.path.getmtime(os.path.realpath(__file__)))
         glob_attrs_dict = {'title': 'EUREC4A interpolated sounding data',
-                             'platform_name': platform,
+                             'platform_id': platform,
                              'surface_altitude': ds.attrs['surface_altitude'],
                              'instrument': ds.instrument,
                              'doi': 'pending',
@@ -561,7 +561,7 @@ def main(args={}):
     #             ds_interp[variable].values = np.round(ds_interp[variable].values, 2)
             ds_interp[variable].encoding['dtype'] = 'f4'
         ds_interp['ascent_flag'].encoding['dtype'] = 'int8'
-        ds_interp['platform'].encoding['dtype'] = 'uint8'
+        ds_interp['platform_id'].encoding['dtype'] = 'uint8'
         ds_interp['alt_bnds'].encoding['dtype'] = 'int64'
         # del ds_interp['alt_bnds'].encoding['_FillValue']
 

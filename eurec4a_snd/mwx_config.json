@@ -153,34 +153,34 @@
       "references": "Stephan et al. (2020)"
     },
     "EUREC4A_Atalante_.*?_.*?":{
-      "platform_name": "Atalante",
+      "platform_id": "Atalante",
       "platform_location": "N/A"
     },
     "EUREC4A_Atalante_Vaisala-RS_.*?":{
-      "platform_name": "Atalante",
+      "platform_id": "Atalante",
       "instrument_id": "Vaisala-RS"
     },
      "EUREC4A_Atalante_Meteomodem-RS_.*?":{
-      "platform_name": "Atalante",
+      "platform_id": "Atalante",
       "instrument_id": "Meteomodem-RS"
     },
     "EUREC4A_Meteor_.*?_.*?":{
-      "platform_name": "Meteor",
+      "platform_id": "Meteor",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_BCO_.*?_.*?":{
-      "platform_name": "BCO",
+      "platform_id": "BCO",
       "platform_location":" Deebles Point, Barbados, West Indies",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_RonBrown_.*?_.*?":{
-      "platform_name": "RonBrown",
+      "platform_id": "RonBrown",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_MS-Merian_.*?_.*?":{
-      "platform_name": "MS-Merian",
+      "platform_id": "MS-Merian",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     }
