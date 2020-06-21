@@ -507,26 +507,28 @@ def main(args={}):
                                          restore_coord_dims=True).count().values,
             dims=dims_2d,
             coords=coords_1d)
-        data_avail_or_interp = np.where(~np.isnan(ds_interp.pressure), 0, np.nan)
-        stacked_data_counts = np.vstack([ds_interp.N_ptu.values[0, :], data_avail_or_interp[0, :]])
-        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
-        data_counts_combined = np.empty(len(stacked_data_counts[0]))
-        data_counts_combined.fill(np.nan)
-        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:, ~nan_idx_both], axis=0)
-        ds_interp['N_ptu'].values[0, :] = data_counts_combined
-
         ds_interp['N_gps'] = xr.DataArray(
             ds_new.latitude.groupby_bins('altitude', interpolation_bins, labels=interpolation_grid,
                                          restore_coord_dims=True).count().values,
             dims=dims_2d,
             coords=coords_1d)
-        data_avail_or_interp = np.where(~np.isnan(ds_interp.latitude), 0, np.nan)
-        stacked_data_counts = np.vstack([ds_interp.N_gps.values[0,:], data_avail_or_interp[0,:]])
-        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
-        data_counts_combined = np.empty(len(stacked_data_counts[0]))
-        data_counts_combined.fill(np.nan)
-        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,~nan_idx_both], axis=0)
-        ds_interp['N_gps'].values[0,:] = data_counts_combined
+
+        # Cell method used
+        data_exists = np.where(np.isnan(ds_interp.pressure), False, True)
+        data_mean = np.where(np.isnan(ds_interp.N_ptu), False, True)  # no data or interp: nan; mean > 0
+        data_method = np.zeros_like(data_exists, dtype='uint')
+        data_method[np.logical_and(data_exists, data_mean)] = 2
+        data_method[np.logical_and(data_exists, ~data_mean)] = 1
+        ds_interp['m_ptu'] = xr.DataArray(data_method, dims=dims_2d, coords=coords_1d)
+        ds_interp['N_ptu'].values[np.logical_and(~data_mean, data_method > 0)] = 0
+
+        data_exists = np.where(np.isnan(ds_interp.latitude), False, True)
+        data_mean = np.where(np.isnan(ds_interp.N_gps), False, True)  # no data or interp: nan; mean > 0
+        data_method = np.zeros_like(data_exists, dtype='uint')
+        data_method[np.logical_and(data_exists, data_mean)] = 2
+        data_method[np.logical_and(data_exists, ~data_mean)] = 1
+        ds_interp['m_gps'] = xr.DataArray(data_method, dims=dims_2d, coords=coords_1d)
+        ds_interp['N_gps'].values[np.logical_and(~data_mean, data_method > 0)] = 0
 
         direction = get_direction(ds_interp, ds)
         if direction == 'ascending':
