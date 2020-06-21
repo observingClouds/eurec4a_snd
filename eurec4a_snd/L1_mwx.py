@@ -28,11 +28,11 @@ import xarray as xr
 import sys
 sys.path.append('.')
 from _mwx_helpers import *
-from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration
+from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration, get_global_attrs
 
 # User-configuration
-campaign = 'EUREC4A'
-output_filename_format = '{campaign}_{platform_short}_sounding_{direction}_%Y%m%d_%H%M.nc'  # including path
+level = 'L1'
+output_filename_format = '{campaign}_{platform_short}_{instrument_id}_{direction}_{level}_%Y%m%d_%H%M_{version}.nc'  # including path
 
 json_config_fn = 'mwx_config.json'
 
@@ -89,6 +89,21 @@ def get_args():
     parser.add_argument("--platform_location", metavar='Platform location',
                         help="Location of the measurement platform e.g. Deebles Point, Barbados, West Indies",
                         default=None,
+                        required=False,
+                        type=str)
+    parser.add_argument("--instrument_id", metavar='Instrument identifier',
+                        help="Instrument identifier e.g. Vaisala-RS or Meteomodem-RS",
+                        default='RS',
+                        required=False,
+                        type=str)
+    parser.add_argument("--platform_id", metavar='Platform identifier',
+                        help="Platform identifier as used in config e.g. Atalante or BCO",
+                        default=None,
+                        required=False,
+                        type=str)
+    parser.add_argument("--campaign", metavar='Campaign',
+                        help="Campaign name as used in config e.g. EUREC4A",
+                        default='EUREC4A',
                         required=False,
                         type=str)
     parser.add_argument("--round-like-BUFR", metavar='BOOLEAN',
@@ -196,6 +211,10 @@ def main(args={}):
     radiosondes_values = j['radiosondes_sounding_items']
     meta_data_dict = j['meta_data']
 
+    campaign = args['campaign']
+    platform_id = args['platform_id']
+    instrument_id = args['instrument_id']
+
     # Function definitions
     f_flighttime = lambda radiorx: begin_time_dt + timedelta(seconds=radiorx-float(launch_time))
 
@@ -287,7 +306,8 @@ def main(args={}):
             ## Resolution
             resolution = calc_temporal_resolution(flight_time_unix)
             ## Sounding ID
-            sounding_id = '{platform}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform_name_short,
+            sounding_id = '{platform}__{direction}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform_id,
+                                                                             direction = direction_dict[s],
                                                                              lat = xr_snd.Latitude.values[0],
                                                                              lon = xr_snd.Longitude.values[0],
                                                                              time = launch_time_dt.strftime('%Y%m%d%H%M'))
@@ -324,9 +344,11 @@ def main(args={}):
                         xr_output[variable].attrs[attr] = value
 
             ## Global
-            xr_output.attrs['title'] = "Sounding data during the EUREC4A campaign"
-            xr_output.attrs['platform_name'] = f'{platform_name_long} ({platform_name_short})'
-            xr_output.attrs['location'] = platform_location
+            xr_output.attrs['title'] = "Sounding data during the {} campaign (level 1)".format(campaign)
+            xr_output.attrs['campaign_id'] = campaign
+            xr_output.attrs['platform_id'] = f'{platform_id}'
+            xr_output.attrs['instrument_id'] = f'{instrument_id}'
+            xr_output.attrs['platform_location'] = platform_location
             xr_output.attrs['surface_altitude'] = '{:3.1f} m'.format(float(altitude))
             xr_output.attrs['instrument'] = f'Radiosonde {sounding_meta_dict["SondeTypeName"]} by Vaisala'
             xr_output.attrs['number_of_probe'] = sounding_meta_dict['SerialNbr']
@@ -349,18 +371,31 @@ def main(args={}):
             xr_output.attrs['Conventions'] = "CF-1.7"
             xr_output.attrs['featureType'] = "trajectory"
 
+            # Overwrite standard attrs with those defined in config file
+            # Get global meta data from mwx_config.json
+            glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+            for attrs, value in glob_attrs_dict.items():
+                xr_output.attrs[attrs] = value
+
             # Reduce dtype to float instead of double
             xr_output.sounding_id.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
             for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                              'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
-                xr_output[variable].encoding = {'dtype': 'f4'}
+                xr_output[variable].encoding['dtype'] = 'f4'
 
             for variable in xr_output.data_vars:
                 xr_output[variable].encoding['zlib'] = True
 
+            if package_version_set:
+                version = __version__
+            else:
+                version = git_module_version
             filename = output_format.format(campaign=campaign,
-                                              platform_short=platform_name_short,
-                                              direction=direction_dict[sounding.Dropping.values[0]])
+                                            platform_short=platform_name_short,
+                                            direction=direction_dict[sounding.Dropping.values[0]],
+                                            instrument_id=args["instrument_id"],
+                                            version=version,
+                                            )
             filename = launch_time_dt.strftime(filename)
             xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
             logging.info('File converted to {}'.format(filename))

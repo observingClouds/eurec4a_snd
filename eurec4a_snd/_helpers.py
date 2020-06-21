@@ -3,6 +3,7 @@ Helper functions
 """
 import tempfile
 import os
+import re
 import inspect
 import platform
 import json
@@ -20,6 +21,38 @@ class UnitChangedError(Exception):
 
 class UnexpectedUnit(Exception):
     pass
+
+class RegexDict(dict):
+    """
+    Dictionary with capability of taking regular xpressions
+    """
+    def get_matching(self, event):
+        return (self[key] for key in self if re.match(key, event))
+
+    def get_matching_combined(self, event):
+        """
+        Find matching keys and return combined dictionary
+
+        >>> d = {'EUREC4A_*':{'a':0}, 'EUREC4A_BCO':{'p':1}}
+        >>> rd = RegexDict(d)
+        >>> rd.get_matching_combined('EUREC4A_BCO')
+        {'a': 0, 'p': 1}
+        """
+        matching = self.get_matching(event)
+        dall = {}
+        for d in matching:
+            dall.update(d)
+        return dall
+
+
+def get_global_attrs(cfg_file, key):
+    """
+    Get global attributes from configuration file
+    """
+    with open(cfg_file, 'r') as f:
+        j=json.load(f)
+        rd = RegexDict(j['global_meta_data'])
+        return rd.get_matching_combined(key)
 
 
 def unixpath(path_in):

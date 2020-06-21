@@ -32,11 +32,9 @@
     },
     "pressure": {
       "long_name": "pressure",
-      "coordinates": "flight_time longitude latitude pressure",
+      "coordinates": "flight_time longitude latitude",
       "standard_name": "air_pressure",
       "units": "hPa",
-      "axis": "Z",
-      "positive": "down",
       "_FillValue": 9.969209968386869e+36
     },
     "temperature": {
@@ -117,26 +115,73 @@
     },
     "ascent_flag": {
       "long_name": "indicator of vertical flight direction",
-      "flag_values": "1, 0",
+      "flag_values": "True False",
       "flag_meanings": "ascending descending",
-      "valid_range": "0, 1"
+      "valid_range": "False True"
     },
     "platform": {
       "long_name": "platform identifier",
-      "units": "-",
-      "description": "1: BCO, 2: Meteor, 3: RH-Brown, 4: MS-Merian, 5: Atalante"
+      "units": "1",
+      "description": "1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante"
     },
     "sounding_id": {
       "cf_role": "trajectory_id",
       "long_name": "sounding identifier",
-      "description": "unique string describing the soundings origin"
+      "description": "unique string describing the soundings origin (PLATFORM_SND-DIRECTION_LAT_LON_TIME)"
     },
     "altitude": {
-      "standard_name": "geopotenial_height",
+      "standard_name": "geopotential_height",
       "long_name": "geopotential height retrieved from PTU",
-      "units": "gpm",
+      "units": "m",
+      "positive": "up",
       "coordinates": "flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
+    }
+  },
+  "global_meta_data":{
+    "EUREC4A_.*?_.*?_L1":{
+        "title": "EUREC4A level 1 sounding data"
+    },
+    "EUREC4A_.*?_.*?_L2":{
+        "title": "EUREC4A level 2 sounding data"
+    },
+    "EUREC4A_.*?_.*?_.*?":{
+      "campaign_id": "EUREC4A",
+      "doi": "pending",
+      "institution": "Max Planck Institute for Meteorology, Hamburg, Germany",
+      "references": "Stephan et al. (2020)"
+    },
+    "EUREC4A_Atalante_.*?_.*?":{
+      "platform_name": "Atalante",
+      "platform_location": "N/A"
+    },
+    "EUREC4A_Atalante_Vaisala-RS_.*?":{
+      "platform_name": "Atalante",
+      "instrument_id": "Vaisala-RS"
+    },
+     "EUREC4A_Atalante_Meteomodem-RS_.*?":{
+      "platform_name": "Atalante",
+      "instrument_id": "Meteomodem-RS"
+    },
+    "EUREC4A_Meteor_.*?_.*?":{
+      "platform_name": "Meteor",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_BCO_.*?_.*?":{
+      "platform_name": "BCO",
+      "platform_location":" Deebles Point, Barbados, West Indies",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_RonBrown_.*?_.*?":{
+      "platform_name": "RonBrown",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_Merian_.*?_.*?":{
+      "platform_name": "Merian",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
     }
   }
 }

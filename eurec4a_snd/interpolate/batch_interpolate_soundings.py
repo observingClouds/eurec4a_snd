@@ -90,130 +90,185 @@ variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
                   'pressure':'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
                   'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
                   'windSpeed': 'wind_speed',
-                  'wind_u': 'wind_u', 'wind_v': 'wind_v'}
+                  'wind_u': 'wind_u', 'wind_v': 'wind_v',
+                  'x': 'x', 'y':'y', 'z':'z'
+                  }
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
                     'longitude', 'latitude', 'mixing_ratio', 'launch_time',
                     'flight_time', 'ascent_rate']
 meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
+                                  'standard_name': 'time',
                                   'units': 'seconds since 1970-01-01 00:00:00 UTC',
                                   'coordinates': 'flight_time longitude latitude altitude',
-                                  '_FillValue': default_fillvals['f8']},
+                                  '_FillValue': default_fillvals['f8'],
+                                  'ancillary_variables': 'N_ptu',
+                                  'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                  },
                   'launch_time': {'long_name': 'time at which the sounding started',
                                   'units': 'seconds since 1970-01-01 00:00:00 UTC',
                                   '_FillValue': default_fillvals['f8']
                                   },
                   'ascent_rate': {'long_name': 'ascent/desent rate of measuring device',
-                                  'coordinates': 'flight_time longitude latitude altitude',
+                                  'coordinates': 'longitude latitude flight_time sounding_id',
                                   'description': 'calculated from interpolated geopotential height changes',
-                                  'units': 'gpm/s',
-                                  '_FillValue': default_fillvals['f4']},
+                                  'units': 'm/s',
+                                  '_FillValue': default_fillvals['f4'],
+                                  'ancillary_variables': 'N_ptu',
+                                  'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                  },
                   'altitude': {'long_name': 'geopotential height',
                                'standard_name': 'geopotential_height',
-                               'units': 'gpm',
-                               'axis': 'Y',
-                               '_FillValue': default_fillvals['f4']
+                               'units': 'm',
+                               'axis': 'Z',
+                               'positive': 'up',
+                               # '_FillValue': default_fillvals['f4']
                                },
                   'pressure': {'long_name': 'pressure',
                                'standard_name': 'air_pressure',
                                'units': 'hPa',
-                               'coordinates': 'flight_time longitude latitude altitude',
-                               '_FillValue': default_fillvals['f4']
+                               'coordinates': 'longitude latitude flight_time sounding_id',
+                               '_FillValue': default_fillvals['f4'],
+                               'ancillary_variables': 'N_ptu',
+                               'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
                                },
                   'temperature': {'long_name': 'dry bulb temperature',
                                   'standard_name': 'air_temperature',
                                   'units': 'degrees Celsius',
-                                  'coordinates': 'flight_time longitude latitude altitude',
-                                  '_FillValue': default_fillvals['f4']
+                                  'coordinates': 'longitude latitude flight_time sounding_id',
+                                  '_FillValue': default_fillvals['f4'],
+                                  'cell_method': 'alt: point (derived from averaged theta)'
                                   },
                   'theta': {'long_name': 'potential temperature',
                             'standard_name': 'air_potential_temperature',
                             'units': 'K',
-                            'coordinates': 'flight_time longitude latitude altitude',
-                            '_FillValue': default_fillvals['f4']
+                            'coordinates': 'flight_time longitude latitude sounding_id',
+                            '_FillValue': default_fillvals['f4'],
+                            'ancillary_variables': 'N_ptu',
+                            'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
                             }, 
                   'relative_humidity': {'long_name': 'relative_humidity',
                                         'standard_name': 'relative_humidity',
-                                        'coordinates': 'flight_time longitude latitude altitude',
+                                        'coordinates': 'flight_time longitude latitude sounding_id',
                                         'units': '%',
-                                        '_FillValue': default_fillvals['f4']
+                                        '_FillValue': default_fillvals['f4'],
+                                        'cell_method': 'alt: point (derived from averaged q, T, p)'
                                         },
                   'specific_humidity': {'long_name': 'specific humidity',
                                         'standard_name': 'specific_humidity',
                                         'units': 'g/kg',
-                                        'coordinates': 'flight_time longitude latitude altitude',
-                                        '_FillValue': default_fillvals['f4']
+                                        'coordinates': 'flight_time longitude latitude sounding_id',
+                                        '_FillValue': default_fillvals['f4'],
+                                        'ancillary_variables': 'N_ptu',
+                                        'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
                                         },
                   'dew_point': {'long_name': 'dew point temperature',
                                 'standard_name': 'dew_point_temperature',
                                 'units': 'degrees Celsius',
-                                'coordinates': 'flight_time longitude latitude altitude',
-                                '_FillValue': default_fillvals['f4']},
+                                'coordinates': 'flight_time longitude latitude sounding_id',
+                                '_FillValue': default_fillvals['f4'],
+                                'ancillary_variables': 'N_ptu',
+                                'cell_method': 'alt: mean (interval=10m comment: N_ptu)'
+                                },
                   'mixing_ratio': {'long_name': 'water vapor mixing ratio',
-                                   'coordinates': 'flight_time longitude latitude altitude',
+                                   'coordinates': 'flight_time longitude latitude sounding_id',
                                    'units': 'g/kg',
                                    'standard_name': 'humidity_mixing_ratio',
-                                   '_FillValue': default_fillvals['f4']
+                                   '_FillValue': default_fillvals['f4'],
+                                   'ancillary_variables': 'N_ptu',
+                                   'cell_method': 'alt: point (derived from averaged q)'
                                    },
                   'wind_speed': {'long_name': 'wind speed',
                                  'standard_name': 'wind_speed',
                                  'units': 'm/s',
-                                 'coordinates': 'flight_time longitude latitude altitude',
-                                 '_FillValue': default_fillvals['f4']
+                                 'coordinates': 'flight_time longitude latitude sounding_id',
+                                 '_FillValue': default_fillvals['f4'],
+                                 'cell_method': 'alt: point (derived from averaged u, v)'
                                  },
                   'wind_direction': {'long_name': 'wind direction',
-                                     'coordinates': 'flight_time longitude latitude altitude',
+                                     'coordinates': 'flight_time longitude latitude sounding_id',
                                      'standard_name': 'wind_from_direction',
                                      'units': 'degrees',
-                                     '_FillValue': default_fillvals['f4']
+                                     '_FillValue': default_fillvals['f4'],
+                                     'cell_method': 'alt: point (derived from averaged u, v)'
                                      },
                   'wind_u': {'long_name': 'u-component of the wind',
                              'standard_name': 'eastward_wind',
                              'units': 'm/s',
-                             'coordinates': 'flight_time longitude latitude altitude',
-                             '_FillValue': default_fillvals['f4']
+                             'coordinates': 'flight_time longitude latitude sounding_id',
+                             '_FillValue': default_fillvals['f4'],
+                             'ancillary_variables': 'N_gps',
+                             'cell_method': 'alt: mean (interval=10m comment: N_gps)'
                              },
                   'wind_v': {'long_name': 'v-component of the wind',
                              'standard_name': 'northward_wind',
                              'units': 'm/s',
-                             'coordinates': 'flight_time longitude latitude altitude',
-                             '_FillValue': default_fillvals['f4']
+                             'coordinates': 'flight_time longitude latitude sounding_id',
+                             '_FillValue': default_fillvals['f4'],
+                             'ancillary_variables': 'N_gps',
+                             'cell_method': 'alt: mean (interval=10m comment: N_gps)'
                              },
                   'latitude': {'long_name': 'latitude',
                                'standard_name': 'latitude',
-                               'units': 'degree_north',
-                               '_FillValue': default_fillvals['f4']
+                               'units': 'degrees_north',
+                               '_FillValue': default_fillvals['f4'],
+                               'ancillary_variables': 'N_gps',
+                               'cell_method': 'alt: mean (interval=10m comment: N_gps)'
                                },
                   'longitude': {'long_name': 'longitude',
                                 'standard_name': 'longitude',
-                                'units': 'degree_east',
-                                '_FillValue': default_fillvals['f4']
+                                'units': 'degrees_east',
+                                '_FillValue': default_fillvals['f4'],
+                                'ancillary_variables': 'N_gps',
+                                'cell_method': 'alt: mean (interval=10m comment: N_gps)',
                                 },
                   'ascent_flag': {'long_name': 'indicator of vertical flight direction',
-                                  'flag_values': '1, 0',
+                                  'flag_values': np.array([1, 0],dtype=np.int8),
                                   'flag_meanings': 'ascending descending',
-                                  'valid_range': '0, 1'
+                                  'valid_range': np.array([0, 1],dtype=np.int8)
                                   },
                   'platform': {'long_name': 'platform identifier',
-                               'units': '-',
-                               'description': '1: BCO, 2: Meteor, 3: RH-Brown, 4: MS-Merian, 5: Atalante'
+                               'units': '1',
+                               'description': '1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante'
                                },
-                   'data_count': {'description': 'number of measurements that have been used to derive level 2 data point average',
+                  'N_ptu': {'standard_name': 'number_of_observations',
+                         'description': 'number of measurements and method used to derive level 2 PTU data average',
                                   'flag_values':'np.nan, 0 , 1+',
-                                  'flag_meanings':'no data, linear interpolation, averaging'}
+                                  'flag_meanings':'no_data interpolation averaging'
+                             },
+                  'N_gps': {'standard_name': 'number_of_observations',
+                         'description': 'number of measurements and method used to derive level 2 GPS data average',
+                                  'flag_values':'np.nan, 0 , 1+',
+                                  'flag_meanings':'no_data interpolation averaging'
+                             },
+                  'x':{'long_name':'WGS84_x'},
+                  'y':{'long_name':'WGS84_y'},
+                  'z':{'long_name':'WGS84_z'}
+                  # 'm_ptu': {'long_name': 'cell_method used for PTU data'
+                  #           'standard_name': 'status_flag',
+                  #           'flag_values': '0, 1, 2',
+                  #           'flag_meanings': 'no_data linear_interpolation averaging'
+                  #           },
+                  # 'm_gps': {'long_name': 'cell_method used for GPS data'
+                  #           'standard_name': 'status_flag',
+                  #           'flag_values': '0, 1, 2',
+                  #           'flag_meanings': 'no_data linear_interpolation averaging'
+                  #           }
                   }
 platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Barbados Cloud Observatory (BCO)': 'BCO',
                         'Maria S Merian (MER)': 'MS-Merian',
                         'FS_METEOR (MET)': 'Meteor',
-                        'Research Vessel Ronald H. Brown (WTEC) (RHB)': 'RH-Brown'}
-platform_number_dict = {'Atalante (ATL)': 5,
-                        'Barbados Cloud Observatory (BCO)': 1,
-                        'Maria S Merian (MER)': 4,
-                        'FS_METEOR (MET)': 2,
-                        'Research Vessel Ronald H. Brown (WTEC) (RHB)': 3}
+                        'Research Vessel Ronald H. Brown (WTEC) (RHB)': 'RonBrown'}
+platform_number_dict = {'Atalante': 5,
+                        'BCO': 1,
+                        'Merian': 4,
+                        'Meteor': 2,
+                        'RonBrown': 3}
 std_pressures = [1000.00, 925.00, 850.00, 700.00, 500.00, 400.00, 300.00,
                  250.00, 200.00, 150.00, 100.00, 70.00, 50.00]
+
+json_config_fn = pwd+'/../mwx_config.json'
 
 
 def main(args={}):
@@ -291,9 +346,9 @@ def main(args={}):
         ds = ds.isel({'levels': uniq_altitude_idx})
 
         # Check if platform is known
-        if ds.platform_name not in platform_rename_dict.keys():
-            logging.error('The platform {} is not known. Please choose one of {}'.format(ds.platform_name, platform_rename_dict.keys()))
-            sys.exit()
+        # if ds.platform_name not in platform_rename_dict.keys():
+        #     logging.error('The platform {} is not known. Please choose one of {}'.format(ds.platform_name, platform_rename_dict.keys()))
+        #     sys.exit()
 
         # Consistent platform test
         if f == 0:
@@ -430,16 +485,31 @@ def main(args={}):
         # Interpolate NaNs
         ## max_gap is the maximum gap of NaNs in meters that will be still interpolated
         #ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
-        ds_interp['data_count'] = xr.DataArray(ds_new.pressure.groupby_bins('altitude',np.arange(-5,31005,10), labels=np.arange(0,31000,10), restore_coord_dims=True).count().values,
-                                  dims=dims_2d,
-                                  coords=coords_1d)
+        ds_interp['N_ptu'] = xr.DataArray(
+            ds_new.pressure.groupby_bins('altitude', np.arange(-5, 31005, 10), labels=np.arange(0 ,31000, 10),
+                                         restore_coord_dims=True).count().values,
+            dims=dims_2d,
+            coords=coords_1d)
         data_avail_or_interp = np.where(~np.isnan(ds_interp.pressure), 0, np.nan)
-        stacked_data_counts = np.vstack([ds_interp.data_count.values[0,:], data_avail_or_interp[0,:]])
+        stacked_data_counts = np.vstack([ds_interp.N_ptu.values[0, :], data_avail_or_interp[0, :]])
+        nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
+        data_counts_combined = np.empty(len(stacked_data_counts[0]))
+        data_counts_combined.fill(np.nan)
+        data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:, ~nan_idx_both], axis=0)
+        ds_interp['N_ptu'].values[0, :] = data_counts_combined
+
+        ds_interp['N_gps'] = xr.DataArray(
+            ds_new.latitude.groupby_bins('altitude', np.arange(-5, 31005, 10), labels=np.arange(0, 31000, 10),
+                                         restore_coord_dims=True).count().values,
+            dims=dims_2d,
+            coords=coords_1d)
+        data_avail_or_interp = np.where(~np.isnan(ds_interp.latitude), 0, np.nan)
+        stacked_data_counts = np.vstack([ds_interp.N_gps.values[0,:], data_avail_or_interp[0,:]])
         nan_idx_both = np.logical_and(np.isnan(stacked_data_counts[0]), np.isnan(stacked_data_counts[1]))
         data_counts_combined = np.empty(len(stacked_data_counts[0]))
         data_counts_combined.fill(np.nan)
         data_counts_combined[~nan_idx_both] = np.nanmax(stacked_data_counts[:,~nan_idx_both], axis=0)
-        ds_interp['data_count'].values[0,:] = data_counts_combined
+        ds_interp['N_gps'].values[0,:] = data_counts_combined
 
         direction = get_direction(ds_interp, ds)
         if direction == 'ascending':
@@ -447,9 +517,12 @@ def main(args={}):
         else:
             ds_interp['ascent_flag'] = xr.DataArray([0], dims=['sounding'])
 
+        # Copy trajectory id from level1 dataset
+        ds_interp['sounding_id'] = ds['sounding_id']
+
         script_basename = os.path.basename(__file__)
         script_modification_time = time.ctime(os.path.getmtime(os.path.realpath(__file__)))
-        global_attrs_dict = {'title': 'EUREC4A interpolated sounding data',
+        glob_attrs_dict = {'title': 'EUREC4A interpolated sounding data',
                              'platform_name': platform,
                              'surface_altitude': ds.attrs['surface_altitude'],
                              'instrument': ds.instrument,
@@ -465,19 +538,28 @@ def main(args={}):
                              'Conventions': 'CF-1.7'
                              }
 
-        ds_interp = set_global_attributes(ds_interp, global_attrs_dict)
+        # Overwrite standard attrs with those defined in config file
+        # Get global meta data from mwx_config.json
+        level='L2'
+        glob_attrs_dict2 = get_global_attrs(json_config_fn, f'{ds.campaign_id}_{ds.platform_id}_{ds.instrument_id}_{level}')
+
+        for attrs, value in glob_attrs_dict2.items():
+            glob_attrs_dict[attrs] = value
+
+        ds_interp = set_global_attributes(ds_interp, glob_attrs_dict)
         ds_interp = set_additional_var_attributes(ds_interp, meta_data_dict)
 
         for variable in ['temperature', 'dew_point', 'wind_speed', 'pressure',
                          'wind_u', 'wind_v', 'latitude', 'longitude',
-                         'mixing_ratio', 'altitude', 'wind_direction',
+                         'mixing_ratio', 'wind_direction',
                          'specific_humidity', 'relative_humidity',
                          'ascent_rate'
                          ]:
     #             ds_interp[variable].values = np.round(ds_interp[variable].values, 2)
-            ds_interp[variable].encoding = {'dtype': 'f4'}
-        ds_interp['ascent_flag'].encoding = {'dtype': 'bool'}
-        ds_interp['platform'].encoding = {'dtype': 'uint8'}
+            ds_interp[variable].encoding['dtype'] = 'f4'
+        ds_interp['ascent_flag'].encoding['dtype'] = 'int8'
+        ds_interp['platform'].encoding['dtype'] = 'uint8'
+        import pdb; pdb.set_trace()
 
         # Transpose dataset if necessary
         for variable in ds_interp.data_vars:
@@ -488,8 +570,14 @@ def main(args={}):
         time_dt = num2date(ds_interp.isel({'sounding': 0}).launch_time,
                            "seconds since 1970-01-01 00:00:00")
         time_fmt = time_dt.strftime('%Y%m%d%H%M')
-        platform_filename = platform_rename_dict[platform]
-        outfile = args['outputfolder']+'EUREC4A_{platform}_soundings_{date}.nc'.format(platform=platform_filename, date=time_fmt)
+        platform_filename = platform  # platform_rename_dict[platform]
+        outfile = args['outputfolder']+'{campaign}_{platform}_{instrument_id}_{level}_{date}_{version}.nc'.format(campaign=ds.campaign_id,
+                                                                                                                  platform=platform_filename,
+                                                                                                                  instrument_id=ds.instrument_id,
+                                                                                                                  level=level,
+                                                                                                                  date=time_fmt,
+                                                                                                                  version=git_module_version
+                                                                                                                  )
         logging.info('Write output to {}'.format(outfile))
         write_dataset(ds_interp, outfile)
 
