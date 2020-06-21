@@ -256,7 +256,7 @@ platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Research Vessel Ronald H. Brown (WTEC) (RHB)': 'RonBrown'}
 platform_number_dict = {'Atalante': 5,
                         'BCO': 1,
-                        'Merian': 4,
+                        'MS-Merian': 4,
                         'Meteor': 2,
                         'RonBrown': 3}
 std_pressures = [1000.00, 925.00, 850.00, 700.00, 500.00, 400.00, 300.00,

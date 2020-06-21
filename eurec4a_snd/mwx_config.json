@@ -179,8 +179,8 @@
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     },
-    "EUREC4A_Merian_.*?_.*?":{
-      "platform_name": "Merian",
+    "EUREC4A_MS-Merian_.*?_.*?":{
+      "platform_name": "MS-Merian",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     }
