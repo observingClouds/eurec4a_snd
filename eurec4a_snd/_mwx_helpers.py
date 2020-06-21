@@ -71,6 +71,31 @@ def open_mwx(mwx_file):
     decompressed_files = np.array(decompress(mwx_file, tmpdir + '/'))
     return decompressed_files
 
+class MWX(object):
+    """
+        Open Vaisala MWX41 archive file (.mwx)
+
+        Input
+        -----
+        mwx_file : str
+            Vaisala MW41 archive file
+
+        Returns
+        -------
+        decompressed_files : list
+            List of temporarily decompressed .xml files
+            within the archive file
+        """
+    def __init__(self, mwx_file):
+        self.tmpdir, self.tmpdir_obj = getTmpDir()
+        self.decompressed_files = np.array(decompress(mwx_file, self.tmpdir + '/'))
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        self.tmpdir_obj.cleanup()
+    def get_decompressed_files(self):
+        return self.decompressed_files
+
 
 def check_availability(decomp_files, file, return_name=False):
     """
@@ -84,7 +109,7 @@ def check_availability(decomp_files, file, return_name=False):
     filename : str (optional)
         Full filename of requested file
     """
-    basenames = [os.path.basename(decomp_files)]
+    basenames = [os.path.basename(decomp_file) for decomp_file in decomp_files]
 
     # Availability
     availability_mask = np.in1d(basenames, file)

@@ -242,30 +242,30 @@ def main(args={}):
     for mwx_file in tqdm.tqdm(mwx_files):
 
         # Decompress/open mwx file
-        decompressed_files = open_mwx(mwx_file)
+        with MWX(mwx_file) as mwx:
+            decompressed_files = mwx.decompressed_files
 
-        # Get the files SynchronizedSoundingData.xml, Soundings.xml, ...
-        a1, sync_filename = check_availability(decompressed_files, 'SynchronizedSoundingData.xml', True)
-        a2, snd_filename = check_availability(decompressed_files, 'Soundings.xml', True)
-        a3, radio_filename = check_availability(decompressed_files, 'Radiosondes.xml', True)
-        if np.any([~a1, ~a2, ~a3]):
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
+            # Get the files SynchronizedSoundingData.xml, Soundings.xml, ...
+            a1, sync_filename = check_availability(decompressed_files, 'SynchronizedSoundingData.xml', True)
+            a2, snd_filename = check_availability(decompressed_files, 'Soundings.xml', True)
+            a3, radio_filename = check_availability(decompressed_files, 'Radiosondes.xml', True)
+            if np.any([not a1, not a2, not a3]):
+                logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
+                continue
 
-        # Read Soundings.xml to get base time
-        itemlist = read_xml(snd_filename)
-        for i, item in enumerate(itemlist):
-            begin_time = item.attributes['BeginTime'].value
-            launch_time = item.attributes['LaunchTime'].value
-            altitude = item.attributes['Altitude'].value
-        begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
+            # Read Soundings.xml to get base time
+            itemlist = read_xml(snd_filename)
+            for i, item in enumerate(itemlist):
+                begin_time = item.attributes['BeginTime'].value
+                launch_time = item.attributes['LaunchTime'].value
+                altitude = item.attributes['Altitude'].value
+            begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
 
-        # Read sounding data
-        pd_snd = get_sounding_profile(sync_filename, sync_sounding_values)
-        pd_std = get_sounding_profile(std_filename, std_sounding_values)
+            # Read sounding data
+            pd_snd = get_sounding_profile(sync_filename, sync_sounding_values)
 
-        # Read Radiosounding.xml to get sounding metadata
-        sounding_meta_dict = get_sounding_metadata(radio_filename, radiosondes_values)
+            # Read Radiosounding.xml to get sounding metadata
+            sounding_meta_dict = get_sounding_metadata(radio_filename, radiosondes_values)
 
         # Create flight time
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
@@ -400,7 +400,6 @@ def main(args={}):
             xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
             logging.info('File converted to {}'.format(filename))
 
-        tmpdir_obj.cleanup()
 
 if __name__ == "__main__":
     main()
