@@ -563,7 +563,6 @@ def main(args={}):
             ds_interp[variable].encoding['dtype'] = 'f4'
         ds_interp['ascent_flag'].encoding['dtype'] = 'int8'
         ds_interp['platform'].encoding['dtype'] = 'uint8'
-        import pdb; pdb.set_trace()
 
         # Transpose dataset if necessary
         for variable in ds_interp.data_vars:
