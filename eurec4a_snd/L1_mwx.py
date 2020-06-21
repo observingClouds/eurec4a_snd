@@ -333,6 +333,7 @@ def main(args={}):
             xr_output['windDirection'] = xr.DataArray([xr_snd.WindDir.values], dims = ['sounding', 'levels'])
             xr_output['latitude'] = xr.DataArray([xr_snd.Latitude.values], dims = ['sounding', 'levels'])
             xr_output['longitude'] = xr.DataArray([xr_snd.Longitude.values], dims = ['sounding', 'levels'])
+            xr_output['altitude_WGS84'] = xr.DataArray([xr_snd.Altitude.values], dims=['sounding', 'levels'])
         #     xr_output['standard_level_flag'] = xr.DataArray()
 
             # Write attributes

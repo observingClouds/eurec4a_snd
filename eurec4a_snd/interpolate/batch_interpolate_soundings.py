@@ -16,10 +16,14 @@ import metpy.calc as mpcalc
 from metpy.units import units
 import netCDF4
 from netCDF4 import num2date, default_fillvals
+import pyproj
 import eurec4a_snd
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+pwd = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(pwd)
 from postprocessing import *
+sys.path.append(pwd+'/../')
+from _helpers import get_global_attrs
 
 
 def get_args():
@@ -363,8 +367,22 @@ def main(args={}):
 
         # Prepare some data that cannot be linearly interpolated
         wind_dir_rad = np.deg2rad(ds.windDirection.values)
-        ds['wind_u'] = -1*ds.windSpeed.values * np.sin(wind_dir_rad)
-        ds['wind_v'] = -1*ds.windSpeed.values * np.cos(wind_dir_rad)
+        ds['wind_u'] = xr.DataArray(-1*ds.windSpeed.values * np.sin(wind_dir_rad), dims=['levels'])
+        ds['wind_v'] = xr.DataArray(-1*ds.windSpeed.values * np.cos(wind_dir_rad), dims=['levels'])
+
+        if 'altitude_WGS84' in ds.keys():
+            # Convert lat, lon, alt to cartesian coordinates
+            ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
+            lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
+            x, y, z = pyproj.transform(lla, ecef,
+                                                           ds.longitude.values,
+                                                           ds.latitude.values,
+                                                           ds.altitude_WGS84.values,
+                                                           radians=False)
+            for var, val in {'x':x, 'y':y, 'z':z}.items():
+                ds[var] = xr.DataArray(val, dims=['levels'])
+        else:
+            logging.warning('No WGS84 altitude could be found. The averaging of the position might be faulty especially at the 0 meridian and close to the poles')
 
         dewPoint_K = ds['dewPoint'].values+273.15
         pressure_Pa = ds['pressure'].values*100
@@ -429,9 +447,28 @@ def main(args={}):
         wind_u = ds_interp.isel({'sounding': 0})['wind_u']
         wind_v = ds_interp.isel({'sounding': 0})['wind_v']
         wind_direction = np.rad2deg(np.arctan2(-1*wind_u, -1*wind_v)) % 360
+        wind_speed = np.sqrt(wind_u**2+wind_v**2)
         ds_interp['wind_direction'] = xr.DataArray([np.array(wind_direction.values)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
+        ds_interp['wind_speed'] = xr.DataArray([np.array(wind_speed.values)],
+                                                   dims=dims_2d,
+                                                   coords=coords_1d)
+        if 'altitude_WGS84' in ds.keys():
+            lon, lat, alt = pyproj.transform(ecef, lla,
+                                             ds_interp['x'].values,
+                                             ds_interp['y'].values,
+                                             ds_interp['z'].values,
+                                             radians=False)
+
+            for var, val in {'latitude':lat, 'longitude':lon, 'altitude_WGS84': alt}.items():
+                ds_interp[var] = xr.DataArray(val, dims=dims_2d, coords=coords_1d)
+
+            del ds_interp['x']
+            del ds_interp['y']
+            del ds_interp['z']
+            del ds_interp['altitude_WGS84']
+
         ds_input = ds_input.sortby('altitude')
         ds_input.altitude.load()
         ds_input.pressure.load()
