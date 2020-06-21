@@ -13,90 +13,91 @@
       "units": "seconds since 1970-01-01 00:00:00 UTC",
       "axis": "T",
       "calendar": "gregorian",
-      "coordinates": "flight_time longitude latitude pressure",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "launch_time": {
+      "standard_name": "time",
       "long_name": "time at which the sounding started",
       "units": "seconds since 1970-01-01 00:00:00 UTC",
       "calendar": "gregorian",
-      "standard_name": "time",
       "_FillValue": 9.969209968386869e+36
     },
     "ascentRate": {
       "long_name": "ascent/desent rate of measuring device",
-      "coordinates": "flight_time longitude latitude pressure",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "description": "ascent rate is positive/ descent rate is negative",
       "units": "m/s",
       "_FillValue": 9.969209968386869e+36
     },
     "pressure": {
-      "long_name": "pressure",
-      "coordinates": "flight_time longitude latitude",
       "standard_name": "air_pressure",
+      "long_name": "pressure",
       "units": "hPa",
+      "coordinates": "sounding_id flight_time longitude latitude",
       "_FillValue": 9.969209968386869e+36
     },
     "temperature": {
-      "long_name": "dry bulb temperature",
-      "coordinates": "flight_time longitude latitude pressure",
       "standard_name": "air_temperature",
+      "long_name": "dry bulb temperature",
       "units": "degrees_Celsius",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "humidity": {
-      "long_name": "relative_humidity",
       "standard_name": "relative_humidity",
-      "coordinates": "flight_time longitude latitude pressure",
+      "long_name": "relative_humidity",
       "units": "%",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "specific_humidity": {
-      "long_name": "specific humidity",
       "standard_name": "specific_humidity",
+      "long_name": "specific humidity",
       "units": "g/kg",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "dewPoint": {
-      "long_name": "dew point temperature",
-      "coordinates": "flight_time longitude latitude pressure",
       "standard_name": "dew_point_temperature",
+      "long_name": "dew point temperature",
       "units": "degrees_Celsius",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "mixingRatio": {
-      "long_name": "water vapor mixing ratio",
-      "coordinates": "flight_time longitude latitude pressure",
-      "units": "g/kg",
       "standard_name": "humidity_mixing_ratio",
+      "long_name": "water vapor mixing ratio",
+      "units": "g/kg",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "windSpeed": {
-      "long_name": "wind speed",
-      "coordinates": "flight_time longitude latitude pressure",
       "standard_name": "wind_speed",
+      "long_name": "wind speed",
       "units": "m/s",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "windDirection": {
-      "long_name": "wind direction",
-      "coordinates": "flight_time longitude latitude pressure",
       "standard_name": "wind_from_direction",
+      "long_name": "wind direction",
       "units": "degrees",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "wind_u": {
-      "long_name": "u-component of the wind",
       "standard_name": "eastward_wind",
+      "long_name": "u-component of the wind",
       "units": "m/s",
       "coordinates": "flight_time longitude latitude altitude",
       "_FillValue": 9.969209968386869e+36
     },
     "wind_v": {
-      "long_name": "v-component of the wind",
       "standard_name": "northward_wind",
+      "long_name": "v-component of the wind",
       "units": "m/s",
-      "coordinates": "flight_time longitude latitude altitude",
+      "coordinates": "sounding_id flight_time longitude latitude altitude",
       "_FillValue": 9.969209968386869e+36
     },
     "latitude": {
@@ -107,8 +108,8 @@
       "_FillValue": 9.969209968386869e+36
     },
     "longitude": {
-      "long_name": "longitude",
       "standard_name": "longitude",
+      "long_name": "longitude",
       "units": "degrees_east",
       "axis": "X",
       "_FillValue": 9.969209968386869e+36
@@ -134,7 +135,7 @@
       "long_name": "geopotential height retrieved from PTU",
       "units": "m",
       "positive": "up",
-      "coordinates": "flight_time longitude latitude pressure",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     }
   },

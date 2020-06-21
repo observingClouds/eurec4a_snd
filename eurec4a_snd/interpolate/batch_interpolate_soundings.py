@@ -248,16 +248,6 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                   'x':{'long_name':'WGS84_x'},
                   'y':{'long_name':'WGS84_y'},
                   'z':{'long_name':'WGS84_z'}
-                  # 'm_ptu': {'long_name': 'cell_method used for PTU data'
-                  #           'standard_name': 'status_flag',
-                  #           'flag_values': '0, 1, 2',
-                  #           'flag_meanings': 'no_data linear_interpolation averaging'
-                  #           },
-                  # 'm_gps': {'long_name': 'cell_method used for GPS data'
-                  #           'standard_name': 'status_flag',
-                  #           'flag_values': '0, 1, 2',
-                  #           'flag_meanings': 'no_data linear_interpolation averaging'
-                  #           }
                   }
 platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Barbados Cloud Observatory (BCO)': 'BCO',
@@ -271,6 +261,10 @@ platform_number_dict = {'Atalante': 5,
                         'RonBrown': 3}
 std_pressures = [1000.00, 925.00, 850.00, 700.00, 500.00, 400.00, 300.00,
                  250.00, 200.00, 150.00, 100.00, 70.00, 50.00]
+
+interpolation_grid = np.arange(0, 31000, 10)  # meters
+interpolation_bins = np.arange(-5,31005,10)  # meters
+max_gap_fill = 50  # Maximum data gap size that should be filled by interpolation (meters)
 
 json_config_fn = pwd+'/../mwx_config.json'
 
@@ -383,21 +377,13 @@ def main(args={}):
                 ds[var] = xr.DataArray(val, dims=['levels'])
         else:
             logging.warning('No WGS84 altitude could be found. The averaging of the position might be faulty especially at the 0 meridian and close to the poles')
-
-        dewPoint_K = ds['dewPoint'].values+273.15
-        pressure_Pa = ds['pressure'].values*100
         
         theta = calc_theta_from_T(ds['temperature'].values, ds['pressure'].values)
-        #dp = mpcalc.dewpoint_from_relative_humidity(
-        #ds.temperature.values * units.degC, ds.humidity.values / 100).magnitude
-        # q = calc_q_from_rh(ds['dewPoint'].values, ds['pressure'].values)
-        e_s = calc_saturation_pressure(ds['temperature'].values+273.15)
-        w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds['pressure'].values*units.hPa).magnitude
+        e_s = calc_saturation_pressure(ds['temperature'].values + 273.15)
+        w_s = mpcalc.mixing_ratio(e_s * units.Pa, ds['pressure'].values*units.hPa).magnitude
         w = ds['humidity'].values/100.*w_s
         q = w/(1+w)
-        #mixing_ratio = np.array(calc_mixing_ratio_hardy(dewPoint_K,
-        #                                                pressure_Pa))*1000
-        #q = mpcalc.specific_humidity_from_mixing_ratio(mixing_ratio/1000)
+
         da_w = xr.DataArray([w*1000],
                             dims=['sounding', 'altitude'],
                             coords={'altitude': ds.altitude.values})
@@ -432,16 +418,16 @@ def main(args={}):
             ds_new = ds_new.dropna(dim='altitude',
                                    subset=output_variables,
                                    how='any')
-            ds_interp = ds_new.interp(altitude=np.arange(0, 31000, 10))
+            ds_interp = ds_new.interp(altitude=interpolation_grid)
         elif args['method'] == 'bin':
-            ds_interp = ds_new.groupby_bins('altitude',np.arange(-5,31005,10),
-                                            labels=np.arange(0,31000,10),
+            ds_interp = ds_new.groupby_bins('altitude', interpolation_bins,
+                                            labels=interpolation_grid,
                                             restore_coord_dims=True).mean()
             ds_interp = ds_interp.rename({'altitude_bins':'altitude'})
             ds_interp['launch_time'] = ds_new['launch_time']
 
         ## Interpolation NaN
-        ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+        ds_interp = ds_interp.interpolate_na('altitude', max_gap=max_gap_fill, use_coordinate=True)
 
         dims_2d = ['sounding', 'altitude']
         coords_1d = {'altitude': ds_interp.altitude.values}
@@ -481,27 +467,12 @@ def main(args={}):
                                              dims=dims_2d,
                                              coords=coords_1d)
 
-        # Calculations after interpolation
-        #specific_humidity = metpy.calc.specific_humidity_from_mixing_ratio(ds_interp['mixing_ratio']/1000)
-        #relative_humidity = metpy.calc.relative_humidity_from_specific_humidity(
-        #  specific_humidity, ds_interp.temperature.values * units.degC,
-        #  ds_interp.pressure.values * units.hPa)
-
-        #ds_interp['specific_humidity'] = xr.DataArray(np.array(specific_humidity*1000),
-        #                                              dims=dims_2d,
-        #                                              coords=coords_1d)
-        #ds_interp['relative_humidity'] = xr.DataArray(np.array(relative_humidity)*100,
-        #                                              dims=dims_2d,
-        #                                              coords=coords_1d)
         ds_interp['launch_time'] = xr.DataArray([ds_interp.isel({'sounding': 0}).launch_time.item()/1e9],
                                                 dims=['sounding'])
         ds_interp['platform'] = xr.DataArray([platform_number_dict[platform]],
                                              dims=['sounding'])
-        #ds_interp['ascent_rate'] = xr.DataArray([calc_ascentrate(ds_interp.isel({'sounding': 0}).altitude.values,
-        #                                                         ds_interp.isel({'sounding': 0}).flight_time.values)],
-        #                                        dims=dims_2d,
-        #                                        coords=coords_1d)
 
+        # Calculations after interpolation
         # Recalculate temperature and relative humidity from theta and q
         temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
         ds_interp['temperature'] = xr.DataArray([np.array(temperature)],
@@ -512,20 +483,14 @@ def main(args={}):
         e_s = calc_saturation_pressure(ds_interp.isel(sounding=0)['temperature'].values+273.15)
         w_s = mpcalc.mixing_ratio(e_s*units.Pa, ds_interp.isel(sounding=0)['pressure'].values*units.hPa).magnitude
         relative_humidity = w/w_s*100
-        #relative_humidity = calc_rh_from_q(ds_interp['q'].values, ds_interp['temperature_re'].values, ds_interp['pressure'].values)
-        #saturation_p = calc_saturation_pressure(ds_interp['temperature_re'].values[0,:]+273.15)
-        #w_s = mpcalc.mixing_ratio(saturation_p * units.Pa, ds_interp['pressure'].values * units.hPa).magnitude
-        #relative_humidity = (ds_interp['specific_humidity']/1000)/((1-ds_interp['specific_humidity']/1000)*w_s)*100
  
         ds_interp['relative_humidity'] = xr.DataArray([np.array(relative_humidity)],
                                                    dims=dims_2d,
                                                    coords=coords_1d)
 
-        # Interpolate NaNs
-        ## max_gap is the maximum gap of NaNs in meters that will be still interpolated
-        #ds_interp = ds_interp.interpolate_na('altitude', max_gap=50, use_coordinate=True)
+        # Count number of measurements within each bin
         ds_interp['N_ptu'] = xr.DataArray(
-            ds_new.pressure.groupby_bins('altitude', np.arange(-5, 31005, 10), labels=np.arange(0 ,31000, 10),
+            ds_new.pressure.groupby_bins('altitude', interpolation_bins, labels=interpolation_grid,
                                          restore_coord_dims=True).count().values,
             dims=dims_2d,
             coords=coords_1d)
@@ -538,7 +503,7 @@ def main(args={}):
         ds_interp['N_ptu'].values[0, :] = data_counts_combined
 
         ds_interp['N_gps'] = xr.DataArray(
-            ds_new.latitude.groupby_bins('altitude', np.arange(-5, 31005, 10), labels=np.arange(0, 31000, 10),
+            ds_new.latitude.groupby_bins('altitude', interpolation_bins, labels=interpolation_grid,
                                          restore_coord_dims=True).count().values,
             dims=dims_2d,
             coords=coords_1d)

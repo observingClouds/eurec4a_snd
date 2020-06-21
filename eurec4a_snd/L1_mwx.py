@@ -11,9 +11,7 @@ from pathlib import Path, PureWindowsPath
 import subprocess as sp
 import argparse
 import logging
-import tempfile
 import glob
-from xml.dom import minidom
 from datetime import timedelta
 import datetime as dt
 import netCDF4
@@ -22,7 +20,6 @@ import time #as time_module
 import tqdm
 import json
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 import sys
@@ -297,7 +294,7 @@ def main(args={}):
             ## Dew point temperature
             dewpoint = convert_RH_to_dewpoint(xr_snd.Temperature.values, xr_snd.Humidity.values)
             ## Mixing ratio
-            e_s = calc_saturation_pressure(xr_snd.Temperature.values)  # calc_vapor_pressure(xr_snd, method='hardy')
+            e_s = calc_saturation_pressure(xr_snd.Temperature.values)
             mixing_ratio = calc_wv_mixing_ratio(xr_snd, e_s)*xr_snd.Humidity.values/100.
             ## Launch time as type(datetime)
             flight_time_unix = sounding.flight_time.values.astype(float)/1e9
