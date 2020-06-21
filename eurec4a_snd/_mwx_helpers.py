@@ -17,6 +17,12 @@ class VariableNotFoundInSounding(Warning):
 class SondeTypeNotIdentifiable(Warning):
     pass
 
+def custom_formatwarning(msg, *args, **kwargs):
+    # ignore everything except the message
+    return str(msg) + '\n'
+
+warnings.formatwarning = custom_formatwarning
+
 
 def getTmpDir():
     """
