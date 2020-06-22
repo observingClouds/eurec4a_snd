@@ -8,12 +8,12 @@ import tqdm
 import numpy as np
 import xarray as xr
 
-files_l2 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export/level_2/EURE*.nc'))
-files_l1 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export/level_1/*/*/*.nc'))
+files_l2 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EURE*.nc'))
+files_l1 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_1/*/*/*.nc'))
 
 rename_dict = {
     'altitude': 'alt',
-    'ascentRate': 'ascent_rate',
+    'ascentRate': 'dz',
     'dewPoint': 'dp',
     'flight_time': 'flight_time',
     'humidity': 'rh',
@@ -24,7 +24,7 @@ rename_dict = {
     'relative_humidity': 'rh',
     'specific_humidity': 'q',
     'pressure': 'p',
-    'temperature': 'tc',
+    'temperature': 'ta',
     'windDirection': 'wdir',
     'windSpeed':'wspd',
     'wind_direction': 'wdir',
