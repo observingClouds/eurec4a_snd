@@ -62,7 +62,7 @@ python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0
 
 # Remove short soundings (less than 30 levels)
 #python remove_short_soundings.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/level1_mwx/EUREC4A*sounding*.nc' -t 30 -d True
-python remove_short_soundings.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level1_mwx/EUREC4A*sounding*.nc' -t 30 -d True
+python ./postprocessing/remove_short_soundings.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level1_mwx/EUREC4A*L1*.nc' -t 30 -d True
 
 # Convert Level1 to Level2 (interpolate)
 #git checkout interpolation_method
@@ -167,8 +167,8 @@ cp -r /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level0_* /mnt/lustre
 #python ../eurec4a_snd/interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level1_bufr/ATL/MeteoModem/EUREC4A_Atalante_sounding_ascent_20200*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/'
 #ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v4/EUREC4A_Atalante_soundings_20200* /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export/level_2/EUREC4A_Atalante_soundings_MeteoModem.nc
 
-python ../eurec4a_snd/interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level1_bufr/ATL/MeteoModem/EUREC4A_Atalante_sounding_ascent_20200*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/'
-ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/EUREC4A_Atalante_soundings_20200* /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_MeteoModem-RS_L2.nc
+python ../eurec4a_snd/interpolate/batch_interpolate_soundings.py -m bin -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level1_bufr/ATL/MeteoModem/EUREC4A_Atalante_sounding_ascent_20200*.nc' -o '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/' --platform_id Atalante --campaign EUREC4A --instrument_id MeteoModem-RS
+ncrcat -h /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/EUREC4A_Atalante_MeteoModem-RS_*20200* /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_MeteoModem-RS_L2.nc
 
 python ./postprocessing/remove_lower_levels.py
 
