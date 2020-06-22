@@ -934,40 +934,6 @@ def exclude_sounding_level(sounding, nan_mask):
 
     return sounding
 
-# def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, significance_bits):
-#     """
-#     Exclude levels with specific extendedVerticalSoundingSignificance
-#
-#     Exclude sounding levels that contain one or more signficance bits
-#     and no additional one.
-#
-#     Input
-#     -----
-#     sounding : sounding object
-#         sounding
-#
-#     significance_bits : array like
-#         signficance bits that should trigger removal of sounding level
-#
-#     Note: Only those levels will be excluded, where all significance bits
-#           that are set are also included in significance_bits.
-#
-#     Example:
-#     exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, [1,3])
-#     would exclude the level with the bits [1], [1,3] and [3],
-#     but does not exclude e.g. the levels [], [1,4], [3,5], [1,4,8,..], ....
-#     """
-#     # Get levels where extendedVerticalSoundingSignificance is not 0
-#     significance_levels = np.where(sounding.extendedVerticalSoundingSignificance != 0)[0]
-#     to_delete_mask = np.zeros(len(sounding.time), dtype=bool)
-#     for significance_level in significance_levels:
-#         current_level = sounding.extendedVerticalSoundingSignificance[significance_level]
-#         current_level = set(decode_extendedVerticalSoundingSignificance(current_level))
-#         to_delete_mask[significance_level] = current_level.issubset(significance_bits)
-#     sounding = exclude_sounding_level(sounding, ~to_delete_mask)
-#
-#     return sounding
-
 
 def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, significance_bits):
     """

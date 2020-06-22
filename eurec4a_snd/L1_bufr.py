@@ -236,22 +236,10 @@ def main(args={}):
 
         sounding = expected_unit_check(sounding)
 
-        # after all needed header information is read, the reduced data field
-        # is masked for NaN values and an output file produced afterward:
-        logging.debug('Mask invalid sounding data')
-        sounding.time = np.ma.masked_invalid(sounding.time)
-        sounding.gpm = np.ma.masked_invalid(sounding.gpm)
-        sounding.pressure = np.ma.masked_invalid(sounding.pressure)
-        sounding.temperature = np.ma.masked_invalid(sounding.temperature)
-        sounding.dewpoint = np.ma.masked_invalid(sounding.dewpoint)
-        sounding.windspeed = np.ma.masked_invalid(sounding.windspeed)
-        sounding.winddirection = np.ma.masked_invalid(sounding.winddirection)
-        sounding.latitude = np.ma.masked_invalid(sounding.latitude)
-        sounding.longitude = np.ma.masked_invalid(sounding.longitude)
-
         # Correct surface values of MeteoModem soundings
         if sondetype == 177:
             sounding = correct_meteomodem_surface(sounding, bufr_file)
+
 
         # Calculate additional variables
         e = thermo.es(sounding.dewpoint, sounding.pressure*100)
@@ -268,7 +256,7 @@ def main(args={}):
         sounding = exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, args['significant_levels'])
 
         # Remove 1000hPa reduced gpm
-        sounding = exclude_1000hPa_gpm(sounding)
+        #sounding = exclude_1000hPa_gpm(sounding)
 
         # Ascent rate
         sounding = calc_ascentrate(sounding)
