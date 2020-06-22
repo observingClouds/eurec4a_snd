@@ -144,6 +144,11 @@
       "coordinates": "sounding_id flight_time longitude latitude pressure",
       "units": "m",
       "_FillValue": 9.969209968386869e+36
+    },
+    "extendedVerticalSoundingSignificance":{
+      "long_name": "extended vertical soudning significance",
+      "description": "see BUFR code flag table to decode",
+      "units": ""
     }
   },
   "global_meta_data":{
@@ -169,8 +174,9 @@
       "instrument_id": "Vaisala-RS"
     },
      "EUREC4A_Atalante_Meteomodem-RS_.*?":{
-      "platform_id": "Atalante",
-      "instrument_id": "Meteomodem-RS"
+       "platform_id": "Atalante",
+       "instrument_id": "Meteomodem-RS",
+       "surface_altitude": "13 m"
     },
     "EUREC4A_Meteor_.*?_.*?":{
       "platform_id": "Meteor",
@@ -179,7 +185,7 @@
     },
     "EUREC4A_BCO_.*?_.*?":{
       "platform_id": "BCO",
-      "platform_location":" Deebles Point, Barbados, West Indies",
+      "platform_location": "Deebles Point, Barbados, West Indies",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_RonBrown_.*?_.*?":{
