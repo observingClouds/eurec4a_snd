@@ -289,15 +289,17 @@ def main(args={}):
         if outpath.suffix == '.nc':
             outfile = Path(outpath.as_posix().format(campaign=campaign,
                                                      platform=platform_id,
+                                                     instrument=instrument_id,
                                                      level=level,
                                                      direction='{}'.format(direction_str),
                                                      date=sounding_date.strftime('%Y%m%dT%H%M'),
                                                      version=version))
         else:
             outfile = Path(os.path.join(outpath, \
-                "{campaign}_{platform}_{level}-{direction}_{date}_{version}.nc".\
+                "{campaign}_{platform}_{instrument}_{level}-{direction}_{date}_{version}.nc".\
                 format(campaign=campaign,
                        platform=platform_id,
+                       instrument=instrument_id,
                        level=level,
                        direction='{}'.format(direction_str),
                        date=sounding_date.strftime('%Y%m%dT%H%M'),
