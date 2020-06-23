@@ -10,7 +10,7 @@ level2_files = [
                 '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_mwx/EUREC4A_RonBrown_soundings.nc',
                 '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_mwx/EUREC4A_MS-Merian_soundings.nc',
                 '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_mwx/EUREC4A_Atalante_soundings_Vaisala.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_soundings_MeteoModem.nc'
+                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_bufr/EUREC4A_Atalante_soundings_Meteomodem.nc'
                 ]
 import numpy as np
 import xarray as xr
