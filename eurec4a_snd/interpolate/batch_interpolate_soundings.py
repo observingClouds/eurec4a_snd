@@ -83,8 +83,7 @@ variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
                   'pressure':'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
                   'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
                   'windSpeed': 'wind_speed',
-                  'wind_u': 'wind_u', 'wind_v': 'wind_v',
-                  'x': 'x', 'y':'y', 'z':'z'
+                  'wind_u': 'wind_u', 'wind_v': 'wind_v'
                   }
 output_variables = ['altitude', 'temperature', 'pressure',
                     'dew_point', 'wind_u', 'wind_v', 'wind_speed',
@@ -381,6 +380,7 @@ def main(args={}):
                                                            ds.latitude.values,
                                                            ds.altitude_WGS84.values,
                                                            radians=False)
+            variables_dict.update({'x':x, 'y':y, 'z':z})
             for var, val in {'x':x, 'y':y, 'z':z}.items():
                 ds[var] = xr.DataArray(val, dims=['levels'])
         else:
