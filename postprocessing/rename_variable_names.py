@@ -67,5 +67,5 @@ for file in tqdm.tqdm(files):
     ds.flight_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
     ds.launch_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
 
-    ds.to_netcdf(file)
+    ds.to_netcdf(file, unlimited_dims=['sounding'])
 

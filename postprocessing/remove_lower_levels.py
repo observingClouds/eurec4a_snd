@@ -40,4 +40,4 @@ for file in level2_files:
         del ds_out.attrs['python_version']
     except:
         pass
-    ds_out.to_netcdf(file+'2')
+    ds_out.to_netcdf(file+'2', unlimited_dims=['sounding'])
