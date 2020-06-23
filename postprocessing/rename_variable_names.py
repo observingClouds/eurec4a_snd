@@ -34,7 +34,9 @@ rename_dict = {
     'wind_v': 'v'
 }
 
-attrs_to_delete = ['surface_altitude', 'latitude_of_launch_location', 'longitude_of_launch_location', 'python_version', 'converted_by', 'contact_person', 'institution', 'location'] 
+attrs_to_delete = ['platform_location', 'surface_altitude', 'latitude_of_launch_location', 'longitude_of_launch_location', 'python_version', 'converted_by', 'contact_person', 'institution', 'location'] 
+
+vars_to_delete = ['altitude_WGS84']
 
 files = np.hstack([files_l1, files_l2])
 
@@ -61,6 +63,8 @@ for file in tqdm.tqdm(files):
     for attr in attrs:
         if attr in attrs_to_delete:
             del ds.attrs[attr]
+    for var in vars_to_delete:
+        del ds[var]
     for var in list(ds.variables):
         if 'coordinates' in ds[var].encoding.keys():
             ds[var].encoding['coordinates'] = "flight_time lat lon"
