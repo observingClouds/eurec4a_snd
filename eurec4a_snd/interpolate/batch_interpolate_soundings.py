@@ -273,7 +273,7 @@ interpolation_grid = np.arange(0, 31000, 10)  # meters
 interpolation_bins = np.arange(-5,31005,10).astype('int')  # Bins len(interpolation_grid)+1; (a,b]; (meters)
 max_gap_fill = 50  # Maximum data gap size that should be filled by interpolation (meters)
 
-json_config_fn = pwd+'/../mwx_config.json'
+json_config_fn = pwd+'/../config/mwx_config.json'
 
 
 def main(args={}):

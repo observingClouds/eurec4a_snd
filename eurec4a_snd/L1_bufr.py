@@ -29,7 +29,7 @@ from config import cfg_creator as configupdater
 from _helpers import *
 import _thermo as thermo
 
-json_config_fn = 'mwx_config.json'
+json_config_fn = '/'.join([os.path.dirname(os.path.abspath(__file__)),'config/mwx_config.json'])
 
 
 def get_args():

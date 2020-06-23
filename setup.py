@@ -29,7 +29,7 @@ setuptools.setup(
                      'sounding_visualize=eurec4a_snd.make_quicklooks_rs41:main',
                      'sounding_skewT=eurec4a_snd.visualize.make_skewT_metpy:main',
                      'sounding_interpolate=eurec4a_snd.interpolate.batch_interpolate_soundings:main',
-                     'sounding_converter_mwx=eurec4a_snd.L1_mwx.py:main'
+                     'sounding_converter_mwx=eurec4a_snd.L1_mwx:main'
                      ]},
-    package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini"]}
+    package_data={"eurec4a_snd": ["examples/data/*", "config/meta_information_template.ini", "config/mwx_config.json"]}
 )

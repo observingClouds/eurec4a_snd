@@ -23,7 +23,7 @@ import numpy as np
 import xarray as xr
 
 import sys
-sys.path.append('.')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from _mwx_helpers import *
 from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration, get_global_attrs
 
@@ -31,7 +31,7 @@ from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_con
 level = 'L1'
 output_filename_format = '{campaign}_{platform_short}_{instrument_id}_{level}-{direction}_%Y%m%dT%H%M_{version}.nc'  # including path
 
-json_config_fn = 'mwx_config.json'
+json_config_fn = '/'.join([os.path.dirname(os.path.abspath(__file__)),'config/mwx_config.json'])
 
 def get_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
