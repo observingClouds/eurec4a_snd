@@ -76,5 +76,7 @@ for f, file in enumerate(tqdm.tqdm(files)):
                 ds[var].values = var_dict['converter'](ds[var].values)
                 ds[var].attrs['units'] = var_dict['units_new']
     ds['flight_time'].encoding['_FillValue'] = False
+    if 'coordinates' in ds.attrs:
+        del ds.attrs['coordinates']
     ds.to_netcdf(file, unlimited_dims=['sounding'])
 
