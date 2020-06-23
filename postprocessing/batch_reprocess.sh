@@ -16,6 +16,9 @@ source activate /home/mpim/m300408/conda-envs/new_campaign
 cd ~/GITHUB/eurec4a_snd/eurec4a_snd/
 git checkout final_changes
 
+rm -r /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/
+rm -r /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/
+
 # Correct mwx files from the Meteor
 ## Get surface values from the DSHIP data
 ### Download DSHIP data
@@ -128,7 +131,7 @@ cp /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_mwx/EUREC4A_MS-M
 
 cp /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v5/level2_bufr/EUREC4A_Atalante_soundings_Meteomodem.nc2 /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc
 
-python ../postprocessing/rename_variable_names.
+python ../postprocessing/rename_variable_names.py
 python ../postprocessing/change_units.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/*.nc'
 python ../postprocessing/change_units.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_1/*/*/*.nc'
 

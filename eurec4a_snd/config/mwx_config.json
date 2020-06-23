@@ -46,7 +46,7 @@
     },
     "humidity": {
       "standard_name": "relative_humidity",
-      "long_name": "relative_humidity",
+      "long_name": "relative humidity",
       "units": "%",
       "coordinates": "sounding_id flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
