@@ -380,7 +380,7 @@ def main(args={}):
                                                            ds.latitude.values,
                                                            ds.altitude_WGS84.values,
                                                            radians=False)
-            variables_dict.update({'x':x, 'y':y, 'z':z})
+            variables_dict.update({'x':'x', 'y':'y', 'z':'z'})
             for var, val in {'x':x, 'y':y, 'z':z}.items():
                 ds[var] = xr.DataArray(val, dims=['levels'])
         else:
