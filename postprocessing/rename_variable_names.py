@@ -34,6 +34,11 @@ rename_dict = {
     'wind_v': 'v'
 }
 
+rename_attrs_dict = {
+    'git-version': 'version',
+    'git_version': 'version'
+    }
+
 attrs_to_delete = ['platform_location', 'surface_altitude', 'latitude_of_launch_location', 'longitude_of_launch_location', 'python_version', 'converted_by', 'contact_person', 'institution', 'location'] 
 
 vars_to_delete = ['altitude_WGS84']
@@ -48,6 +53,11 @@ for file in tqdm.tqdm(files):
     for var in list(ds.variables):
         if var in rename_dict.keys():
             ds = ds.rename({var: rename_dict[var]})
+
+    for attr in ds.attrs.keys():
+        if attr in rename_attrs_dict.keys():
+            ds.attrs[rename_attrs_dict[attr]] = ds.attrs[attr]
+            del ds.attrs[attr]
 
     for var in list(ds.variables):
         ds[var].encoding['zlib'] = True
@@ -64,7 +74,8 @@ for file in tqdm.tqdm(files):
         if attr in attrs_to_delete:
             del ds.attrs[attr]
     for var in vars_to_delete:
-        del ds[var]
+        if var in ds.data_vars:
+            del ds[var]
     for var in list(ds.variables):
         if 'coordinates' in ds[var].encoding.keys():
             ds[var].encoding['coordinates'] = "flight_time lat lon"
