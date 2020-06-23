@@ -160,9 +160,9 @@
     },
     "EUREC4A_.*?_.*?_.*?":{
       "campaign_id": "EUREC4A",
-      "doi": "pending",
+      "doi": "10.25326/62",
       "institution": "Max Planck Institute for Meteorology, Hamburg, Germany",
-      "references": "Stephan et al. (2020)",
+      "references": "Stephan et al. (2020): Ship- and island-based atmospheric soundings from the 2020 EUREC4A field campaign, ESSD",
       "acknowledgement": "The MPI-M is listed as the institute of first contact. Investigators, Institutions and Agencies who contributed to this dataset are numerous and are acknowledged in the reference publication"
     },
     "EUREC4A_Atalante_.*?_.*?":{
