@@ -14,7 +14,7 @@
       "axis": "T",
       "calendar": "gregorian",
       "coordinates": "sounding_id flight_time longitude latitude pressure",
-      "_FillValue": false
+      "_FillValue": 9.969209968386869e+36
     },
     "launch_time": {
       "standard_name": "time",
