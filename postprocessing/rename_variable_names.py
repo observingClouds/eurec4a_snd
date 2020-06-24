@@ -43,7 +43,7 @@ attrs_to_delete = ['platform_location', 'surface_altitude', 'latitude_of_launch_
 
 vars_to_delete = ['altitude_WGS84']
 
-files = np.hstack([files_l1, files_l2])
+files = np.hstack([files_l2, files_l1])
 
 for file in tqdm.tqdm(files):
     #if file == '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export/level_1/ATL/Vaisala/EUREC4A_ATL_sounding_ascent_20200127_1059.nc':
@@ -54,7 +54,7 @@ for file in tqdm.tqdm(files):
         if var in rename_dict.keys():
             ds = ds.rename({var: rename_dict[var]})
 
-    for attr in ds.attrs.keys():
+    for attr in list(ds.attrs.keys()):
         if attr in rename_attrs_dict.keys():
             ds.attrs[rename_attrs_dict[attr]] = ds.attrs[attr]
             del ds.attrs[attr]
@@ -68,7 +68,7 @@ for file in tqdm.tqdm(files):
                 ds[var].encoding['_FillValue'] = 9.96921e36
         if 'coordinates' in ds[var].attrs.keys():
             del ds[var].attrs['coordinates']
-            ds[var].encoding['coordinates'] = "flight_time lat lon" 
+            ds[var].encoding['coordinates'] = "sounding_id flight_time lat lon" 
     attrs = list(ds.attrs.keys())
     for attr in attrs:
         if attr in attrs_to_delete:
@@ -78,7 +78,7 @@ for file in tqdm.tqdm(files):
             del ds[var]
     for var in list(ds.variables):
         if 'coordinates' in ds[var].encoding.keys():
-            ds[var].encoding['coordinates'] = "flight_time lat lon"
+            ds[var].encoding['coordinates'] = "sounding_id flight_time lat lon"
     ds.flight_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
     ds.launch_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
 
