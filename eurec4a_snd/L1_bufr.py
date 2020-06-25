@@ -273,7 +273,7 @@ def main(args={}):
         instrument_id = args['instrument_id']
         level = 'L1'
         if package_version_set:
-            version = __version__
+            version = 'v{}'.format(__version__)
         else:
             version = git_module_version
         glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')

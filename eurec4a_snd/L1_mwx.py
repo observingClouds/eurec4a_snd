@@ -385,7 +385,7 @@ def main(args={}):
                 xr_output[variable].encoding['zlib'] = True
 
             if package_version_set:
-                version = __version__
+                version = 'v{}'.format(__version__)
             else:
                 version = git_module_version
             filename = output_format.format(campaign=campaign,
