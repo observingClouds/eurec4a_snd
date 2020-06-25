@@ -537,7 +537,8 @@ def main(args={}):
             ds_interp['ascent_flag'] = xr.DataArray([0], dims=['sounding'])
 
         # Copy trajectory id from level1 dataset
-        ds_interp['sounding_id'] = ds['sounding_id']
+        ds_interp['sounding_id'] = xr.DataArray([ds['sounding_id'].values], dims=['sounding'])
+        ds_interp.sounding_id.attrs = ds['sounding_id'].attrs
 
         script_basename = os.path.basename(__file__)
         script_modification_time = time.ctime(os.path.getmtime(os.path.realpath(__file__)))
