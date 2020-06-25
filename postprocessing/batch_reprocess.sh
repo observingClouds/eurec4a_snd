@@ -134,5 +134,11 @@ python ../postprocessing/rename_variable_names.py
 python ../postprocessing/change_units.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/*.nc'
 python ../postprocessing/change_units.py -i '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_1/*/*/*.nc'
 
+for file in `ls /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_1/*/*/*.nc`:
+do
+ncatted -O -h -a coordinates,global,d,, $file
+done
+
+
 echo "Please include the version number in the filename of the level 2 data. This is not done automatically."
 
