@@ -14,6 +14,7 @@ files_l1 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_
 rename_dict = {
     'altitude': 'alt',
     'ascentRate': 'dz',
+    'ascent_rate': 'dz',
     'dewPoint': 'dp',
     'flight_time': 'flight_time',
     'humidity': 'rh',
