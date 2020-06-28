@@ -364,8 +364,9 @@ def main(args={}):
         if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
             xr_output['extendedVerticalSoundingSignificance'] = xr.DataArray([sounding.extendedVerticalSoundingSignificance], dims=['sounding','levels'])
 
-        sounding_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
-                        format(platform=config['PLATFORM']['platform_name_short'],
+        sounding_name = '{platform}__{direction}__{lat:05.2f}_{lon:06.2f}__{launchtime}'.\
+                        format(platform=platform_id,
+                               direction=direction_str,
                                lat=sounding.station_lat,
                                lon=sounding.station_lon,
                                launchtime=str(YYYYMMDDHHMM))
