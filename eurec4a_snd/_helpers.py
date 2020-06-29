@@ -3,6 +3,7 @@ Helper functions
 """
 import tempfile
 import os
+import re
 import inspect
 import platform
 import json
@@ -10,6 +11,10 @@ import datetime as dt
 import numpy as np
 import logging
 from pathlib import Path, PureWindowsPath
+import configparser
+from configparser import ExtendedInterpolation
+from netCDF4 import date2num
+import xarray as xr
 
 
 class UnitChangedError(Exception):
@@ -18,6 +23,38 @@ class UnitChangedError(Exception):
 
 class UnexpectedUnit(Exception):
     pass
+
+class RegexDict(dict):
+    """
+    Dictionary with capability of taking regular xpressions
+    """
+    def get_matching(self, event):
+        return (self[key] for key in self if re.match(key, event))
+
+    def get_matching_combined(self, event):
+        """
+        Find matching keys and return combined dictionary
+
+        >>> d = {'EUREC4A_*':{'a':0}, 'EUREC4A_BCO':{'p':1}}
+        >>> rd = RegexDict(d)
+        >>> rd.get_matching_combined('EUREC4A_BCO')
+        {'a': 0, 'p': 1}
+        """
+        matching = self.get_matching(event)
+        dall = {}
+        for d in matching:
+            dall.update(d)
+        return dall
+
+
+def get_global_attrs(cfg_file, key):
+    """
+    Get global attributes from configuration file
+    """
+    with open(cfg_file, 'r') as f:
+        j=json.load(f)
+        rd = RegexDict(j['global_meta_data'])
+        return rd.get_matching_combined(key)
 
 
 def unixpath(path_in):
@@ -188,6 +225,36 @@ def convert_json_to_arrays(json_flat, key_keys):
             self.extendedVerticalSoundingSignificance = []
             self.meta_data = {}
 
+        def to_dataset(self):
+            """
+            Convert sounding to dataset
+            """
+            date_unit = "seconds since 1970-01-01 00:00:00 UTC"
+            var_dict = {
+                'launch_time': date2num(self.sounding_start_time, date_unit),
+                'flight_time': self.time,
+                'altitude': self.gpm,
+                'ascentRate': self.ascentrate,
+                'dewPoint': self.dewpoint,
+                'humidity': self.relativehumidity,
+                'latitude': self.latitude,
+                'longitude': self.longitude,
+                'mixingRatio': self.mixingratio,
+                'pressure': self.pressure,
+                'temperature': self.temperature,
+                'windDirection': self.winddirection,
+                'windSpeed': self.windspeed
+            }
+
+            ds = xr.Dataset()
+            for var, value in var_dict.items():
+                if isinstance(value, np.ndarray):
+                    ds[var] = xr.DataArray([value], dims=['sounding', 'levels'])
+                else:
+                    ds[var] = xr.DataArray([value], dims=['sounding'])
+            return ds
+
+
     def _ensure_measurement_integrity(self):
         """
         Test integrity of each measurement unit
@@ -345,7 +412,7 @@ def convert_json_to_arrays(json_flat, key_keys):
                 msg_fmt = search_bufr_msg_format(descriptors)
                 s.meta_data['bufr_msg'] = msg_fmt
         elif json_flat[key_key+'_key'] == 'radiosondeOperatingFrequency':
-            s.meta_data['sonde_frequency'] = str(json_flat[key_key+'_value']) + json_flat[key_key+'_units']
+            s.meta_data['sonde_frequency'] = str(json_flat[key_key+'_value']) +' '+ json_flat[key_key+'_units']
 
     _ensure_measurement_integrity(s)
 
@@ -867,6 +934,7 @@ def exclude_sounding_level(sounding, nan_mask):
 
     return sounding
 
+
 def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, significance_bits):
     """
     Exclude levels with specific extendedVerticalSoundingSignificance
@@ -896,7 +964,71 @@ def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, signi
     for significance_level in significance_levels:
         current_level = sounding.extendedVerticalSoundingSignificance[significance_level]
         current_level = set(decode_extendedVerticalSoundingSignificance(current_level))
-        to_delete_mask[significance_level] = current_level.issubset(significance_bits)
+        #to_delete_mask[significance_level] = current_level.issubset(significance_bits)
+        to_delete_mask[significance_level]= ((current_level == set(significance_bits)) or (current_level == set([4])))
     sounding = exclude_sounding_level(sounding, ~to_delete_mask)
 
+    return sounding
+
+
+
+def correct_meteomodem_surface(sounding, bufr_file):
+    """
+    Correct specific meteo modem soundings
+    """
+    d = {'ATALANTE_2020012512_1.309057.BFR': 21.676335267277707,
+         'ATALANTE_2020012612_1.309057.BFR': 20.299818275809564,
+         'ATALANTE_2020012612_2.309057.BFR': 20.490235079280602,
+         'ATALANTE_2020012618_1.309057.BFR': 20.395027551835543,
+         'ATALANTE_2020012618_2.309057.BFR': 20.72719422108181,
+         'ATALANTE_2020012618_3.309057.BFR': 20.72719422108181,
+         'ATALANTE_2020012618_4.309057.BFR': 20.490235079280602,
+         'ATALANTE_2020012618_5.309057.BFR': 20.961170412362186,
+         'ATALANTE_2020012618_6.309057.BFR': 21.096516728956811,
+         'ATALANTE_2020012700_1.309057.BFR': 21.228696671077643,
+         'ATALANTE_2020012700_2.309057.BFR': 21.645982812790148,
+         'ATALANTE_2020012700_3.309057.BFR': 21.676335267277707,
+         'ATALANTE_2020012800_1.309057.BFR': 22.734527932378281,
+         'ATALANTE_2020012800_2.309057.BFR': np.nan,
+         'ATALANTE_2020020218_1.309057.BFR': 20.631811617269207,
+         'ATALANTE_2020020218_2.309057.BFR': 21.192243399966955,
+         'ATALANTE_2020020300_1.309057.BFR': 23.250129401644031,
+         'ATALANTE_2020020300_2.309057.BFR': 20.770057518368084,
+         'ATALANTE_2020020300_3.309057.BFR': 21.228696671077643,
+         'ATALANTE_2020020300_4.309057.BFR': 21.132797893968846,
+         'ATALANTE_2020020300_5.309057.BFR': 21.594661125167445,
+         'ATALANTE_2020020300_6.309057.BFR': 22.347032338755625,
+         'ATALANTE_2020020300_7.309057.BFR': 21.12715294391278,
+         'ATALANTE_2020020306_1.309057.BFR': 21.16565351341211,
+         'ATALANTE_2020020306_2.309057.BFR': 21.350899212666299,
+         'ATALANTE_2020020306_3.309057.BFR': 21.114158685504709,
+         'ATALANTE_2020020306_4.309057.BFR': 21.047255593956379,
+         'ATALANTE_2020020306_5.309057.BFR': 20.653281422508336,
+         'ATALANTE_2020020306_6.309057.BFR': 20.927958315808677,
+         'ATALANTE_2020020306_7.309057.BFR': 21.357437545602338,
+         'ATALANTE_2020020312_1.309057.BFR': 21.510617824089007,
+         'ATALANTE_2020020312_2.309057.BFR': 21.195165907041719,
+         'ATALANTE_2020020312_3.309057.BFR': np.nan,
+         'ATALANTE_2020020312_4.309057.BFR': 21.000788492386096,
+         'ATALANTE_2020020312_5.309057.BFR': 21.000788492386096,
+         'ATALANTE_2020020312_6.309057.BFR': 21.13786737261098,
+         'ATALANTE_2020020312_7.309057.BFR': 21.877213391027734,
+         'ATALANTE_2020020312_8.309057.BFR': 21.469277211341332,
+         'ATALANTE_2020020318_1.309057.BFR': 21.93987011060981,
+         'ATALANTE_2020020318_3.309057.BFR': 21.543164982699349,
+         'ATALANTE_2020020318_4.309057.BFR': 21.431461248468246,
+         'ATALANTE_2020020318_5.309057.BFR': 21.31908609493534,
+         'ATALANTE_2020021100_1.309057.BFR': 21.534170247830687,
+         'ATALANTE_2020021800_1.309057.BFR': 21.216973566186809,
+         'ATALANTE_2020021800_2.309057.BFR': 21.483871685146806,
+         'ATALANTE_2020021800_4.309057.BFR': 22.123277349708609,
+         'ATALANTE_2020021800_5.309057.BFR': 21.931339923645719}
+    if os.path.basename(bufr_file) in d.keys():
+        Td_corrected = d[os.path.basename(bufr_file)]
+        print('Correct Td from {} to {}'.format(sounding.dewpoint[0], Td_corrected))
+        sounding.dewpoint[0] = Td_corrected
+        if np.isnan(Td_corrected):
+            sounding.temperature[0] = np.nan
+    else:
+        print('Unknown BFR file. No correction will be applied.')
     return sounding

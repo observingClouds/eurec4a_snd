@@ -147,6 +147,59 @@ def calc_rh_from_q(q, T, p):
     return rh
 
 
+def get_wind_components(dir, spd):
+    """
+    Convert directional windspeed and winddirection
+    to wind components
+
+    Input
+    -----
+    dir : array-like
+        wind from direction (deg)
+    spd : array-like
+        wind speed along dir
+
+    Return
+    ------
+    u : array-like
+       eastward wind component
+       (positive when directed eastward)
+    v : array-like
+       northward wind component
+       (positive when directed northward)
+    """
+    dir_rad = np.deg2rad(dir)
+    u = -1*spd * np.sin(dir_rad)
+    v = -1*spd * np.cos(dir_rad)
+    return u, v
+
+
+def get_directional_wind(u, v):
+    """
+    Convert wind-components to directional
+    wind
+
+    Input
+    -----
+    u : array-like
+        eastward wind component
+        (positive when directed eastward)
+    v : array-like
+        northward wind component
+        (positive when directed northward)
+
+    Return
+    ------
+    dir : array-like
+        wind from direction (deg)
+    spd : array-like
+        wind speed along dir
+    """
+    dir = np.rad2deg(np.arctan2(-1*u, -1*v)) % 360
+    spd = np.sqrt(u**2+v**2)
+    return dir, spd
+
+
 
 def set_global_attributes(ds, global_attrs_dict):
     """

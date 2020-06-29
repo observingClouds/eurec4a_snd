@@ -9,13 +9,9 @@ sounding system to netCDF
 import os
 from pathlib import Path, PureWindowsPath
 import subprocess as sp
-import configparser
-from configparser import ExtendedInterpolation
 import argparse
 import logging
-import tempfile
 import glob
-from xml.dom import minidom
 from datetime import timedelta
 import datetime as dt
 import netCDF4
@@ -24,19 +20,18 @@ import time #as time_module
 import tqdm
 import json
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 import sys
-sys.path.append('.')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from _mwx_helpers import *
-from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration
+from _helpers import calc_saturation_pressure, unixpath, setup_logging, load_configuration, get_global_attrs
 
 # User-configuration
-campaign = 'EUREC4A'
-output_filename_format = '{campaign}_{platform_short}_sounding_{direction}_%Y%m%d_%H%M.nc'  # including path
+level = 'L1'
+output_filename_format = '{campaign}_{platform_short}_{instrument_id}_{level}-{direction}_%Y%m%dT%H%M_{version}.nc'  # including path
 
-json_config_fn = 'mwx_config.json'
+json_config_fn = '/'.join([os.path.dirname(os.path.abspath(__file__)),'config/mwx_config.json'])
 
 def get_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -91,6 +86,21 @@ def get_args():
     parser.add_argument("--platform_location", metavar='Platform location',
                         help="Location of the measurement platform e.g. Deebles Point, Barbados, West Indies",
                         default=None,
+                        required=False,
+                        type=str)
+    parser.add_argument("--instrument_id", metavar='Instrument identifier',
+                        help="Instrument identifier e.g. Vaisala-RS or Meteomodem-RS",
+                        default='RS',
+                        required=False,
+                        type=str)
+    parser.add_argument("--platform_id", metavar='Platform identifier',
+                        help="Platform identifier as used in config e.g. Atalante or BCO",
+                        default=None,
+                        required=False,
+                        type=str)
+    parser.add_argument("--campaign", metavar='Campaign',
+                        help="Campaign name as used in config e.g. EUREC4A",
+                        default='EUREC4A',
                         required=False,
                         type=str)
     parser.add_argument("--round-like-BUFR", metavar='BOOLEAN',
@@ -172,7 +182,7 @@ def main(args={}):
             args["inputpath"] = config["FILES"]["INPUT_MWX"]
         if args["outputfolder"] is None:
             args["outputfolder"] = config["FILES"]["OUTPUT_MWX2NC"]
-    
+
     output_folder = args['outputfolder']
     basename = os.path.basename(output_folder)
     dirname = os.path.dirname(output_folder)
@@ -193,11 +203,14 @@ def main(args={}):
     # Loading standard config file
     with open(json_config_fn, 'r') as f:
         j=json.load(f)
-
     sync_sounding_values = j['sync_sounding_items']
     std_sounding_values =  j['std_sounding_items']
     radiosondes_values = j['radiosondes_sounding_items']
     meta_data_dict = j['meta_data']
+
+    campaign = args['campaign']
+    platform_id = args['platform_id']
+    instrument_id = args['instrument_id']
 
     # Function definitions
     f_flighttime = lambda radiorx: begin_time_dt + timedelta(seconds=radiorx-float(launch_time))
@@ -226,74 +239,30 @@ def main(args={}):
     for mwx_file in tqdm.tqdm(mwx_files):
 
         # Decompress/open mwx file
-        tmpdir, tmpdir_obj = getTmpDir()
-        decompressed_files = np.array(decompress(mwx_file, tmpdir+'/'))
+        with MWX(mwx_file) as mwx:
+            decompressed_files = mwx.decompressed_files
 
-        # Get the files SynchronizedSoundingData.xml, Soundings.xml, ...
-        sync_mask = [f_sync(file) for file in decompressed_files]
-        if np.sum(sync_mask) == 0:
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
-        sync_filename = decompressed_files[sync_mask][0]
-        snd_mask = [f_snd(file) for file in decompressed_files]
-        if np.sum(snd_mask) == 0:
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
-        snd_filename = decompressed_files[snd_mask][0]
-        std_mask = [f_std(file) for file in decompressed_files]
-        if np.sum(std_mask) == 0:
-            logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
-            continue
-        std_filename = decompressed_files[std_mask][0]
-        radio_mask = [f_radio(file) for file in decompressed_files]
-        radio_filename = decompressed_files[radio_mask][0]
+            # Get the files SynchronizedSoundingData.xml, Soundings.xml, ...
+            a1, sync_filename = check_availability(decompressed_files, 'SynchronizedSoundingData.xml', True)
+            a2, snd_filename = check_availability(decompressed_files, 'Soundings.xml', True)
+            a3, radio_filename = check_availability(decompressed_files, 'Radiosondes.xml', True)
+            if np.any([not a1, not a2, not a3]):
+                logging.warning('No sounding data found in {}. Skipped'.format(mwx_file))
+                continue
 
-        # Read Soundings.xml to get base time
-        itemlist = read_xml(snd_filename)
-        for i, item in enumerate(itemlist):
-            begin_time = item.attributes['BeginTime'].value
-            launch_time = item.attributes['LaunchTime'].value
-            altitude = item.attributes['Altitude'].value
-        begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
-
-        # Read SynchronizedSoundingData.xml with processed sounding data
-        itemlist = read_xml(sync_filename)
-        sounding_dict = {}
-        try:
+            # Read Soundings.xml to get base time
+            itemlist = read_xml(snd_filename)
             for i, item in enumerate(itemlist):
-                level_dict = {}
-                for var in sync_sounding_values:
-                    level_dict[var] = item.attributes[var].value
-                sounding_dict[i] = level_dict
-        except:
-            logging.warning('Key {} not found in file {}'.format(var, mwx_file))
-            continue
-        pd_snd = pd.DataFrame.from_dict(sounding_dict, orient='index', dtype=float)
+                begin_time = item.attributes['BeginTime'].value
+                launch_time = item.attributes['LaunchTime'].value
+                altitude = item.attributes['Altitude'].value
+            begin_time_dt = dt.datetime.strptime(begin_time,'%Y-%m-%dT%H:%M:%S.%f')
 
-        # Read StdPressureLevels.xml to include measurements interpolated to std-levels
-        itemlist = read_xml(std_filename)
-        sounding_std_dict = {}
-        for i, item in enumerate(itemlist):
-            level_dict = {}
-            for var in std_sounding_values:
-                level_dict[var] = item.attributes[var].value
-            sounding_std_dict[i] = level_dict
-        pd_std = pd.DataFrame.from_dict(sounding_std_dict, orient='index', dtype=float)
+            # Read sounding data
+            pd_snd = get_sounding_profile(sync_filename, sync_sounding_values)
 
-        # Read Radiosounding.xml to get sounding metadata
-        itemlist = read_xml(radio_filename)
-        sounding_meta_dict = {}
-        for i, item in enumerate(itemlist):
-            assert i == 0, 'further entries were found, meaning soundings meta data could be mixed up'
-            for var in radiosondes_values:
-                try:
-                    sounding_meta_dict[var] = item.attributes[var].value
-                except KeyError:
-                    logging.error('Attribute {} could not found and is assumed to be RS41-SGP'.format(var))
-                    sounding_meta_dict[var] = 'RS41-SGP'
-
-        # Convert missing values (-32768) to nan
-        pd_snd = pd_snd.replace(-32768, np.nan)
+            # Read Radiosounding.xml to get sounding metadata
+            sounding_meta_dict = get_sounding_metadata(radio_filename, radiosondes_values)
 
         # Create flight time
         pd_snd['flight_time'] = pd_snd.RadioRxTimePk.apply(f_flighttime)
@@ -315,7 +284,7 @@ def main(args={}):
         # Write output
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
             if len(sounding) < 2:
-                logging.warning('Sounding ({}) does not contain data. Skip sounding-direction of{}'.format(direction_dict[s], mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
+                logging.warning('Sounding ({}) does not contain data. Skip sounding-direction of {}'.format(direction_dict[s], mwx_file)) #, direction_dict[sounding.Dropping.values[0]]))
                 continue
             xr_snd = xr.Dataset.from_dataframe(sounding)
 
@@ -325,7 +294,7 @@ def main(args={}):
             ## Dew point temperature
             dewpoint = convert_RH_to_dewpoint(xr_snd.Temperature.values, xr_snd.Humidity.values)
             ## Mixing ratio
-            e_s = calc_saturation_pressure(xr_snd.Temperature.values)  # calc_vapor_pressure(xr_snd, method='hardy')
+            e_s = calc_saturation_pressure(xr_snd.Temperature.values)
             mixing_ratio = calc_wv_mixing_ratio(xr_snd, e_s)*xr_snd.Humidity.values/100.
             ## Launch time as type(datetime)
             flight_time_unix = sounding.flight_time.values.astype(float)/1e9
@@ -334,7 +303,8 @@ def main(args={}):
             ## Resolution
             resolution = calc_temporal_resolution(flight_time_unix)
             ## Sounding ID
-            sounding_id = '{platform}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform_name_short,
+            sounding_id = '{platform}__{direction}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform_id,
+                                                                             direction = direction_dict[s],
                                                                              lat = xr_snd.Latitude.values[0],
                                                                              lon = xr_snd.Longitude.values[0],
                                                                              time = launch_time_dt.strftime('%Y%m%d%H%M'))
@@ -360,6 +330,7 @@ def main(args={}):
             xr_output['windDirection'] = xr.DataArray([xr_snd.WindDir.values], dims = ['sounding', 'levels'])
             xr_output['latitude'] = xr.DataArray([xr_snd.Latitude.values], dims = ['sounding', 'levels'])
             xr_output['longitude'] = xr.DataArray([xr_snd.Longitude.values], dims = ['sounding', 'levels'])
+            xr_output['altitude_WGS84'] = xr.DataArray([xr_snd.Altitude.values], dims=['sounding', 'levels'])
         #     xr_output['standard_level_flag'] = xr.DataArray()
 
             # Write attributes
@@ -371,9 +342,11 @@ def main(args={}):
                         xr_output[variable].attrs[attr] = value
 
             ## Global
-            xr_output.attrs['title'] = "Sounding data during the EUREC4A campaign"
-            xr_output.attrs['platform_name'] = f'{platform_name_long} ({platform_name_short})'
-            xr_output.attrs['location'] = platform_location
+            xr_output.attrs['title'] = "Sounding data during the {} campaign (level 1)".format(campaign)
+            xr_output.attrs['campaign_id'] = campaign
+            xr_output.attrs['platform_id'] = f'{platform_id}'
+            xr_output.attrs['instrument_id'] = f'{instrument_id}'
+            xr_output.attrs['platform_location'] = platform_location
             xr_output.attrs['surface_altitude'] = '{:3.1f} m'.format(float(altitude))
             xr_output.attrs['instrument'] = f'Radiosonde {sounding_meta_dict["SondeTypeName"]} by Vaisala'
             xr_output.attrs['number_of_probe'] = sounding_meta_dict['SerialNbr']
@@ -396,23 +369,36 @@ def main(args={}):
             xr_output.attrs['Conventions'] = "CF-1.7"
             xr_output.attrs['featureType'] = "trajectory"
 
+            # Overwrite standard attrs with those defined in config file
+            # Get global meta data from mwx_config.json
+            glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+            for attrs, value in glob_attrs_dict.items():
+                xr_output.attrs[attrs] = value
+
             # Reduce dtype to float instead of double
             xr_output.sounding_id.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
             for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                              'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
-                xr_output[variable].encoding = {'dtype': 'f4'}
+                xr_output[variable].encoding['dtype'] = 'f4'
 
             for variable in xr_output.data_vars:
                 xr_output[variable].encoding['zlib'] = True
 
+            if package_version_set:
+                version = 'v{}'.format(__version__)
+            else:
+                version = git_module_version
             filename = output_format.format(campaign=campaign,
-                                              platform_short=platform_name_short,
-                                              direction=direction_dict[sounding.Dropping.values[0]])
+                                            platform_short=platform_id,
+                                            direction=direction_dict[sounding.Dropping.values[0]],
+                                            instrument_id=args["instrument_id"],
+                                            version=version,
+                                            level=level
+                                            )
             filename = launch_time_dt.strftime(filename)
             xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
             logging.info('File converted to {}'.format(filename))
 
-        tmpdir_obj.cleanup()
 
 if __name__ == "__main__":
     main()

@@ -22,11 +22,14 @@ import logging
 import numpy as np
 import netCDF4
 from netCDF4 import Dataset, default_fillvals, num2date, date2num
+import xarray as xr
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from config import cfg_creator as configupdater
 from _helpers import *
 import _thermo as thermo
+
+json_config_fn = '/'.join([os.path.dirname(os.path.abspath(__file__)),'config/mwx_config.json'])
 
 
 def get_args():
@@ -78,6 +81,24 @@ def get_args():
                              'not be included in the converted files.',
                         required=False, default=[], nargs='+', type=int)
 
+    parser.add_argument("--instrument_id", metavar='Instrument identifier',
+                        help="Instrument identifier e.g. Vaisala-RS or Meteomodem-RS",
+                        default='RS',
+                        required=False,
+                        type=str)
+
+    parser.add_argument("--platform_id", metavar='Platform identifier',
+                        help="Platform identifier as used in config e.g. Atalante or BCO",
+                        default=None,
+                        required=False,
+                        type=str)
+
+    parser.add_argument("--campaign", metavar='Campaign',
+                        help="Campaign name as used in config e.g. EUREC4A",
+                        default='EUREC4A',
+                        required=False,
+                        type=str)
+
     parser.add_argument('-v', '--verbose', metavar="DEBUG",
                         help='Set the level of verbosity [DEBUG, INFO,'
                         ' WARNING, ERROR]',
@@ -119,7 +140,7 @@ def main(args={}):
 
     try:
         git_module_version = sp.check_output(
-            ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip()
+            ["git", "describe", "--always", "--dirty"], stderr=sp.STDOUT).strip().decode()
         git_version_set = True
     except (sp.CalledProcessError, FileNotFoundError):
         logging.debug('No git-version could be found.')
@@ -163,7 +184,8 @@ def main(args={}):
 
     logging.debug('Create filelist')
     if args['inputfile'] is None:
-        filelist = args['inputpath'].glob('*.bfr')
+        filelist = list(args['inputpath'].glob('*.bfr'))
+        filelist.extend(list(args['inputpath'].glob('*.BFR')))
     else:
         filelist = [args['inputfile']]
     filelist = sorted(filelist)
@@ -207,25 +229,17 @@ def main(args={}):
         sounding.direction = get_sounding_direction(sounding.meta_data['bufr_msg'])
         if sounding.direction == 1:
             # Upward
-            direction_str = 'Ascent'
+            direction_str = 'ascent'
         elif sounding.direction == -1:
             # Downward
-            direction_str = 'Descent'
+            direction_str = 'descent'
 
         sounding = expected_unit_check(sounding)
 
-        # after all needed header information is read, the reduced data field
-        # is masked for NaN values and an output file produced afterward:
-        logging.debug('Mask invalid sounding data')
-        sounding.time = np.ma.masked_invalid(sounding.time)
-        sounding.gpm = np.ma.masked_invalid(sounding.gpm)
-        sounding.pressure = np.ma.masked_invalid(sounding.pressure)
-        sounding.temperature = np.ma.masked_invalid(sounding.temperature)
-        sounding.dewpoint = np.ma.masked_invalid(sounding.dewpoint)
-        sounding.windspeed = np.ma.masked_invalid(sounding.windspeed)
-        sounding.winddirection = np.ma.masked_invalid(sounding.winddirection)
-        sounding.latitude = np.ma.masked_invalid(sounding.latitude)
-        sounding.longitude = np.ma.masked_invalid(sounding.longitude)
+        # Correct surface values of MeteoModem soundings
+        if sondetype == 177:
+            sounding = correct_meteomodem_surface(sounding, bufr_file)
+
 
         # Calculate additional variables
         e = thermo.es(sounding.dewpoint, sounding.pressure*100)
@@ -242,7 +256,7 @@ def main(args={}):
         sounding = exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, args['significant_levels'])
 
         # Remove 1000hPa reduced gpm
-        sounding = exclude_1000hPa_gpm(sounding)
+        #sounding = exclude_1000hPa_gpm(sounding)
 
         # Ascent rate
         sounding = calc_ascentrate(sounding)
@@ -251,7 +265,19 @@ def main(args={}):
         sounding = sort_sounding_by_time(sounding)
 
         # Find temporal resolution
-        time_resolution = calc_temporal_resolution(sounding)
+        resolution = calc_temporal_resolution(sounding)
+
+        # Get global attributes
+        campaign = args['campaign']
+        platform_id = args['platform_id']
+        instrument_id = args['instrument_id']
+        level = 'L1'
+        if package_version_set:
+            version = 'v{}'.format(__version__)
+        else:
+            version = git_module_version
+        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+        platform_location = glob_attrs_dict['platform_location']
 
         # Create outputfile with time information from file
         sounding_date = sounding.sounding_start_time
@@ -261,226 +287,136 @@ def main(args={}):
         outpath = Path(sounding.sounding_start_time.strftime(outpath_fmt.as_posix()))
 
         if outpath.suffix == '.nc':
-            outfile = Path(outpath.as_posix().format(platform=config['PLATFORM']['platform_name_short'],
-                                                     location=config['PLATFORM']['platform_location'].
-                                                               replace(' ', '').
-                                                               replace(',', '').
-                                                               replace(';', ''),
-                                                     direction='{}Profile'.format(direction_str),
-                                                     date=sounding_date.strftime('%Y%m%d_%H%M')))
+            outfile = Path(outpath.as_posix().format(campaign=campaign,
+                                                     platform=platform_id,
+                                                     instrument=instrument_id,
+                                                     level=level,
+                                                     direction='{}'.format(direction_str),
+                                                     date=sounding_date.strftime('%Y%m%dT%H%M'),
+                                                     version=version))
         else:
             outfile = Path(os.path.join(outpath, \
-                "{platform}_Sounding{direction}_{location}_{date}.nc".\
-                format(platform=config['PLATFORM']['platform_name_short'],
-                       location=config['PLATFORM']['platform_location'].
-                                 replace(' ', '').
-                                 replace(',', '').
-                                 replace(';', ''),
-                       direction='{}Profile'.format(direction_str),
-                       date=sounding_date.strftime('%Y%m%d_%H%M'))))
+                "{campaign}_{platform}_{instrument}_{level}-{direction}_{date}_{version}.nc".\
+                format(campaign=campaign,
+                       platform=platform_id,
+                       instrument=instrument_id,
+                       level=level,
+                       direction='{}'.format(direction_str),
+                       date=sounding_date.strftime('%Y%m%dT%H%M'),
+                       version=version)))
 
         if not outfile.parent.exists():
             os.makedirs(outfile.parent)
 
-        # Creation of output NetCDF file
-        fo = Dataset(outfile, 'w', format='NETCDF4')
-
-        # assign NetCDF file attributes from meta data
-        fo.title = 'Sounding data containing temperature, pressure, humidity,'\
-                   ' latitude, longitude, wind direction, wind speed, and time'
-        # Platform information
-        fo.platform_name = '{long} ({short})'.format(
-            long=config['PLATFORM']['platform_name_long'],
-            short=config['PLATFORM']['platform_name_short'])
-        fo.location = config['PLATFORM']['platform_location']
-        fo.surface_altitude = config['PLATFORM']['platform_altitude']
-
-        # Instrument metadata
-        fo.instrument = config['INSTRUMENT']['instrument_description']
-        fo.number_of_Probe = serial
-        fo.sonde_type = str(sondetype)
-        fo.sonde_frequency = sondefreq
-
-        # Information about launch
-        fo.date_YYYYMMDD = sounding_date.strftime('%Y%m%d')
-        fo.time_of_launch_HHmmss = sounding_date.strftime('%H%M%S')
-        fo.launch_unixtime = date2num(sounding.sounding_start_time, date_unit)
-        fo.latitude_of_launch_location = '{0:5.2f} deg N'.\
-            format(sounding.station_lat)
-        fo.longitude_of_launch_location = '{0:6.2f} deg E'.\
-            format(sounding.station_lon)
-
-        # Information about output
-        fo.resolution = "{:g} sec".format(time_resolution)
-        fo.source = Path(PureWindowsPath(bufr_file)).absolute().as_posix()
-        fo.git_version = git_module_version
-        fo.created_with = '{file} with its last modifications on {time}'.\
-            format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
-                   file=os.path.basename(__file__))
-        fo.created_on = str(time.ctime(time.time()))
-        fo.contact_person = '{name} ({mail})'.format(
+        xr_output = sounding.to_dataset()
+        ## Global
+        xr_output.attrs['title'] = "EUREC4A level 1 sounding data".format(campaign)
+        xr_output.attrs['campaign_id'] = campaign
+        xr_output.attrs['platform_id'] = f'{platform_id}'
+        xr_output.attrs['instrument_id'] = f'{instrument_id}'
+        xr_output.attrs['platform_location'] = platform_location
+        xr_output.attrs['contact_person'] = '{name} ({mail})'.format(
             name=config['OUTPUT']['contact_person_name'],
             mail=config['OUTPUT']['contact_person_email'])
-        fo.institution = config['OUTPUT']['institution']
-        fo.converted_by = '{name} ({mail})'.format(
+        xr_output.attrs['institution'] = config['OUTPUT']['institution']
+        xr_output.attrs['converted_by'] = '{name} ({mail})'.format(
             name=config['OUTPUT']['executive_person_name'],
             mail=config['OUTPUT']['executive_person_email'])
-        fo.python_version = "{} (with numpy:{}, netCDF4:{}, eurec4a_snd:{})".\
-            format(sys.version, np.__version__, netCDF4.__version__,
-                   __version__)
-        fo.Conventions = 'CF-1.7'
-        fo.featureType = "trajectory"
+        if 'surface_altitude' in glob_attrs_dict.keys():
+            altitude = glob_attrs_dict['surface_altitude']
+        else:
+            altitude = config['PLATFORM']['platform_altitude']
+        xr_output.attrs['surface_altitude'] = altitude
+        if sondetype == 177:
+            xr_output.attrs['instrument'] = f'Radiosonde GPSonde M10 by MeteoModem'
+        elif sondetype == 123:
+            xr_output.attrs['instrument'] = f'Radiosonde RS41-SGP by Vaisala'
+        xr_output.attrs['number_of_probe'] = serial
+        xr_output.attrs['sonde_type'] = str(sondetype)
+        xr_output.attrs['sonde_frequency'] = sondefreq
+        xr_output.attrs['date_YYYYMMDD'] = sounding_date.strftime('%Y%m%d')
+        xr_output.attrs['time_of_launch_HHmmss'] = sounding_date.strftime('%H%M%S')
+        xr_output.attrs['launch_unixtime'] = float(xr_output['launch_time'].values[0])
+        xr_output.attrs[
+            'latitude_of_launch_location'] = '{0:5.2f} deg N'.\
+            format(sounding.station_lat)
+        xr_output.attrs[
+            'longitude_of_launch_location'] = '{0:6.2f} deg E'.\
+            format(sounding.station_lon)
+        xr_output.attrs['source'] = str(Path(PureWindowsPath(bufr_file)))
+        xr_output.attrs['git_version'] = git_module_version
+        xr_output.attrs['created_with'] = '{file} with its last modifications on {time}'. \
+            format(time=time.ctime(os.path.getmtime(os.path.realpath(__file__))),
+                   file=os.path.basename(__file__))
+        xr_output.attrs['created_on'] = str(time.ctime(time.time()))
+        xr_output.attrs['python_version'] = "{} (with numpy:{}, netCDF4:{}, eurec4a_snd:{})". \
+            format(sys.version, np.__version__, netCDF4.__version__, __version__)
+        xr_output.attrs['resolution'] = f'{resolution} sec'
+        xr_output.attrs['Conventions'] = "CF-1.7"
+        xr_output.attrs['featureType'] = "trajectory"
 
-        # Define Dimension (record length) from ASCII record counter
-        fo.createDimension('levels', len(sounding.pressure))
-        fo.createDimension('sounding', None)
-        fo.createDimension('str_dim', 1000)
-        fillval = default_fillvals['f4']
+        # Overwrite standard attrs with those defined in config file
+        # Get global meta data from mwx_config.json
+        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+        for attrs, value in glob_attrs_dict.items():
+            xr_output.attrs[attrs] = value
 
-        # Creation of NetCDF Variables, including description and unit
-        nc_prof = fo.createVariable(
-            'sounding', 'S1', ('sounding', 'str_dim'),
-            fill_value='',
-            zlib=True)
-        nc_prof.cf_role = "sounding_id"
-        nc_prof.long_name = 'sounding identifier'
-        nc_prof.description = 'unique string describing the soundings origin'
-
-        nc_launchtime = fo.createVariable('launch_time', 'f8', ('sounding'),
-            zlib=True)
-        nc_launchtime.long_name = "time at which the sonde has been launched"
-        nc_launchtime.units = 'seconds since 1970-01-01 00:00:00 UTC'
-        nc_launchtime.calendar = 'gregorian'
-        nc_launchtime.standard_name = 'time'
-
-        nc_tindex = fo.createVariable(
-            'flight_time', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_tindex.long_name = 'time passed since launch'
-        nc_tindex.standard_name = 'time'
-        nc_tindex.units = 'seconds since {launch}'.format(
-            launch=sounding_date.strftime('%Y-%m-%d %H:%M:%S UTC'))
-        nc_tindex.axis = 'T'
-        nc_tindex.calendar = "gregorian"
-        nc_vvert = fo.createVariable(
-            'ascentRate', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_vvert.long_name = 'ascent/descent rate of balloon or other measuring device'
-        nc_vvert.description = 'ascent rate is positive/ descent rate is negative'
-        nc_vvert.units = 'm/s'
-        nc_vvert.coordinates = "flight_time longitude latitude pressure"
-        nc_alti = fo.createVariable(
-            'altitude', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_alti.standard_name = 'geopotential_height'
-        nc_alti.units = 'gpm'
-        nc_alti.coordinates = "flight_time longitude latitude pressure"
-        nc_pres = fo.createVariable(
-            'pressure', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_pres.standard_name = 'air_pressure'
-        nc_pres.units = 'hPa'
-        nc_pres.axis = 'Z'
-        nc_pres.positive = 'down'
-        nc_temp = fo.createVariable(
-            'temperature', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_temp.standard_name = 'air_temperature'
-        nc_temp.units = 'degrees_Celsius'
-        nc_temp.coordinates = "flight_time longitude latitude pressure"
-        nc_rh = fo.createVariable(
-            'humidity', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_rh.standard_name = 'relative_humidity'
-        nc_rh.units = '%'
-        nc_rh.coordinates = "flight_time longitude latitude pressure"
-        nc_dewp = fo.createVariable(
-            'dewPoint', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_dewp.standard_name = 'dew_point_temperature'
-        nc_dewp.units = 'degrees_Celsius'
-        nc_dewp.coordinates = "flight_time longitude latitude pressure"
-        nc_mix = fo.createVariable(
-            'mixingRatio', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_mix.long_name = 'water vapor mixing ratio'
-        nc_mix.standard_name = 'humidity_mixing_ratio'
-        nc_mix.units = 'g/kg'
-        nc_mix.coordinates = "flight_time longitude latitude pressure"
-        nc_vhori = fo.createVariable(
-            'windSpeed', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_vhori.standard_name = 'wind_speed'
-        nc_vhori.units = 'm/s'
-        nc_vhori.coordinates = "flight_time longitude latitude pressure"
-        nc_vdir = fo.createVariable(
-            'windDirection', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_vdir.standard_name = 'wind_from_direction'
-        nc_vdir.units = 'degrees'
-        nc_vdir.coordinates = "flight_time longitude latitude pressure"
-        nc_lat = fo.createVariable(
-            'latitude', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_lat.long_name = 'latitude'
-        nc_lat.standard_name = 'latitude'
-        nc_lat.units = 'degrees_north'
-        nc_lat.axis = 'Y'
-        nc_long = fo.createVariable(
-            'longitude', 'f4', ('sounding', 'levels'),
-            fill_value=fillval,
-            zlib=True)
-        nc_long.long_name = 'longitude'
-        nc_long.standard_name = 'longitude'
-        nc_long.units = 'degrees_east'
-        nc_long.axis = 'X'
         if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
-            nc_evss = fo.createVariable(
-                'extendedVerticalSoundingSignificance', 'i4', ('sounding', 'levels'),
-                fill_value=0,
-                zlib=True)
-            nc_evss.long_name = 'extended vertical soudning significance'
-            nc_evss.description = 'see BUFR code flag table to decode'
-            nc_evss.units = '-'
+            xr_output['extendedVerticalSoundingSignificance'] = xr.DataArray([sounding.extendedVerticalSoundingSignificance], dims=['sounding','levels'])
 
-        sounding_name = '{platform}__{lat:5.2f}_{lon:5.2f}__{launchtime}'.\
-                        format(platform=config['PLATFORM']['platform_name_short'],
+        sounding_name = '{platform}__{direction}__{lat:05.2f}_{lon:06.2f}__{launchtime}'.\
+                        format(platform=platform_id,
+                               direction=direction_str,
                                lat=sounding.station_lat,
                                lon=sounding.station_lon,
                                launchtime=str(YYYYMMDDHHMM))
-        sounding_name_parts = []
-        for char in sounding_name:
-            sounding_name_parts.extend(char)
 
-        nc_prof[0, 0:len(sounding_name_parts)] = sounding_name_parts
-        nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
+        xr_output['sounding_id'] = xr.DataArray([sounding_name], dims = ['sounding'])
 
-        nc_tindex[0, :] = sounding.time
-        nc_vvert[0, :] = sounding.ascentrate
-        nc_alti[0, :] = sounding.gpm
-        nc_pres[0, :] = sounding.pressure
-        nc_temp[0, :] = sounding.temperature
-        nc_rh[0, :] = sounding.relativehumidity
-        nc_dewp[0, :] = sounding.dewpoint
-        nc_mix[0, :] = sounding.mixingratio
-        nc_vhori[0, :] = sounding.windspeed
-        nc_vdir[0, :] = sounding.winddirection
-        nc_lat[0, :] = sounding.latitude
-        nc_long[0, :] = sounding.longitude
-        if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
-            nc_evss[0, :] = sounding.extendedVerticalSoundingSignificance
-        fo.close()
+        with open(json_config_fn, 'r') as f:
+            j = json.load(f)
+        meta_data_dict = j['meta_data']
+        for variable in xr_output.data_vars:
+            if variable in meta_data_dict.keys():
+                variable_meta_data = meta_data_dict[variable]
+                for attr, value in variable_meta_data.items():
+                    xr_output[variable].attrs[attr] = value
+
+        # Reduce dtype to float instead of double
+        xr_output.sounding_id.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
+        for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
+                         'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
+            xr_output[variable].encoding['dtype'] = 'f4'
+        xr_output['flight_time'].encoding['dtype'] = 'f8'
+
+        for variable in xr_output.data_vars:
+            xr_output[variable].encoding['zlib'] = True
+
+        xr_output.to_netcdf(outfile, unlimited_dims=['sounding'])
+
+        # sounding_name_parts = []
+        # for char in sounding_name:
+        #     sounding_name_parts.extend(char)
+
+        # nc_prof[0, 0:len(sounding_name_parts)] = sounding_name_parts
+        # nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
+        #
+        # nc_tindex[0, :] = sounding.time
+        # nc_vvert[0, :] = sounding.ascentrate
+        # nc_alti[0, :] = sounding.gpm
+        # nc_pres[0, :] = sounding.pressure
+        # nc_temp[0, :] = sounding.temperature
+        # nc_rh[0, :] = sounding.relativehumidity
+        # nc_dewp[0, :] = sounding.dewpoint
+        # nc_mix[0, :] = sounding.mixingratio
+        # nc_vhori[0, :] = sounding.windspeed
+        # nc_vdir[0, :] = sounding.winddirection
+        # nc_lat[0, :] = sounding.latitude
+        # nc_long[0, :] = sounding.longitude
+        # if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
+        #     nc_evss[0, :] = sounding.extendedVerticalSoundingSignificance
+        # fo.close()
+
         logging.info('DONE: {input} converted to {output}'.format(
             input=filelist[ifile],
             output=outfile))

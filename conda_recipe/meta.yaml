@@ -25,3 +25,4 @@ requirements:
     - metpy
     - basemap-data-hires
     - tqdm
+    - bottleneck

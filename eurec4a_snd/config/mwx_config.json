@@ -1,0 +1,202 @@
+{
+  "sync_sounding_items": ["SoundingIdPk", "RadioRxTimePk", "DataSrvTime", "Pressure", "Temperature", "Humidity", "WindDir",
+    "WindSpeed", "WindNorth", "WindEast", "Height", "PtuStatus", "WindInterpolated",
+    "Latitude", "Longitude", "North", "East", "Up", "Altitude", "Dropping"
+  ],
+  "std_sounding_items": ["SoundingIdPk", "RadioRxTime", "DataSrvTime", "PressurePk", "Temperature", "Humidity",
+    "WindDirection", "WindSpeed", "Height", "Latitude", "Longitude", "DroppingPk"
+  ],
+  "radiosondes_sounding_items": ["Frequency", "SerialNbr", "SondeTypeName"],
+  "meta_data": {
+    "flight_time": {
+      "long_name": "time at pressure level",
+      "units": "seconds since 1970-01-01 00:00:00 UTC",
+      "axis": "T",
+      "calendar": "gregorian",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "launch_time": {
+      "standard_name": "time",
+      "long_name": "time at which the sounding started",
+      "units": "seconds since 1970-01-01 00:00:00 UTC",
+      "calendar": "gregorian",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "ascentRate": {
+      "long_name": "ascent/desent rate of measuring device",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "description": "ascent rate is positive/ descent rate is negative",
+      "units": "m/s",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "pressure": {
+      "standard_name": "air_pressure",
+      "long_name": "pressure",
+      "units": "hPa",
+      "coordinates": "sounding_id flight_time longitude latitude",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "temperature": {
+      "standard_name": "air_temperature",
+      "long_name": "dry bulb temperature",
+      "units": "degrees_Celsius",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "humidity": {
+      "standard_name": "relative_humidity",
+      "long_name": "relative humidity",
+      "units": "%",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "specific_humidity": {
+      "standard_name": "specific_humidity",
+      "long_name": "specific humidity",
+      "units": "g/kg",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "dewPoint": {
+      "standard_name": "dew_point_temperature",
+      "long_name": "dew point temperature",
+      "units": "degrees_Celsius",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "mixingRatio": {
+      "standard_name": "humidity_mixing_ratio",
+      "long_name": "water vapor mixing ratio",
+      "units": "g/kg",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "windSpeed": {
+      "standard_name": "wind_speed",
+      "long_name": "wind speed",
+      "units": "m/s",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "windDirection": {
+      "standard_name": "wind_from_direction",
+      "long_name": "wind direction",
+      "units": "degree",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "wind_u": {
+      "standard_name": "eastward_wind",
+      "long_name": "u-component of the wind",
+      "units": "m/s",
+      "coordinates": "flight_time longitude latitude altitude",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "wind_v": {
+      "standard_name": "northward_wind",
+      "long_name": "v-component of the wind",
+      "units": "m/s",
+      "coordinates": "sounding_id flight_time longitude latitude altitude",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "latitude": {
+      "long_name": "latitude",
+      "standard_name": "latitude",
+      "units": "degrees_north",
+      "axis": "Y",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "longitude": {
+      "standard_name": "longitude",
+      "long_name": "longitude",
+      "units": "degrees_east",
+      "axis": "X",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "ascent_flag": {
+      "long_name": "indicator of vertical flight direction",
+      "flag_values": "True False",
+      "flag_meanings": "ascending descending",
+      "valid_range": "False True"
+    },
+    "platform": {
+      "long_name": "platform identifier",
+      "units": "1",
+      "description": "1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante"
+    },
+    "sounding_id": {
+      "cf_role": "trajectory_id",
+      "long_name": "sounding identifier",
+      "description": "unique string describing the soundings origin (PLATFORM_SND-DIRECTION_LAT_LON_TIME)"
+    },
+    "altitude": {
+      "standard_name": "geopotential_height",
+      "long_name": "geopotential height retrieved from PTU",
+      "units": "m",
+      "positive": "up",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "altitude_WGS84": {
+      "standard_name": "height_above_reference_ellipsoid",
+      "positive": "up",
+      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "units": "m",
+      "_FillValue": 9.969209968386869e+36
+    },
+    "extendedVerticalSoundingSignificance":{
+      "long_name": "extended vertical soudning significance",
+      "description": "see BUFR code flag table to decode",
+      "units": ""
+    }
+  },
+  "global_meta_data":{
+    "EUREC4A_.*?_.*?_L1":{
+        "title": "EUREC4A level 1 sounding data"
+    },
+    "EUREC4A_.*?_.*?_L2":{
+        "title": "EUREC4A level 2 sounding data"
+    },
+    "EUREC4A_.*?_.*?_.*?":{
+      "campaign_id": "EUREC4A",
+      "doi": "10.25326/62",
+      "institution": "Max Planck Institute for Meteorology, Hamburg, Germany",
+      "references": "Stephan et al. (2020): Ship- and island-based atmospheric soundings from the 2020 EUREC4A field campaign, ESSD",
+      "acknowledgement": "The MPI-M is listed as the institute of first contact. Investigators, Institutions and Agencies who contributed to this dataset are numerous and are acknowledged in the reference publication"
+    },
+    "EUREC4A_Atalante_.*?_.*?":{
+      "platform_id": "Atalante",
+      "platform_location": "N/A"
+    },
+    "EUREC4A_Atalante_Vaisala-RS_.*?":{
+      "platform_id": "Atalante",
+      "instrument_id": "Vaisala-RS"
+    },
+     "EUREC4A_Atalante_Meteomodem-RS_.*?":{
+       "platform_id": "Atalante",
+       "instrument_id": "Meteomodem-RS",
+       "surface_altitude": "13 m"
+    },
+    "EUREC4A_Meteor_.*?_.*?":{
+      "platform_id": "Meteor",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_BCO_.*?_.*?":{
+      "platform_id": "BCO",
+      "platform_location": "Deebles Point, Barbados, West Indies",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_RonBrown_.*?_.*?":{
+      "platform_id": "RonBrown",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
+    },
+    "EUREC4A_MS-Merian_.*?_.*?":{
+      "platform_id": "MS-Merian",
+      "platform_location": "N/A",
+      "instrument_id": "Vaisala-RS"
+    }
+  }
+}
