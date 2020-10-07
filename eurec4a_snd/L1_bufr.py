@@ -309,6 +309,10 @@ def main(args={}):
             os.makedirs(outfile.parent)
 
         xr_output = sounding.to_dataset()
+
+        # Convert seconds since launch to actual time of observations
+        xr_output.flight_time.values = xr_output.launch_time.values + xr_output.flight_time.values
+
         ## Global
         xr_output.attrs['title'] = "EUREC4A level 1 sounding data".format(campaign)
         xr_output.attrs['campaign_id'] = campaign
