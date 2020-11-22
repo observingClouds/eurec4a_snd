@@ -294,10 +294,9 @@ def main(args={}):
                 # instead of relying on Dropping variable
                 logging.warning("Calculate bursting of balloon from maximum geopotential height")
                 idx_max_hgt = np.argmax(pd_snd_rnd.Height)
-                if s == 0:
-                    pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1]
-                elif s == 1:
-                    pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:]
+
+                pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1]
+                pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:]
 
         # Write output
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
