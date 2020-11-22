@@ -281,6 +281,24 @@ def main(args={}):
         pd_snd_asc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 0]
         pd_snd_dsc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 1]
 
+        # Bugfix 17
+        for s, (sounding, func) in enumerate(zip((pd_snd_asc, pd_snd_dsc), (np.greater_equal, np.less_equal))):
+            window_size = 5
+            smoothed_heights = np.convolve(sounding.Height, np.ones((window_size,)) / window_size, mode='valid')
+            if not np.all(func(np.gradient(smoothed_heights), 0)):
+                total = len(sounding.Height)
+                nb_diff = total - np.sum(func(np.gradient(sounding.Height), 0))
+                logging.warning("Of {} observations, {} observations have an inconsistent "
+                                "sounding direction".format(total, nb_diff))
+                # Find split time for ascending and descending sounding by maximum height
+                # instead of relying on Dropping variable
+                logging.warning("Calculate bursting of balloon from maximum geopotential height")
+                idx_max_hgt = np.argmax(pd_snd_rnd.Height)
+                if s == 0:
+                    pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1]
+                elif s == 1:
+                    pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:]
+
         # Write output
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
             if len(sounding) < 2:
