@@ -152,6 +152,13 @@
       "long_name": "extended vertical soudning significance",
       "description": "see BUFR code flag table to decode",
       "units": ""
+    },
+    "method":{
+      "long_name": "interpolation method",
+      "description": "interpolation performed during sounding",
+      "comment": "same as flag in .cor file",
+      "flag_values": "0 1 2 3 4",
+      "flag_meanings": "No GPS radio humidity temperature"
     }
   },
   "global_meta_data":{

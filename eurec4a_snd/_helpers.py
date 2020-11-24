@@ -553,6 +553,17 @@ def convert_list_to_array(sounding):
     return sounding
 
 
+def read_bufr_sounding(bufr_file, logging):
+    json_file = convert_bufr_to_json(bufr_file, logging)
+    json_flat, keys = read_json(json_file)
+
+    sounding = convert_json_to_arrays(json_flat, keys)
+    sounding = replace_missing_data(sounding)
+    sounding = convert_list_to_array(sounding)
+
+    return sounding
+
+
 def calculate_coordinates(origin, offset):
     """
     Calculate positon of measurement
