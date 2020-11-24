@@ -87,7 +87,7 @@ def get_args():
                         required=False,
                         type=str)
 
-    parser.add_argument("--platform_id", metavar='Platform identifier',
+    parser.add_argument("--platform", metavar='Platform identifier',
                         help="Platform identifier as used in config e.g. Atalante or BCO",
                         default=None,
                         required=False,
@@ -269,14 +269,14 @@ def main(args={}):
 
         # Get global attributes
         campaign = args['campaign']
-        platform_id = args['platform_id']
+        platform_id = args['platform']
         instrument_id = args['instrument_id']
         level = 'L1'
         if package_version_set:
             version = 'v{}'.format(__version__)
         else:
             version = git_module_version
-        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform}_{instrument_id}_{level}')
         platform_location = glob_attrs_dict['platform_location']
 
         # Create outputfile with time information from file
@@ -288,7 +288,7 @@ def main(args={}):
 
         if outpath.suffix == '.nc':
             outfile = Path(outpath.as_posix().format(campaign=campaign,
-                                                     platform=platform_id,
+                                                     platform=platform,
                                                      instrument=instrument_id,
                                                      level=level,
                                                      direction='{}'.format(direction_str),
@@ -298,7 +298,7 @@ def main(args={}):
             outfile = Path(os.path.join(outpath, \
                 "{campaign}_{platform}_{instrument}_{level}-{direction}_{date}_{version}.nc".\
                 format(campaign=campaign,
-                       platform=platform_id,
+                       platform=platform,
                        instrument=instrument_id,
                        level=level,
                        direction='{}'.format(direction_str),
@@ -316,7 +316,7 @@ def main(args={}):
         ## Global
         xr_output.attrs['title'] = "EUREC4A level 1 sounding data".format(campaign)
         xr_output.attrs['campaign_id'] = campaign
-        xr_output.attrs['platform_id'] = f'{platform_id}'
+        xr_output.attrs['platform_id'] = f'{platform}'
         xr_output.attrs['instrument_id'] = f'{instrument_id}'
         xr_output.attrs['platform_location'] = platform_location
         xr_output.attrs['contact_person'] = '{name} ({mail})'.format(
@@ -361,7 +361,7 @@ def main(args={}):
 
         # Overwrite standard attrs with those defined in config file
         # Get global meta data from mwx_config.json
-        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+        glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform}_{instrument_id}_{level}')
         for attrs, value in glob_attrs_dict.items():
             xr_output.attrs[attrs] = value
 
@@ -369,13 +369,13 @@ def main(args={}):
             xr_output['extendedVerticalSoundingSignificance'] = xr.DataArray([sounding.extendedVerticalSoundingSignificance], dims=['sounding','levels'])
 
         sounding_name = '{platform}__{direction}__{lat:05.2f}_{lon:06.2f}__{launchtime}'.\
-                        format(platform=platform_id,
+                        format(platform=platform,
                                direction=direction_str,
                                lat=sounding.station_lat,
                                lon=sounding.station_lon,
                                launchtime=str(YYYYMMDDHHMM))
 
-        xr_output['sounding_id'] = xr.DataArray([sounding_name], dims = ['sounding'])
+        xr_output['sounding'] = xr.DataArray([sounding_name], dims = ['sounding'])
 
         with open(json_config_fn, 'r') as f:
             j = json.load(f)
@@ -387,7 +387,7 @@ def main(args={}):
                     xr_output[variable].attrs[attr] = value
 
         # Reduce dtype to float instead of double
-        xr_output.sounding_id.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
+        xr_output.sounding.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
         for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                          'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
             xr_output[variable].encoding['dtype'] = 'f4'

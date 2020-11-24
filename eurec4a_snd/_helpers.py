@@ -249,7 +249,7 @@ def convert_json_to_arrays(json_flat, key_keys):
             ds = xr.Dataset()
             for var, value in var_dict.items():
                 if isinstance(value, np.ndarray):
-                    ds[var] = xr.DataArray([value], dims=['sounding', 'levels'])
+                    ds[var] = xr.DataArray([value], dims=['sounding', 'level'])
                 else:
                     ds[var] = xr.DataArray([value], dims=['sounding'])
             return ds

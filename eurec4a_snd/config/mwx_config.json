@@ -13,7 +13,7 @@
       "units": "seconds since 2020-01-01 00:00:00",
       "axis": "T",
       "calendar": "gregorian",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "launch_time": {
@@ -25,7 +25,7 @@
     },
     "ascentRate": {
       "long_name": "ascent/desent rate of measuring device",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "description": "ascent rate is positive/ descent rate is negative",
       "units": "m/s",
       "_FillValue": 9.969209968386869e+36
@@ -34,70 +34,70 @@
       "standard_name": "air_pressure",
       "long_name": "pressure",
       "units": "hPa",
-      "coordinates": "sounding_id flight_time longitude latitude",
+      "coordinates": "sounding flight_time longitude latitude",
       "_FillValue": 9.969209968386869e+36
     },
     "temperature": {
       "standard_name": "air_temperature",
       "long_name": "dry bulb temperature",
       "units": "degrees_Celsius",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "humidity": {
       "standard_name": "relative_humidity",
       "long_name": "relative humidity",
       "units": "%",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "specific_humidity": {
       "standard_name": "specific_humidity",
       "long_name": "specific humidity",
       "units": "g/kg",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "dewPoint": {
       "standard_name": "dew_point_temperature",
       "long_name": "dew point temperature",
       "units": "degrees_Celsius",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "mixingRatio": {
       "standard_name": "humidity_mixing_ratio",
       "long_name": "water vapor mixing ratio",
       "units": "g/kg",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "windSpeed": {
       "standard_name": "wind_speed",
       "long_name": "wind speed",
       "units": "m/s",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "windDirection": {
       "standard_name": "wind_from_direction",
       "long_name": "wind direction",
       "units": "degree",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "wind_u": {
       "standard_name": "eastward_wind",
       "long_name": "u-component of the wind",
       "units": "m/s",
-      "coordinates": "flight_time longitude latitude altitude",
+      "coordinates": "sounding flight_time longitude latitude altitude",
       "_FillValue": 9.969209968386869e+36
     },
     "wind_v": {
       "standard_name": "northward_wind",
       "long_name": "v-component of the wind",
       "units": "m/s",
-      "coordinates": "sounding_id flight_time longitude latitude altitude",
+      "coordinates": "sounding flight_time longitude latitude altitude",
       "_FillValue": 9.969209968386869e+36
     },
     "latitude": {
@@ -125,7 +125,7 @@
       "units": "1",
       "description": "1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante"
     },
-    "sounding_id": {
+    "sounding": {
       "cf_role": "trajectory_id",
       "long_name": "sounding identifier",
       "description": "unique string describing the soundings origin (PLATFORM_SND-DIRECTION_LAT_LON_TIME)"
@@ -135,13 +135,13 @@
       "long_name": "geopotential height retrieved from PTU",
       "units": "m",
       "positive": "up",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "altitude_WGS84": {
       "standard_name": "height_above_reference_ellipsoid",
       "positive": "up",
-      "coordinates": "sounding_id flight_time longitude latitude pressure",
+      "coordinates": "sounding flight_time longitude latitude pressure",
       "units": "m",
       "_FillValue": 9.969209968386869e+36
     },
@@ -166,35 +166,35 @@
       "acknowledgement": "The MPI-M is listed as the institute of first contact. Investigators, Institutions and Agencies who contributed to this dataset are numerous and are acknowledged in the reference publication"
     },
     "EUREC4A_Atalante_.*?_.*?":{
-      "platform_id": "Atalante",
+      "platform": "Atalante",
       "platform_location": "N/A"
     },
     "EUREC4A_Atalante_Vaisala-RS_.*?":{
-      "platform_id": "Atalante",
+      "platform": "Atalante",
       "instrument_id": "Vaisala-RS"
     },
      "EUREC4A_Atalante_Meteomodem-RS_.*?":{
-       "platform_id": "Atalante",
+       "platform": "Atalante",
        "instrument_id": "Meteomodem-RS",
        "surface_altitude": "13 m"
     },
     "EUREC4A_Meteor_.*?_.*?":{
-      "platform_id": "Meteor",
+      "platform": "Meteor",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_BCO_.*?_.*?":{
-      "platform_id": "BCO",
+      "platform": "BCO",
       "platform_location": "Deebles Point, Barbados, West Indies",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_RonBrown_.*?_.*?":{
-      "platform_id": "RonBrown",
+      "platform": "RonBrown",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     },
     "EUREC4A_MS-Merian_.*?_.*?":{
-      "platform_id": "MS-Merian",
+      "platform": "MS-Merian",
       "platform_location": "N/A",
       "instrument_id": "Vaisala-RS"
     }

@@ -93,7 +93,7 @@ def get_args():
                         default='RS',
                         required=False,
                         type=str)
-    parser.add_argument("--platform_id", metavar='Platform identifier',
+    parser.add_argument("--platform", metavar='Platform identifier',
                         help="Platform identifier as used in config e.g. Atalante or BCO",
                         default=None,
                         required=False,
@@ -209,7 +209,7 @@ def main(args={}):
     meta_data_dict = j['meta_data']
 
     campaign = args['campaign']
-    platform_id = args['platform_id']
+    platform = args['platform']
     instrument_id = args['instrument_id']
 
     # Function definitions
@@ -320,7 +320,7 @@ def main(args={}):
             ## Resolution
             resolution = calc_temporal_resolution(flight_time_unix)
             ## Sounding ID
-            sounding_id = '{platform}__{direction}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform_id,
+            sounding_id = '{platform}__{direction}__{lat:3.2f}_{lon:4.2f}__{time}'.format(platform = platform,
                                                                              direction = direction_dict[s],
                                                                              lat = xr_snd.Latitude.values[0],
                                                                              lon = xr_snd.Longitude.values[0],
@@ -332,22 +332,24 @@ def main(args={}):
                 raise SondeTypeNotImplemented('SondeTypeName {} is not implemented'.format(sounding_meta_dict["SondeTypeName"]))
 
             xr_output = xr.Dataset()
-            xr_output['launch_time'] = xr.DataArray([launch_time_unix], dims = ['sounding'])
-            xr_output['flight_time'] = xr.DataArray([flight_time_unix], dims = ['sounding', 'levels'])
-            xr_output['sounding_id'] = xr.DataArray([sounding_id], dims = ['sounding'])
-            xr_output['ascentRate'] = xr.DataArray([ascent_rate], dims = ['sounding', 'levels'])
-            #xr_output['altitude'] = xr.DataArray([xr_snd.GeometricHeight.values], dims = ['sounding', 'levels']) # This is different to BUFR
-            xr_output['pressure'] = xr.DataArray([xr_snd.Pressure.values], dims = ['sounding', 'levels'])
-            xr_output['altitude'] = xr.DataArray([xr_snd.Height.values], dims = ['sounding', 'levels'])
-            xr_output['temperature'] = xr.DataArray([xr_snd.Temperature.values - 273.15], dims = ['sounding', 'levels'])
-            xr_output['humidity'] = xr.DataArray([xr_snd.Humidity.values], dims = ['sounding', 'levels'])
-            xr_output['dewPoint'] = xr.DataArray([dewpoint - 273.15], dims = ['sounding', 'levels'])
-            xr_output['mixingRatio'] = xr.DataArray([mixing_ratio], dims = ['sounding', 'levels'])
-            xr_output['windSpeed'] = xr.DataArray([xr_snd.WindSpeed.values], dims = ['sounding', 'levels'])
-            xr_output['windDirection'] = xr.DataArray([xr_snd.WindDir.values], dims = ['sounding', 'levels'])
-            xr_output['latitude'] = xr.DataArray([xr_snd.Latitude.values], dims = ['sounding', 'levels'])
-            xr_output['longitude'] = xr.DataArray([xr_snd.Longitude.values], dims = ['sounding', 'levels'])
-            xr_output['altitude_WGS84'] = xr.DataArray([xr_snd.Altitude.values], dims=['sounding', 'levels'])
+            xr_output['launch_time'] = xr.DataArray([sounding.flight_time.values[0]], dims = ['sounding'])
+            # xr_output.launch_time.data = xr_output.launch_time.data.astype('<M8[s]')
+            xr_output['flight_time'] = xr.DataArray([sounding.flight_time], dims = ['sounding', 'level'])
+            # xr_output.flight_time.data = xr_output.flight_time.data.astype('<M8[s]')
+            xr_output['sounding'] = xr.DataArray([sounding_id], dims = ['sounding'])
+            xr_output['ascentRate'] = xr.DataArray([ascent_rate], dims = ['sounding', 'level'])
+            #xr_output['altitude'] = xr.DataArray([xr_snd.GeometricHeight.values], dims = ['sounding', 'level']) # This is different to BUFR
+            xr_output['pressure'] = xr.DataArray([xr_snd.Pressure.values], dims = ['sounding', 'level'])
+            xr_output['altitude'] = xr.DataArray([xr_snd.Height.values], dims = ['sounding', 'level'])
+            xr_output['temperature'] = xr.DataArray([xr_snd.Temperature.values - 273.15], dims = ['sounding', 'level'])
+            xr_output['humidity'] = xr.DataArray([xr_snd.Humidity.values], dims = ['sounding', 'level'])
+            xr_output['dewPoint'] = xr.DataArray([dewpoint - 273.15], dims = ['sounding', 'level'])
+            xr_output['mixingRatio'] = xr.DataArray([mixing_ratio], dims = ['sounding', 'level'])
+            xr_output['windSpeed'] = xr.DataArray([xr_snd.WindSpeed.values], dims = ['sounding', 'level'])
+            xr_output['windDirection'] = xr.DataArray([xr_snd.WindDir.values], dims = ['sounding', 'level'])
+            xr_output['latitude'] = xr.DataArray([xr_snd.Latitude.values], dims = ['sounding', 'level'])
+            xr_output['longitude'] = xr.DataArray([xr_snd.Longitude.values], dims = ['sounding', 'level'])
+            xr_output['altitude_WGS84'] = xr.DataArray([xr_snd.Altitude.values], dims=['sounding', 'level'])
         #     xr_output['standard_level_flag'] = xr.DataArray()
 
             # Write attributes
@@ -358,10 +360,17 @@ def main(args={}):
                     for attr, value in variable_meta_data.items():
                         xr_output[variable].attrs[attr] = value
 
+            ## Coordinates
+            for coordinate in xr_output.coords:
+                if coordinate in meta_data_dict.keys():
+                    coordinate_meta_data = meta_data_dict[coordinate]
+                    for attr, value in coordinate_meta_data.items():
+                        xr_output[coordinate].attrs[attr] = value
+
             ## Global
             xr_output.attrs['title'] = "Sounding data during the {} campaign (level 1)".format(campaign)
             xr_output.attrs['campaign_id'] = campaign
-            xr_output.attrs['platform_id'] = f'{platform_id}'
+            xr_output.attrs['platform'] = f'{platform}'
             xr_output.attrs['instrument_id'] = f'{instrument_id}'
             xr_output.attrs['platform_location'] = platform_location
             xr_output.attrs['surface_altitude'] = '{:3.1f} m'.format(float(altitude))
@@ -388,12 +397,12 @@ def main(args={}):
 
             # Overwrite standard attrs with those defined in config file
             # Get global meta data from mwx_config.json
-            glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform_id}_{instrument_id}_{level}')
+            glob_attrs_dict = get_global_attrs(json_config_fn, f'{campaign}_{platform}_{instrument_id}_{level}')
             for attrs, value in glob_attrs_dict.items():
                 xr_output.attrs[attrs] = value
 
             # Reduce dtype to float instead of double
-            xr_output.sounding_id.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
+            xr_output.sounding.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
             for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                              'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
                 xr_output[variable].encoding['dtype'] = 'f4'
@@ -406,7 +415,7 @@ def main(args={}):
             else:
                 version = git_module_version
             filename = output_format.format(campaign=campaign,
-                                            platform_short=platform_id,
+                                            platform_short=platform,
                                             direction=direction_dict[sounding.Dropping.values[0]],
                                             instrument_id=args["instrument_id"],
                                             version=version,

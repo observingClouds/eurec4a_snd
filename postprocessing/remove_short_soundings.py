@@ -42,7 +42,7 @@ logging.info('Total number of level1 soundings found: {}'.format(len(files)))
 short_sounding_idx = []
 for f, file in enumerate(tqdm.tqdm(files)):
     ds = xr.open_dataset(file)
-    if len(ds.levels) < level_threshold:
+    if len(ds.level) < level_threshold:
         short_sounding_idx.append(f)
 logging.info('Number of short soundings found: {}'.format(len(short_sounding_idx)))
 soundings_short = np.array(files)[short_sounding_idx]

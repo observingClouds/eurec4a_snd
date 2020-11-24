@@ -141,9 +141,9 @@ def main():
     closest_pressure_levels = np.unique([find_nearest(pres_vals, p_) for p_ in pressure_levels_barbs])
     _, closest_pressure_levels_idx, _ = np.intersect1d(pres_vals, closest_pressure_levels, return_indices=True)
 
-    p_barbs = ds_sel.pressure.isel({'levels': closest_pressure_levels_idx}).values * units.hPa
-    wind_speed_barbs = ds_sel.windSpeed.isel({'levels': closest_pressure_levels_idx}).values * (units.meter/units.second)
-    wind_dir_barbs = ds_sel.windDirection.isel({'levels': closest_pressure_levels_idx}).values * units.degrees
+    p_barbs = ds_sel.pressure.isel({'level': closest_pressure_levels_idx}).values * units.hPa
+    wind_speed_barbs = ds_sel.windSpeed.isel({'level': closest_pressure_levels_idx}).values * (units.meter/units.second)
+    wind_dir_barbs = ds_sel.windDirection.isel({'level': closest_pressure_levels_idx}).values * units.degrees
     u_barbs, v_barbs = mpcalc.wind_components(wind_speed_barbs, wind_dir_barbs)
 
     # Find nans in pressure

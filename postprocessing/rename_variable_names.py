@@ -69,7 +69,7 @@ for file in tqdm.tqdm(files):
                 ds[var].encoding['_FillValue'] = 9.96921e36
         if 'coordinates' in ds[var].attrs.keys():
             del ds[var].attrs['coordinates']
-            ds[var].encoding['coordinates'] = "sounding_id flight_time lat lon" 
+            ds[var].encoding['coordinates'] = "sounding flight_time lat lon"
     attrs = list(ds.attrs.keys())
     for attr in attrs:
         if attr in attrs_to_delete:
@@ -79,9 +79,9 @@ for file in tqdm.tqdm(files):
             del ds[var]
     for var in list(ds.variables):
         if 'coordinates' in ds[var].encoding.keys():
-            ds[var].encoding['coordinates'] = "sounding_id flight_time lat lon"
     ds.flight_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
     ds.launch_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
+            ds[var].encoding['coordinates'] = "sounding flight_time lat lon"
 
     ds.to_netcdf(file, unlimited_dims=['sounding'])
 
