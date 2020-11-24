@@ -3,25 +3,36 @@ Script to delete lower measurements in the level 2
 data as the soundings from the ships cannot be
 trusted below 40 m
 """
-
-level2_files = [
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Meteor_soundings.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_BCO_soundings.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_RonBrown_soundings.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_MS-Merian_soundings.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_soundings_Vaisala.nc',
-                '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc'
-                ]
-import os
+import argparse
+import glob
 import numpy as np
 import xarray as xr
 import tqdm
 
+# create parser
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-i", "--inputfilefmt", metavar="INPUT_FILE_FMT",
+                        help="Level2 files or fileformat \n"
+                             "including wildcards e.g. $EXPORT_PATH/level_2/EUREC4A*.nc",
+                        default=None,
+                        required=True,
+                        nargs='+')
+
+# parse the arguments
+args = vars(parser.parse_args())
+
+if len(args['inputfilefmt']) == 0:
+    level2_files = sorted(glob.glob(args['inputfilefmt'][0]))
+else:
+    level2_files = sorted(args['inputfilefmt'])
+
 for file in tqdm.tqdm(level2_files):
     print(file)
     ds_in = xr.load_dataset(file)
-    #os.remove(file)
-    if file == '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EUREC4A_BCO_soundings.nc':
+
+    if 'BCO' in file:
+        #  No remove of lower levels in case of BCO soundings
         ds_out = ds_in
     else:
         ds_ = ds_in

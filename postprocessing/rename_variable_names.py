@@ -3,13 +3,29 @@ Script to rename variable names in level1 and level2
 files
 """
 
+import argparse
 import glob
 import tqdm
 import numpy as np
 import xarray as xr
 
-files_l2 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_2/EURE*.nc'))
-files_l1 = sorted(glob.glob('/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export2/level_1/*/*/*.nc'))
+# create parser
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-i", "--inputfilefmt", metavar="INPUT_FILE_FMT",
+                        help="Level1 and 2 files or fileformat \n"
+                             "including wildcards e.g. $EXPORT_PATH/level_2/EUREC4A*.nc",
+                        default=None,
+                        required=True,
+                        nargs='+')
+
+# parse the arguments
+args = vars(parser.parse_args())
+
+if len(args['inputfilefmt']) == 0:
+    files = sorted(glob.glob(args['inputfilefmt'][0]))
+else:
+    files = sorted(args['inputfilefmt'])
 
 rename_dict = {
     'altitude': 'alt',
@@ -43,8 +59,6 @@ rename_attrs_dict = {
 attrs_to_delete = ['platform_location', 'surface_altitude', 'latitude_of_launch_location', 'longitude_of_launch_location', 'python_version', 'converted_by', 'contact_person', 'institution', 'location'] 
 
 vars_to_delete = ['altitude_WGS84']
-
-files = np.hstack([files_l2, files_l1])
 
 for file in tqdm.tqdm(files):
     #if file == '/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export/level_1/ATL/Vaisala/EUREC4A_ATL_sounding_ascent_20200127_1059.nc':
