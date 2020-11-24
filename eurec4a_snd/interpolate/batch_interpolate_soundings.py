@@ -256,7 +256,12 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                              },
                   'x':{'long_name':'WGS84_x'},
                   'y':{'long_name':'WGS84_y'},
-                  'z':{'long_name':'WGS84_z'}
+                  'z':{'long_name':'WGS84_z'},
+                  'sounding': {
+                        'cf_role' : 'trajectory_id',
+                        'long_name' : 'sounding identifier',
+                        'description' : 'unique string describing the soundings origin (PLATFORM_SND-DIRECTION_LAT_LON_TIME)'
+                        }
                   }
 platform_rename_dict = {'Atalante (ATL)': 'Atalante',
                         'Barbados Cloud Observatory (BCO)': 'BCO',
