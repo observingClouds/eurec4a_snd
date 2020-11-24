@@ -283,6 +283,8 @@ def main(args={}):
 
         # Bugfix 17
         for s, (sounding, func) in enumerate(zip((pd_snd_asc, pd_snd_dsc), (np.greater_equal, np.less_equal))):
+            if len(sounding) < 2:
+                continue
             window_size = 5
             smoothed_heights = np.convolve(sounding.Height, np.ones((window_size,)) / window_size, mode='valid')
             if not np.all(func(np.gradient(smoothed_heights), 0)):
