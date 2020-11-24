@@ -416,6 +416,7 @@ def main(args={}):
                 version = 'v{}'.format(__version__)
             else:
                 version = git_module_version
+
             filename = output_format.format(campaign=campaign,
                                             platform_short=platform,
                                             direction=direction_dict[sounding.Dropping.values[0]],

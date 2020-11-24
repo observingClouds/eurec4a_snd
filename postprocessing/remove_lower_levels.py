@@ -41,7 +41,7 @@ for file in tqdm.tqdm(level2_files):
             if (len(ds_in[var].dims) == 2) and ('_FillValue' in ds_in[var].encoding.keys()):
                 if ds_in[var].dims[0] == 'sounding':
                     ds_[var].values[:,lowest_mask] = np.nan
-                elif ds_in[var].dims[1] == 'soudning':
+                elif ds_in[var].dims[1] == 'sounding':
                     ds_[var].values[lowest_mask,:] = np.nan
         ds_out = ds_
 
