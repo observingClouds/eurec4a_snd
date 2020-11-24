@@ -14,7 +14,7 @@ module load anaconda3
 source activate /home/mpim/m300408/conda-envs/new_campaign
 
 cd ~/GITHUB/eurec4a_snd/eurec4a_snd/
-git checkout final_changes
+git checkout master
 
 export OUTPUT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v6'
 export EXPORT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export3'
