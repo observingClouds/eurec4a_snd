@@ -602,6 +602,7 @@ def main(args={}):
         ds_interp['N_ptu'].encoding['dtype'] = 'f4'
         ds_interp['alt_bnds'].encoding['dtype'] = 'int16'
         ds_interp['altitude'].encoding['dtype'] = 'int16'
+        ds_interp.sounding.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
 
         ds_interp = set_global_attributes(ds_interp, glob_attrs_dict)
         ds_interp = set_additional_var_attributes(ds_interp, meta_data_dict)
