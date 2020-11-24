@@ -91,14 +91,16 @@ output_variables = ['altitude', 'temperature', 'pressure',
                     'flight_time', 'ascent_rate']
 meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                   'standard_name': 'time',
-                                  'units': 'seconds since 1970-01-01 00:00:00 UTC',
-                                  'coordinates': 'flight_time longitude latitude altitude',
+                                  'coordinates': 'longitude latitude altitude sounding',
+                                  'units': "seconds since 2020-01-01",
+                                  'dtype': "float",
                                   '_FillValue': default_fillvals['f8'],
                                   'ancillary_variables': 'N_ptu m_ptu',
                                   'cell_methods': 'altitude: mean (interval: 10 m comment: m_ptu)'
                                   },
                   'launch_time': {'long_name': 'time at which the sounding started',
-                                  'units': 'seconds since 1970-01-01 00:00:00 UTC',
+                                  'units': "seconds since 2020-01-01",
+                                  'dtype': "float",
                                   '_FillValue': default_fillvals['f8']
                                   },
                   'ascent_rate': {'long_name': 'ascent/desent rate of measuring device',
@@ -326,7 +328,7 @@ def main(args={}):
 
     for f, file in enumerate(tqdm.tqdm(filelist)):
         logging.info(f'Process file {file}')
-        ds = xr.open_dataset(file)
+        ds = xr.open_dataset(file, use_cftime=False)
         ds = ds.isel({'sounding': 0})
         ds_input = ds.copy()
 
@@ -566,8 +568,18 @@ def main(args={}):
         for attrs, value in glob_attrs_dict2.items():
             glob_attrs_dict[attrs] = value
 
-        ds_interp = set_global_attributes(ds_interp, glob_attrs_dict)
-        ds_interp = set_additional_var_attributes(ds_interp, meta_data_dict)
+        import pandas as pd
+
+        def convert_num2_date_with_nan(num, format):
+            if not np.isnan(num):
+                return num2date(num, format, only_use_python_datetimes=True, only_use_cftime_datetimes=False)
+            else:
+                return pd.NaT
+
+        convert_nums2date = np.vectorize(convert_num2_date_with_nan)
+
+        ds_interp['flight_time'].data = convert_nums2date(ds_interp.flight_time.data, "seconds since 1970-01-01")
+        ds_interp['launch_time'].data = convert_nums2date(ds_interp.launch_time.data, "seconds since 1970-01-01")
 
         for variable in ['temperature', 'dew_point', 'wind_speed', 'pressure',
                          'wind_u', 'wind_v', 'latitude', 'longitude',
@@ -586,6 +598,9 @@ def main(args={}):
         ds_interp['alt_bnds'].encoding['dtype'] = 'int16'
         ds_interp['altitude'].encoding['dtype'] = 'int16'
 
+        ds_interp = set_global_attributes(ds_interp, glob_attrs_dict)
+        ds_interp = set_additional_var_attributes(ds_interp, meta_data_dict)
+
         # Transpose dataset if necessary
         for variable in ds_interp.data_vars:
              if variable == 'alt_bnds': continue
@@ -593,8 +608,8 @@ def main(args={}):
              if (len(dims) == 2) and (dims[0] != 'sounding'):
                  ds_interp[variable] = ds_interp[variable].T
 
-        time_dt = num2date(ds_interp.isel({'sounding': 0}).launch_time,
-                           "seconds since 1970-01-01 00:00:00")
+        time_dt = pd.Timestamp(np.datetime64(ds_interp.isel({'sounding': 0}).launch_time.data.astype("<M8[ns]")))
+
         time_fmt = time_dt.strftime('%Y%m%dT%H%M')
         platform_filename = platform  # platform_rename_dict[platform]
         outfile = args['outputfolder']+'{campaign}_{platform}_{instrument_id}_{level}_{date}_{version}.nc'.format(campaign=ds.campaign_id,

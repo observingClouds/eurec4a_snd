@@ -422,7 +422,11 @@ def main(args={}):
                                             level=level
                                             )
             filename = launch_time_dt.strftime(filename)
-            xr_output.to_netcdf(filename, unlimited_dims=['sounding'])
+
+            xr_output.to_netcdf(filename, unlimited_dims=['sounding'],
+                                encoding={'flight_time':{'units':"seconds since 2020-01-01", 'dtype':'float'},
+                                          'launch_time':{'units':"seconds since 2020-01-01", 'dtype':'float'}
+                                          })
             logging.info('File converted to {}'.format(filename))
 
 

@@ -222,7 +222,7 @@ def compress_dataset(ds):
 def set_additional_var_attributes(ds, meta_data_dict):
     """
     Set further descriptive variable
-    attributes for interpolated variables
+    attributes and encoding.
     """
     for var in ds.variables:
         try:
@@ -230,7 +230,15 @@ def set_additional_var_attributes(ds, meta_data_dict):
         except KeyError:
             continue
         for key, value in meta_data_var.items():
-            ds[var].attrs[key] = value
+            if key not in ['_FillValue', 'dtype'] and not ('time' in var):
+                ds[var].attrs[key] = value
+            elif (key not in ['_FillValue', 'dtype', 'units']) and ('time' in var):
+                ds[var].attrs[key] = value
+            elif (key == '_FillValue') and (value == False):
+                ds[var].attrs[key] = value
+            else:
+                ds[var].encoding[key] = value
+
     return ds
 
 

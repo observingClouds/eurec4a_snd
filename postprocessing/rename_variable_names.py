@@ -93,9 +93,9 @@ for file in tqdm.tqdm(files):
             del ds[var]
     for var in list(ds.variables):
         if 'coordinates' in ds[var].encoding.keys():
-    ds.flight_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
-    ds.launch_time.encoding['units'] = "seconds since 1970-01-01 00:00:00 UTC"
             ds[var].encoding['coordinates'] = "sounding flight_time lat lon"
+    ds.flight_time.encoding['units'] = "seconds since 2020-01-01 00:00:00"
+    ds.launch_time.encoding['units'] = "seconds since 2020-01-01 00:00:00"
 
     ds.to_netcdf(file, unlimited_dims=['sounding'])
 

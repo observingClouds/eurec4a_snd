@@ -10,17 +10,13 @@
   "meta_data": {
     "flight_time": {
       "long_name": "time at pressure level",
-      "units": "seconds since 2020-01-01 00:00:00",
       "axis": "T",
-      "calendar": "gregorian",
       "coordinates": "sounding flight_time longitude latitude pressure",
       "_FillValue": 9.969209968386869e+36
     },
     "launch_time": {
       "standard_name": "time",
       "long_name": "time at which the sounding started",
-      "units": "seconds since 2020-01-01 00:00:00",
-      "calendar": "gregorian",
       "_FillValue": 9.969209968386869e+36
     },
     "ascentRate": {
