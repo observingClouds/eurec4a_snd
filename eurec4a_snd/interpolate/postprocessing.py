@@ -337,8 +337,8 @@ def pressure_interpolation(pressures, altitudes, output_altitudes, convergence_e
         lower_idx = np.nanmax(np.where(altitudes <= target_h))
         upper_idx = np.nanmin(np.where(altitudes >= target_h))
 
-        p1 = pressures[lower_idx]  # pressure at lower altitude
-        p2 = pressures[upper_idx]  # pressure at higher altitude
+        p1 = np.float64(pressures[lower_idx])  # pressure at lower altitude
+        p2 = np.float64(pressures[upper_idx])  # pressure at higher altitude
         a1 = altitudes[lower_idx]  # lower altitude
         a2 = altitudes[upper_idx]  # higher altitude
 
