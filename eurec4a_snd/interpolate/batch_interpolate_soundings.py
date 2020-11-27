@@ -429,6 +429,7 @@ def main(args={}):
         ds_new['flight_time'].values = flight_time_unix
 
         # Interpolation
+        logging.debug("Starting interpolation")
         if args['method'] == 'linear':
             ds_new = ds_new.dropna(dim='altitude',
                                    subset=output_variables,
@@ -480,6 +481,7 @@ def main(args={}):
         ds_input = ds_input.sortby('altitude')
         ds_input.altitude.load()
         ds_input.pressure.load()
+        logging.debug("Pressure interpolation")
         interp_pres = pressure_interpolation(ds.pressure.values,
                                              ds.altitude.values,
                                              ds_interp.altitude.values)
@@ -493,6 +495,7 @@ def main(args={}):
                                              dims=['sounding'])
 
         # Calculations after interpolation
+        logging.debug("Starting calculations after interpolation")
         # Recalculate temperature and relative humidity from theta and q
         temperature = calc_T_from_theta(ds_interp.isel(sounding=0)['theta'].values, ds_interp.isel(sounding=0)['pressure'].values)
         ds_interp['temperature'] = xr.DataArray([np.array(temperature)],
