@@ -299,6 +299,8 @@ def main(args={}):
 
                 pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1]
                 pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:]
+                pd_snd_asc.Dropping = 0
+                pd_snd_dsc.Dropping = 1
 
         # Write output
         for s,sounding in enumerate([pd_snd_asc, pd_snd_dsc]):
