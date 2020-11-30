@@ -272,6 +272,10 @@ def main(args={}):
         # Convert temperature to Kelvin
         pd_snd['Temperature'] += 273.15
 
+        # Convert radians to degree
+        pd_snd['Latitude'] = np.rad2deg(pd_snd['Latitude'])
+        pd_snd['Longitude'] = np.rad2deg(pd_snd['Longitude'])
+
         # Round sounding measurements similar to BUFR message
         if args['round_like_BUFR']:
             logging.debug('Data is rounded similar to BUFR message output')
