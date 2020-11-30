@@ -28,19 +28,24 @@ else:
     files = sorted(args['inputfilefmt'])
 
 rename_dict = {
+    'alt': 'alt',
     'altitude': 'alt',
     'ascentRate': 'dz',
     'ascent_rate': 'dz',
     'dewPoint': 'dp',
     'flight_time': 'flight_time',
     'humidity': 'rh',
+    'launch_time': 'launch_time',
     'latitude': 'lat',
+    'lat': 'lat',
+    'lon': 'lon',
     'longitude': 'lon',
     'mixingRatio': 'mr',
     'mixing_ratio': 'mr',
     'relative_humidity': 'rh',
     'specific_humidity': 'q',
     'pressure': 'p',
+    'sounding': 'sounding',
     'temperature': 'ta',
     'windDirection': 'wdir',
     'windSpeed':'wspd',
@@ -82,8 +87,14 @@ for file in tqdm.tqdm(files):
             if ds[var].encoding['_FillValue'] == 9.969209968386869e36:
                 ds[var].encoding['_FillValue'] = 9.96921e36
         if 'coordinates' in ds[var].attrs.keys():
+            coordinates_old = ds[var].attrs['coordinates'].split(' ')
+            coordinates_new = (' ').join([rename_dict[coord] for coord in coordinates_old])
             del ds[var].attrs['coordinates']
-            ds[var].encoding['coordinates'] = "sounding flight_time lat lon"
+            ds[var].encoding['coordinates'] = coordinates_new
+        if 'coordinates' in ds[var].encoding.keys():
+            coordinates_old = ds[var].encoding['coordinates'].split(' ')
+            coordinates_new = (' ').join([rename_dict[coord] for coord in coordinates_old])
+            ds[var].encoding['coordinates'] = coordinates_new
     attrs = list(ds.attrs.keys())
     for attr in attrs:
         if attr in attrs_to_delete:
@@ -91,9 +102,6 @@ for file in tqdm.tqdm(files):
     for var in vars_to_delete:
         if var in ds.data_vars:
             del ds[var]
-    for var in list(ds.variables):
-        if 'coordinates' in ds[var].encoding.keys():
-            ds[var].encoding['coordinates'] = "sounding flight_time lat lon"
     ds.flight_time.encoding['units'] = "seconds since 2020-01-01 00:00:00"
     ds.launch_time.encoding['units'] = "seconds since 2020-01-01 00:00:00"
 
