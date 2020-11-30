@@ -419,7 +419,7 @@ def main(args={}):
                 xr_output.attrs[attrs] = value
 
             # Reduce dtype to float instead of double
-            xr_output.sounding.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
+            xr_output.sounding.encoding = {'dtype': 'str'}
             for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                              'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
                 xr_output[variable].encoding['dtype'] = 'f4'
