@@ -16,8 +16,8 @@ source activate /home/mpim/m300408/conda-envs/new_campaign
 cd ~/GITHUB/eurec4a_snd/eurec4a_snd/
 git checkout master
 
-export OUTPUT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v6'
-export EXPORT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export3'
+export OUTPUT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v7'
+export EXPORT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export4'
 
 rm -r $OUTPUT_PATH
 rm -r $EXPORT_PATH
@@ -60,12 +60,11 @@ python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0
 python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/ATL/Vaisala/ -o ${OUTPUT_PATH}/level1_mwx/ --platform Atalante --campaign EUREC4A --instrument_id Vaisala-RS
 python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/RHB/ -o ${OUTPUT_PATH}/level1_mwx/ --platform RonBrown --campaign EUREC4A --instrument_id Vaisala-RS
 python L1_mwx.py -p /mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/BCO/ -o ${OUTPUT_PATH}/level1_mwx/ --platform BCO --campaign EUREC4A --instrument_id Vaisala-RS
-python L1_meteomodem_raw.py -p "/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/ATL/MeteoModem/COR/" -o ${OUTPUT_PATH}/level1_mwx/ --platform Atalante --campaign EUREC4A --instrument_id Meteomodem-RS -s 1 5 6 7 14
+python L1_meteomodem_raw.py -p "/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v3/level0/ATL/MeteoModem/COR/" -o ${OUTPUT_PATH}/level1_mwx/ --platform Atalante --campaign EUREC4A --instrument_id Meteomodem-RS
 
 
 # Remove short soundings (less than 30 levels)
 python ../postprocessing/remove_short_soundings.py -i ${OUTPUT_PATH}'/level1_mwx/EUREC4A*L1*.nc' -t 30 -d True
-python ../postprocessing/remove_short_soundings.py -i ${OUTPUT_PATH}'/level1_bufr/EUREC4A*L1*.nc' -t 30 -d True
 
 # Convert Level1 to Level2 (interpolate)
 mkdir -p ${OUTPUT_PATH}/level1_mwx/
@@ -74,7 +73,7 @@ python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/le
 python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/level1_mwx/EUREC4A_MS-Merian_*Vaisala-RS*.nc' -o ${OUTPUT_PATH}'/level2_mwx/'
 python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/level1_mwx/EUREC4A_BCO_*Vaisala-RS*.nc' -o ${OUTPUT_PATH}'/level2_mwx/'
 python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/level1_mwx/EUREC4A_Atalante_*Vaisala-RS*.nc' -o ${OUTPUT_PATH}'/level2_mwx/'
-python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/level1_bufr/EUREC4A_Atalante_Meteomodem-RS_L1*_20200*.nc' -o ${OUTPUT_PATH}'/level2_bufr/'
+python ./interpolate/batch_interpolate_soundings.py -m bin -i ${OUTPUT_PATH}'/level1_mwx/EUREC4A_Atalante_Meteomodem-RS_L1*_20200*.nc' -o ${OUTPUT_PATH}'/level2_mwx/'
 
 # Concatenate Level2 files by platform
 module load nco
@@ -89,8 +88,8 @@ rm ${OUTPUT_PATH}/level2_mwx/EUREC4A_MS-Merian_soundings.nc
 ncrcat -h ${OUTPUT_PATH}/level2_mwx/*Merian_*Vaisala-RS*_20*.nc ${OUTPUT_PATH}/level2_mwx/EUREC4A_MS-Merian_soundings.nc
 rm ${OUTPUT_PATH}/level2_mwx/EUREC4A_RonBrown_soundings.nc
 ncrcat -h ${OUTPUT_PATH}/level2_mwx/*RonBrown_*Vaisala-RS*_20*.nc ${OUTPUT_PATH}/level2_mwx/EUREC4A_RonBrown_soundings.nc
-rm ${OUTPUT_PATH}/level2_bufr/EUREC4A_Atalante_soundings_Meteomodem.nc
-ncrcat -h ${OUTPUT_PATH}/level2_bufr/EUREC4A_Atalante_Meteomodem-RS*_20*.nc ${OUTPUT_PATH}/level2_bufr/EUREC4A_Atalante_soundings_Meteomodem.nc
+rm ${OUTPUT_PATH}/level2_mwx/EUREC4A_Atalante_soundings_Meteomodem.nc
+ncrcat -h ${OUTPUT_PATH}/level2_mwx/EUREC4A_Atalante_Meteomodem-RS*_20*.nc ${OUTPUT_PATH}/level2_mwx/EUREC4A_Atalante_soundings_Meteomodem.nc
 
 
 # Checks
@@ -113,7 +112,7 @@ cp ${OUTPUT_PATH}/level1_mwx/EUREC4A_RonBrown_Vaisala-RS_L1*.nc ${EXPORT_PATH}/l
 mkdir -p ${EXPORT_PATH}/level_1/BCO/Vaisala/
 cp ${OUTPUT_PATH}/level1_mwx/EUREC4A_BCO_Vaisala-RS_L1*.nc ${EXPORT_PATH}/level_1/BCO/Vaisala/
 mkdir -p ${EXPORT_PATH}/level_1/ATL/MeteoModem/
-cp ${OUTPUT_PATH}/level1_bufr/EUREC4A_Atalante_Meteomodem-RS_L1*.nc ${EXPORT_PATH}/level_1/ATL/MeteoModem/
+cp ${OUTPUT_PATH}/level1_mwx/EUREC4A_Atalante_Meteomodem-RS_L1*.nc ${EXPORT_PATH}/level_1/ATL/MeteoModem/
 
 # Export level2 data to export folder
 mkdir -p ${EXPORT_PATH}/level_2/
@@ -122,7 +121,7 @@ cp ${OUTPUT_PATH}/level2_mwx/EUREC4A_Atalante_soundings_Vaisala.nc ${EXPORT_PATH
 cp ${OUTPUT_PATH}/level2_mwx/EUREC4A_Meteor_soundings.nc ${EXPORT_PATH}/level_2/EUREC4A_Meteor_soundings.nc
 cp ${OUTPUT_PATH}/level2_mwx/EUREC4A_BCO_soundings.nc ${EXPORT_PATH}/level_2/EUREC4A_BCO_soundings.nc
 cp ${OUTPUT_PATH}/level2_mwx/EUREC4A_MS-Merian_soundings.nc ${EXPORT_PATH}/level_2/EUREC4A_MS-Merian_soundings.nc
-cp ${OUTPUT_PATH}/level2_bufr/EUREC4A_Atalante_soundings_Meteomodem.nc ${EXPORT_PATH}/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc
+cp ${OUTPUT_PATH}/level2_mwx/EUREC4A_Atalante_soundings_Meteomodem.nc ${EXPORT_PATH}/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc
 
 
 python ../postprocessing/remove_lower_levels.py -i $EXPORT_PATH/level_2/EUREC4A*.nc
@@ -134,8 +133,8 @@ mv ${EXPORT_PATH}/level_2/EUREC4A_BCO_soundings.nc2 ${EXPORT_PATH}/level_2/EUREC
 mv ${EXPORT_PATH}/level_2/EUREC4A_MS-Merian_soundings.nc2 ${EXPORT_PATH}/level_2/EUREC4A_MS-Merian_soundings.nc
 mv ${EXPORT_PATH}/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc2 ${EXPORT_PATH}/level_2/EUREC4A_Atalante_soundings_Meteomodem.nc
 
-python ../postprocessing/rename_variable_names.py -i ${EXPORT_PATH}'/level_1/*/*/*.nc'
-python ../postprocessing/rename_variable_names.py -i ${EXPORT_PATH}'/level_2/EURE*.nc'
+python ../postprocessing/rename_variable_names.py -i ${EXPORT_PATH}/level_1/*/*/*.nc
+python ../postprocessing/rename_variable_names.py -i ${EXPORT_PATH}/level_2/EURE*.nc
 python ../postprocessing/change_units.py -i ${EXPORT_PATH}'/level_2/*.nc'
 python ../postprocessing/change_units.py -i ${EXPORT_PATH}'/level_1/*/*/*.nc'
 
