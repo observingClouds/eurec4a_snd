@@ -46,7 +46,7 @@ for file in tqdm.tqdm(level2_files):
         ds_out = ds_
 
     for var in ds_out.data_vars:
-        ds_out[var].encoding = {'zlib': True}
+        ds_out[var].encoding['zlib'] = True
 
     # Delete some attributes
     del ds_out.attrs['surface_altitude']
