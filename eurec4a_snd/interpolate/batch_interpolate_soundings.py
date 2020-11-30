@@ -262,7 +262,6 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                   'sounding': {
                         'cf_role' : 'trajectory_id',
                         'long_name' : 'sounding identifier',
-                        'axis' : 'X',
                         'description' : 'unique string describing the soundings origin (PLATFORM_SND-DIRECTION_LAT_LON_TIME)'
                         }
                   }
