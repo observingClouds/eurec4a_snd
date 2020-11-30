@@ -420,6 +420,8 @@ def main(args={}):
 
             # Reduce dtype to float instead of double
             xr_output.sounding.encoding = {'dtype': 'str'}
+            xr_output.method.encoding['dtype'] = 'int16'
+            xr_output.method.attrs['flag_values'] = np.array([np.short(v) for v in xr_output.method.attrs['flag_values'].split(' ')])
             for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                              'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
                 xr_output[variable].encoding['dtype'] = 'f4'
