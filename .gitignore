@@ -4,15 +4,23 @@
 # Setuptools distribution folder.
 /dist/
 
+# Builds
+/build/
+/conda_build/
+
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+.eggs
 
 # Log files
-/*/*.log
+**.log
 
 # Output files
 /*/*.nc
 **.nc
+
+# SLURM logs
+**/Radiosonde.[eo]*
 
 # Mac
 *.DS_Store
