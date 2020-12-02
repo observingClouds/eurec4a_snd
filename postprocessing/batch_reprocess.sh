@@ -138,7 +138,7 @@ python ../postprocessing/rename_variable_names.py -i ${EXPORT_PATH}/level_2/EURE
 python ../postprocessing/change_units.py -i ${EXPORT_PATH}'/level_2/*.nc'
 python ../postprocessing/change_units.py -i ${EXPORT_PATH}'/level_1/*/*/*.nc'
 
-for file in `ls ${EXPORT_PATH}/level_1/*/*/*.nc`:
+for file in `ls ${EXPORT_PATH}/level_1/*/*/*.nc`
 do
 ncatted -O -h -a coordinates,global,d,, $file
 done
