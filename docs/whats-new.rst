@@ -14,8 +14,7 @@ Bugfixes
 
 Processing changes
 ~~~~~~~~~~~~~~~~~~
-- Data of the meteomodem soundings are no longer based on the BUFR files, but on the COR files, to be more in line with the Vaisala soundings. 
-All Meteomodem soundings are affected.(:issue:`20`)
+- Data of the meteomodem soundings are no longer based on the BUFR files, but on the COR files, to be more in line with the Vaisala soundings. All Meteomodem soundings are affected.(:issue:`20`)
 - Change unit in Level 1 data from hPa to Pa (:issue:`22`)
 - To circumvent issues with leap seconds, time references change from `1970-01-01` to `2020-01-01` (:issue:`19`)
 
