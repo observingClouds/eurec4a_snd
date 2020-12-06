@@ -355,7 +355,7 @@ def main(args={}):
         # Geopotential height issue
         # the geopotential height is not a measured coordinate and
         # the same height can occur at different pressure levels
-        # here the first occurance is used
+        # here the first occurrence is used
         _, uniq_altitude_idx = np.unique(ds.altitude.values, return_index=True)
         ds = ds.isel({'level': uniq_altitude_idx})
 

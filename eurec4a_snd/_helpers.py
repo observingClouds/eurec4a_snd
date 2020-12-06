@@ -26,7 +26,7 @@ class UnexpectedUnit(Exception):
 
 class RegexDict(dict):
     """
-    Dictionary with capability of taking regular xpressions
+    Dictionary with capability of taking regular expressions
     """
     def get_matching(self, event):
         return (self[key] for key in self if re.match(key, event))
@@ -595,7 +595,7 @@ def calc_ascentrate(sounding):
 
     Return
     ------
-    soundning : obj
+    sounding : obj
         sounding including the ascent rate
     """
     ascent_rate = np.diff(sounding.gpm)/(np.diff(sounding.time))
@@ -862,7 +862,7 @@ def expected_unit_check(sounding):
 
 def nan_argsort(array, direction=1):
     """
-    Sorting with handeling nan values
+    Sorting with handling nan values
     depending on the sounding direction
 
     Input
@@ -950,7 +950,7 @@ def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, signi
     """
     Exclude levels with specific extendedVerticalSoundingSignificance
 
-    Exclude sounding levels that contain one or more signficance bits
+    Exclude sounding levels that contain one or more significance bits
     and no additional one.
 
     Input
@@ -959,7 +959,7 @@ def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, signi
         sounding
 
     significance_bits : array like
-        signficance bits that should trigger removal of sounding level
+        significance bits that should trigger removal of sounding level
 
     Note: Only those levels will be excluded, where all significance bits
           that are set are also included in significance_bits.

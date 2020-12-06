@@ -9,7 +9,7 @@ This repository has been created before the start of the campaign and evolved fu
 - interpolate sounding data
 - correct and quality control soundings
 
-While most of the scripts can be applied to every sounding that exists in the BUFR or mwx format, some of the postprocessing scripts are specific to the EUREC4A campaign and can only serve as a guidence for other studies.
+While most of the scripts can be applied to every sounding that exists in the BUFR or mwx format, some of the postprocessing scripts are specific to the EUREC4A campaign and can only serve as a guidance for other studies.
 
 ## Installation
 
@@ -61,7 +61,7 @@ conda install -c observingclouds -c conda-forge eurec4a_snd
 ```
 
 ## Change meta-information
-The meta-information which is used in the netCDF files and in order to create a resonable filename, can always be changed by either
+The meta-information which is used in the netCDF files and in order to create a reasonable filename, can always be changed by either
 
 - remove the file `meta_information.ini` in `$HOME` and run `sounding_converter` again, as if it would be your first execution
 - edit the file `~/meta_information.ini` directly

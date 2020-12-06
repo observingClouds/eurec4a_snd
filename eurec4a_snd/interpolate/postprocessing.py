@@ -64,7 +64,7 @@ def calc_mixing_ratio_hardy(dew_point_K, pressure_Pa):
 def calc_q_from_rh(dp, p):
     """
     Input :
-        dp : dew point (deg Celius)
+        dp : dew point (deg Celsius)
         p : pressure (hPa) 
     Output :
         q : Specific humidity values
@@ -285,7 +285,7 @@ def calc_ascentrate(height, time):
 
     Return
     ------
-    soundning : obj
+    sounding : obj
         sounding including the ascent rate
     """
     ascent_rate = np.diff(height)/(np.diff(time))

@@ -20,7 +20,7 @@
       "_FillValue": 9.969209968386869e+36
     },
     "ascentRate": {
-      "long_name": "ascent/desent rate of measuring device",
+      "long_name": "ascent/descent rate of measuring device",
       "coordinates": "launch_time flight_time longitude latitude pressure",
       "description": "ascent rate is positive/ descent rate is negative",
       "units": "m/s",
@@ -149,7 +149,7 @@
       "flag_meanings": "No GPS radio humidity temperature"
      },
     "extendedVerticalSoundingSignificance":{
-      "long_name": "extended vertical soudning significance",
+      "long_name": "extended vertical sounding significance",
       "description": "see BUFR code flag table to decode",
       "units": ""
     }
