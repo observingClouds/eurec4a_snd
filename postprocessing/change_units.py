@@ -1,7 +1,6 @@
 """
 Script to change units
 """
-import os
 import glob
 import tqdm
 import argparse

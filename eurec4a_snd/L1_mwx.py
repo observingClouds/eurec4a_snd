@@ -7,7 +7,7 @@ sounding system to netCDF
 """
 
 import os
-from pathlib import Path, PureWindowsPath
+from pathlib import Path
 import subprocess as sp
 import argparse
 import logging
@@ -15,7 +15,7 @@ import glob
 from datetime import timedelta
 import datetime as dt
 import netCDF4
-from netCDF4 import num2date, default_fillvals
+from netCDF4 import num2date
 import time #as time_module
 import tqdm
 import json
@@ -124,8 +124,10 @@ def get_args():
     return parsed_args
 
 
-def main(args={}):
+def main(args=None):
     # Set up global configuration of BCO-MPI-GIT:
+    if args is None:
+        args = {}
     try:
         args = get_args()
     except:

@@ -24,6 +24,7 @@ class UnitChangedError(Exception):
 class UnexpectedUnit(Exception):
     pass
 
+
 class RegexDict(dict):
     """
     Dictionary with capability of taking regular expressions
@@ -52,7 +53,7 @@ def get_global_attrs(cfg_file, key):
     Get global attributes from configuration file
     """
     with open(cfg_file, 'r') as f:
-        j=json.load(f)
+        j = json.load(f)
         rd = RegexDict(j['global_meta_data'])
         return rd.get_matching_combined(key)
 
@@ -165,7 +166,7 @@ def flatten_json(y):
         elif type(x) is list:
             i = 0
             for a in x:
-                number = flatten(a)
+                flatten(a)
                 i += 1
                 r += 1
         else:
@@ -469,7 +470,7 @@ def replace_missing_data(sounding):
         """
         Replace None with NaN
         """
-        if entry == None:
+        if entry is None:
             return np.nan
         else:
             return entry
@@ -534,7 +535,7 @@ def decode_extendedVerticalSoundingSignificance(decimal):
     >>> decode_extendedVerticalSoundingSignificance(20)
     array([14, 16])
     """
-    mask = np.array("{0:018b}".format(decimal),dtype='c').astype(bool)
+    mask = np.array("{0:018b}".format(decimal), dtype='c').astype(bool)
     bits = np.where(mask)[0]+1
     return bits
 
@@ -693,6 +694,7 @@ def celsius_to_kelvin(celsius):
     """
     return 273.15 + celsius
 
+
 def pascal_to_hectoPascal(pascal):
     """
     Convert Pa to hPa
@@ -817,7 +819,7 @@ def calc_saturation_pressure(temperature_K, method='hardy1998'):
         e_sw = np.zeros_like(temperature_K)
 
         for t, temp in enumerate(temperature_K):
-            ln_e_sw = np.sum([g[i]*temp**(i-2) for i in range(0,7)]) + g[7]*np.log(temp)
+            ln_e_sw = np.sum([g[i]*temp**(i-2) for i in range(0, 7)]) + g[7]*np.log(temp)
             e_sw[t] = np.exp(ln_e_sw)
         return e_sw
 
@@ -930,7 +932,6 @@ def exclude_sounding_level(sounding, nan_mask):
     Function to exclude sounding
     """
     sounding.time = sounding.time[nan_mask]
-    #sounding.ascentrate = sounding.ascentrate[nan_mask]
     sounding.gpm = sounding.gpm[nan_mask]
     sounding.pressure = sounding.pressure[nan_mask]
     sounding.temperature = sounding.temperature[nan_mask]
@@ -975,12 +976,10 @@ def exclude_specific_extendedVerticalSoundingSignificance_levels(sounding, signi
     for significance_level in significance_levels:
         current_level = sounding.extendedVerticalSoundingSignificance[significance_level]
         current_level = set(decode_extendedVerticalSoundingSignificance(current_level))
-        #to_delete_mask[significance_level] = current_level.issubset(significance_bits)
-        to_delete_mask[significance_level]= ((current_level == set(significance_bits)) or (current_level == set([4])))
+        to_delete_mask[significance_level] = ((current_level == set(significance_bits)) or (current_level == {4}))
     sounding = exclude_sounding_level(sounding, ~to_delete_mask)
 
     return sounding
-
 
 
 def correct_meteomodem_surface(sounding, bufr_file):

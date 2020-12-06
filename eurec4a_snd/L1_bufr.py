@@ -15,13 +15,10 @@ import shutil
 import os.path
 import sys
 import subprocess as sp
-import configparser
-from configparser import ExtendedInterpolation
 import argparse
 import logging
 import numpy as np
 import netCDF4
-from netCDF4 import Dataset, default_fillvals, num2date, date2num
 import xarray as xr
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -119,8 +116,10 @@ def get_args():
     return parsed_args
 
 
-def main(args={}):
+def main(args=None):
     # Set up global configuration of BCO-MPI-GIT:
+    if args is None:
+        args = {}
     try:
         args = get_args()
     except:
@@ -387,7 +386,7 @@ def main(args={}):
                     xr_output[variable].attrs[attr] = value
 
         # Reduce dtype to float instead of double
-        xr_output.sounding.encoding = {'dtype': 'S1000', 'char_dim_name': 'str_dim'}
+        xr_output.sounding.encoding = {'dtype': 'str'}
         for variable in ['altitude', 'ascentRate', 'dewPoint', 'humidity', 'latitude', 'longitude',
                          'mixingRatio', 'pressure', 'temperature', 'windDirection', 'windSpeed']:
             xr_output[variable].encoding['dtype'] = 'f4'
@@ -397,29 +396,6 @@ def main(args={}):
             xr_output[variable].encoding['zlib'] = True
 
         xr_output.to_netcdf(outfile, unlimited_dims=['sounding'])
-
-        # sounding_name_parts = []
-        # for char in sounding_name:
-        #     sounding_name_parts.extend(char)
-
-        # nc_prof[0, 0:len(sounding_name_parts)] = sounding_name_parts
-        # nc_launchtime[0] = date2num(sounding.sounding_start_time, date_unit)
-        #
-        # nc_tindex[0, :] = sounding.time
-        # nc_vvert[0, :] = sounding.ascentrate
-        # nc_alti[0, :] = sounding.gpm
-        # nc_pres[0, :] = sounding.pressure
-        # nc_temp[0, :] = sounding.temperature
-        # nc_rh[0, :] = sounding.relativehumidity
-        # nc_dewp[0, :] = sounding.dewpoint
-        # nc_mix[0, :] = sounding.mixingratio
-        # nc_vhori[0, :] = sounding.windspeed
-        # nc_vdir[0, :] = sounding.winddirection
-        # nc_lat[0, :] = sounding.latitude
-        # nc_long[0, :] = sounding.longitude
-        # if 'extendedVerticalSoundingSignificance' in args['additional_variables']:
-        #     nc_evss[0, :] = sounding.extendedVerticalSoundingSignificance
-        # fo.close()
 
         logging.info('DONE: {input} converted to {output}'.format(
             input=filelist[ifile],

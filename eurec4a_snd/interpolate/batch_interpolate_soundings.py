@@ -11,7 +11,6 @@ import logging
 import tqdm
 import numpy as np
 import xarray as xr
-import metpy
 import metpy.calc as mpcalc
 from metpy.units import units
 import netCDF4
@@ -80,8 +79,8 @@ def get_args():
 
 
 variables_dict = {'launch_time': 'launch_time', 'flight_time': 'flight_time',
-                  'pressure':'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
-                  'ascentRate':'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
+                  'pressure': 'pressure', 'latitude': 'latitude', 'longitude': 'longitude',
+                  'ascentRate': 'ascent_rate', 'temperature': 'temperature', 'dewPoint': 'dew_point',
                   'windSpeed': 'wind_speed',
                   'wind_u': 'wind_u', 'wind_v': 'wind_v'
                   }
@@ -224,9 +223,9 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                 'cell_methods': 'alt: mean (interval: 10 m comment: m_gps)',
                                 },
                   'ascent_flag': {'long_name': 'indicator of vertical flight direction',
-                                  'flag_values': np.array([1, 0],dtype=np.int16),
+                                  'flag_values': np.array([1, 0], dtype=np.int16),
                                   'flag_meanings': 'ascending descending',
-                                  'valid_range': np.array([0, 1],dtype=np.int16)
+                                  'valid_range': np.array([0, 1], dtype=np.int16)
                                   },
                   'platform': {'long_name': 'platform identifier',
                                'units': '1',
@@ -235,26 +234,26 @@ meta_data_dict = {'flight_time': {'long_name': 'time at pressure level',
                                'description': '1: BCO, 2: Meteor, 3: RonBrown, 4: MS-Merian, 5: Atalante'
                                },
                   'N_ptu': {'standard_name': 'number_of_observations',
-                         'description': 'number of observations used to derive level 2 PTU-data average',
+                            'description': 'number of observations used to derive level 2 PTU-data average',
                             'units': '1',
                             'coordinates': 'flight_time longitude latitude launch_time',
                             '_FillValue': default_fillvals['f4']
                              },
                   'N_gps': {'standard_name': 'number_of_observations',
-                         'description': 'number of observations used to derive level 2 GPS-data average',
+                            'description': 'number of observations used to derive level 2 GPS-data average',
                             'units': '1',
                             'coordinates': 'flight_time longitude latitude launch_time',
                             '_FillValue': default_fillvals['f4']
                              },
                   'm_ptu': {'long_name': 'bin method',
-                         'description': 'method used to derive level 2 PTU-data average',
-                                  'flag_values': np.array([0, 1 , 2], dtype='int16'),
-                                  'flag_meanings':'no_data interpolation averaging'
+                            'description': 'method used to derive level 2 PTU-data average',
+                            'flag_values': np.array([0, 1, 2], dtype='int16'),
+                            'flag_meanings':'no_data interpolation averaging'
                              },
                   'm_gps': {'long_name': 'bin_method',
-                         'description': 'method used to derive level 2 GPS-data average',
-                                  'flag_values': np.array([0, 1 , 2], dtype='int16'),
-                                  'flag_meanings':'no_data interpolation averaging'
+                            'description': 'method used to derive level 2 GPS-data average',
+                            'flag_values': np.array([0, 1, 2], dtype='int16'),
+                            'flag_meanings':'no_data interpolation averaging'
                              },
                   'x':{'long_name':'WGS84_x'},
                   'y':{'long_name':'WGS84_y'},

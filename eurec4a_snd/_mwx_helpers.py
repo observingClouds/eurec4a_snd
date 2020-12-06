@@ -11,15 +11,19 @@ import warnings
 class SondeTypeNotImplemented(Exception):
     pass
 
+
 class VariableNotFoundInSounding(Warning):
     pass
+
 
 class SondeTypeNotIdentifiable(Warning):
     pass
 
+
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
     return str(msg) + '\n'
+
 
 warnings.formatwarning = custom_formatwarning
 
@@ -92,13 +96,17 @@ class MWX(object):
             List of temporarily decompressed .xml files
             within the archive file
         """
+
     def __init__(self, mwx_file):
         self.tmpdir, self.tmpdir_obj = getTmpDir()
         self.decompressed_files = np.array(decompress(mwx_file, self.tmpdir + '/'))
+
     def __enter__(self):
         return self
+
     def __exit__(self, type, value, traceback):
         self.tmpdir_obj.cleanup()
+
     def get_decompressed_files(self):
         return self.decompressed_files
 
@@ -139,7 +147,7 @@ def check_availability(decomp_files, file, return_name=False):
 def read_xml(filename, return_handle=False):
     xmldoc = minidom.parse(filename)
     itemlist = xmldoc.getElementsByTagName('Row')
-    if return_handle == True:
+    if return_handle:
         return itemlist, xmldoc
     else:
         return itemlist
@@ -208,8 +216,8 @@ def convert_RH_to_dewpoint(T_K, RH):
     M41 sounding system
     """
     assert np.any(T_K > 100), ('Temperature seems to be not given in Kelvin')
-    K = 15*np.log(100/RH) - 2*(T_K-273.15) + 2711.5
-    Tdew = T_K*2*K/(T_K*np.log(100/RH)+2*K)
+    K = 15 * np.log(100 / RH) - 2 * (T_K - 273.15) + 2711.5
+    Tdew = T_K * 2 * K / (T_K * np.log(100 / RH) + 2 * K)
     
     return Tdew
 
@@ -220,10 +228,10 @@ def calc_vapor_pressure(sounding):
     """
     if np.any(sounding.Temperature > 100):
         print('Temperature does not seem to be given in Celsius (assume Kelvin and autoconvert to Celsius)')
-        t = sounding.Temperature.values -273.15
+        t = sounding.Temperature.values - 273.15
     else:
         t = sounding.Temperature.values
-    vapor_pressure = (sounding.Humidity/100.) * (611.2 * np.exp((17.62 * t)/(243.12 + t)))
+    vapor_pressure = (sounding.Humidity / 100.) * (611.2 * np.exp((17.62 * t)/(243.12 + t)))
     return vapor_pressure
 
 
@@ -231,7 +239,7 @@ def calc_wv_mixing_ratio(sounding, vapor_pressure):
     """
     Calculate water vapor mixing ratio
     """
-    wv_mix_ratio = 1000.*((0.622*vapor_pressure)/(100.*sounding.Pressure - vapor_pressure))
+    wv_mix_ratio = 1000. * ((0.622 * vapor_pressure)/(100. * sounding.Pressure - vapor_pressure))
     return wv_mix_ratio
 
 

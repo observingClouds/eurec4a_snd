@@ -7,16 +7,15 @@ Script to convert sounding files from Meteomodem soundings
 """
 
 import os
-from pathlib import Path, PureWindowsPath
+from pathlib import Path
 import subprocess as sp
 import argparse
 import logging
 import glob
-from datetime import timedelta
 import datetime as dt
 import netCDF4
-from netCDF4 import num2date, default_fillvals
-import time #as time_module
+from netCDF4 import num2date
+import time
 import tqdm
 import json
 import numpy as np
@@ -133,8 +132,10 @@ def get_args():
     return parsed_args
 
 
-def main(args={}):
+def main(args=None):
     # Set up global configuration of BCO-MPI-GIT:
+    if args is None:
+        args = {}
     try:
         args = get_args()
     except:
