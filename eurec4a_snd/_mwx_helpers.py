@@ -144,10 +144,10 @@ def check_availability(decomp_files, file, return_name=False):
         return avail
 
 
-def read_xml(filename, return_handle=False):
+def read_xml(filename, return_handle=[]):
     xmldoc = minidom.parse(filename)
     itemlist = xmldoc.getElementsByTagName('Row')
-    if return_handle:
+    if return_handle is []:
         return itemlist, xmldoc
     else:
         return itemlist
