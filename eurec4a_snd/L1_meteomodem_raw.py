@@ -246,7 +246,8 @@ def main(args=None):
         pd_snd = pd.read_csv(mwx_file, delimiter='\t')
 
         # Get date information from filename
-        date_str = mwx_file.split('_')[-2]
+        basename = os.path.basename(mwx_file)
+        date_str = basename.split('_')[1]
         date_dt = dt.datetime.strptime(date_str, '%Y%m%d%H').date()
         first_time_hour =  np.round(pd_snd.Time[0]/(60*60))
         if (first_time_hour > 12) and (dt.datetime.strptime(date_str, '%Y%m%d%H').hour == 0):
