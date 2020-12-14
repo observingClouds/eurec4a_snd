@@ -280,8 +280,8 @@ def main(args=None):
 
         # Split ascending and descending sounding
         direction_dict = {0: 'ascent', 1: 'descent'}
-        pd_snd_asc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 0]
-        pd_snd_dsc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 1]
+        pd_snd_asc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 0].copy()
+        pd_snd_dsc = pd_snd_rnd.loc[pd_snd_rnd.Dropping == 1].copy()
 
         # Bugfix 17
         for s, (sounding, func) in enumerate(zip((pd_snd_asc, pd_snd_dsc), (np.greater_equal, np.less_equal))):
@@ -299,8 +299,8 @@ def main(args=None):
                 logging.warning("Calculate bursting of balloon from maximum geopotential height")
                 idx_max_hgt = np.argmax(pd_snd_rnd.Height)
 
-                pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1]
-                pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:]
+                pd_snd_asc = pd_snd_rnd.iloc[0:idx_max_hgt+1].copy()
+                pd_snd_dsc = pd_snd_rnd.iloc[idx_max_hgt+1:].copy()
                 pd_snd_asc.Dropping = 0
                 pd_snd_dsc.Dropping = 1
 
