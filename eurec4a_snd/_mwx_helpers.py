@@ -144,10 +144,10 @@ def check_availability(decomp_files, file, return_name=False):
         return avail
 
 
-def read_xml(filename, return_handle=False):
+def read_xml(filename, return_handle=[]):
     xmldoc = minidom.parse(filename)
     itemlist = xmldoc.getElementsByTagName('Row')
-    if return_handle:
+    if return_handle is []:
         return itemlist, xmldoc
     else:
         return itemlist
@@ -216,8 +216,9 @@ def convert_RH_to_dewpoint(T_K, RH):
     M41 sounding system
     """
     assert np.any(T_K > 100), ('Temperature seems to be not given in Kelvin')
-    K = 15 * np.log(100 / RH) - 2 * (T_K - 273.15) + 2711.5
-    Tdew = T_K * 2 * K / (T_K * np.log(100 / RH) + 2 * K)
+    hum_frac = np.divide(100,RH, out=np.empty_like(RH).fill(np.nan), where=RH!=0)
+    K = 15 * np.log(hum_frac) - 2 * (T_K - 273.15) + 2711.5
+    Tdew = T_K * 2 * K / (T_K * np.log(hum_frac) + 2 * K)
     
     return Tdew
 
