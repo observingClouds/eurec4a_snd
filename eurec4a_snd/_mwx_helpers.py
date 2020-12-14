@@ -188,7 +188,7 @@ def get_sounding_profile(file, keys):
 
 
 def get_sounding_metadata(file, keys):
-    itemlist = read_xml(file, keys)
+    itemlist = read_xml(file, False)
     sounding_meta_dict = {}
     for i, item in enumerate(itemlist):
         assert i == 0, 'further entries were found, meaning soundings meta data could be mixed up'
