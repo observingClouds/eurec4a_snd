@@ -17,7 +17,7 @@ cd ~/GITHUB/eurec4a_snd/eurec4a_snd/
 git checkout master
 
 export OUTPUT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_v7'
-export EXPORT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export4'
+export EXPORT_PATH='/mnt/lustre02/work/mh0010/m300408/EUREC4Asoundings_export5'
 
 rm -r $OUTPUT_PATH
 rm -r $EXPORT_PATH
