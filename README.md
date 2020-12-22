@@ -1,6 +1,6 @@
 # eurec4a_snd
 
-Software: [![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146) Data: https://doi.org/10.25326/62
+Software: [![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146) Data: https://doi.org/10.25326/137
 
 During the EUREC4A/ATOMIC campaign many radiosondes were launched from different platforms and partners. This collection of scripts has been used to convert, visualize and interpolate the data in a common way.
 
