@@ -7,6 +7,7 @@ Script to convert sounding files from Meteomodem soundings
 """
 
 import os
+import re
 from pathlib import Path
 import subprocess as sp
 import argparse
@@ -335,8 +336,19 @@ def main(args=None):
             else:
                 # Guess filename
                 bufr_file = mwx_file.replace('COR','BFR').replace('.cor', '.309057.BFR')
+                # other option in case BFR has not been reprocessed, but cor has changed
+                ## find reprocessing addition in filename (_R%Y%m%d) and replace with ''
+                pattern = '_R\d{8}'
+                results = re.search(pattern, bufr_file)
+                if results is not None:
+                    match = results.group()
+                    bufr_file_old = bufr_file.replace(match, '')
                 if os.path.isfile(bufr_file):
                     meta_data_avail = True
+                elif os.path.isfile(bufr_file_old) and results is not None:
+                    logging.warning('Could not find BUFR file of current file, but an older version.')
+                    meta_data_avail = True
+                    bufr_file = bufr_file_old
                 else:
                     logging.warning("No sonde specific metadata is available, please consider adding paths to the"
                                     " BUFR files as well.")
