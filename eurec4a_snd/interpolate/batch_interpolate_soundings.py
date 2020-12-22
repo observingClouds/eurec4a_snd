@@ -371,15 +371,19 @@ def main(args={}):
 
         # Unique levels test
         if len(ds.altitude) != len(np.unique(ds.altitude)):
-            print('Altitude levels are not unique of {}'.format(file))
+            logging.warning('Altitude levels are not unique of {}'.format(file))
             break
 
         # Prepare some data that cannot be linearly interpolated
+        logging.debug('Calculate wind components')
         u, v = get_wind_components(ds.windDirection.values, ds.windSpeed.values)
         ds['wind_u'] = xr.DataArray(u, dims=['level'])
         ds['wind_v'] = xr.DataArray(v, dims=['level'])
 
         if 'altitude_WGS84' in ds.keys():
+            logging.debug('Calculate WGS84 altitude')
+            logging.warning('Caution: This feature is under development. Especially, the correct averaging of the '
+                            'position at the 0 meridian and close to the poles is not yet implemented.')
             # Convert lat, lon, alt to cartesian coordinates
             ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
             lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
@@ -392,8 +396,9 @@ def main(args={}):
             for var, val in {'x':x, 'y':y, 'z':z}.items():
                 ds[var] = xr.DataArray(val, dims=['level'])
         else:
-            logging.warning('No WGS84 altitude could be found. The averaging of the position might be faulty especially at the 0 meridian and close to the poles')
-        
+            logging.warning('No WGS84 altitude could be found.')
+
+        logging.debug('Humidity calculations to get q')
         theta = calc_theta_from_T(ds['temperature'].values, ds['pressure'].values)
         e_s = calc_saturation_pressure(ds['temperature'].values + 273.15)
         w_s = mpcalc.mixing_ratio(e_s * units.Pa, ds['pressure'].values*units.hPa).magnitude
@@ -451,6 +456,7 @@ def main(args={}):
             ds_interp['launch_time'] = ds_new['launch_time']
 
         ## Interpolation NaN
+        logging.debug('Interpolate NaN')
         ds_interp = ds_interp.interpolate_na('altitude', max_gap=max_gap_fill, use_coordinate=True)
 
         dims_2d = ['sounding', 'altitude']
