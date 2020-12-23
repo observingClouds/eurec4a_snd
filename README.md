@@ -1,6 +1,6 @@
 # eurec4a_snd
 
-[![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146)
+Software: [![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146) Data: https://doi.org/10.25326/137
 
 During the EUREC4A/ATOMIC campaign many radiosondes were launched from different platforms and partners. This collection of scripts has been used to convert, visualize and interpolate the data in a common way.
 
@@ -10,6 +10,9 @@ This repository has been created before the start of the campaign and evolved fu
 - correct and quality control soundings
 
 While most of the scripts can be applied to every sounding that exists in the BUFR or mwx format, some of the postprocessing scripts are specific to the EUREC4A campaign and can only serve as a guidance for other studies.
+
+## What's new
+Changes to the software and produced data can be found [here](docs/whats-new.rst)
 
 ## Installation
 
