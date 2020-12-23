@@ -1,7 +1,7 @@
 What's new
 ==========
 
-v3.0.0 (unreleased)
+v3.0.0 (23.12.2020)
 -------------------
 This release incorporates all suggestions made during the first round of the ESSD review. 
 It also fixes issues that were mentioned by users using this dataset since the last release.
