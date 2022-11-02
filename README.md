@@ -1,6 +1,6 @@
 # eurec4a_snd
 
-Software: [![DOI](https://zenodo.org/badge/213821146.svg)](https://zenodo.org/badge/latestdoi/213821146) Data: https://doi.org/10.25326/137
+[![Software](https://img.shields.io/badge/Software-10.5281%2Fzenodo.4391098-blue)](https://zenodo.org/badge/latestdoi/213821146) [![Data](https://img.shields.io/badge/Data-10.25326%2F137-green)](https://doi.org/10.25326/137)
 
 During the EUREC4A/ATOMIC campaign many radiosondes were launched from different platforms and partners. This collection of scripts has been used to convert, visualize and interpolate the data in a common way.
 
@@ -8,6 +8,8 @@ This repository has been created before the start of the campaign and evolved fu
 - convert and visualize BUFR and Vaisala MW41 rawdata (`.mwx`)
 - interpolate sounding data
 - correct and quality control soundings
+
+A generalized version of this repository has evolved at https://github.com/observingClouds/pysonde.
 
 While most of the scripts can be applied to every sounding that exists in the BUFR or mwx format, some of the postprocessing scripts are specific to the EUREC4A campaign and can only serve as a guidance for other studies.
 
