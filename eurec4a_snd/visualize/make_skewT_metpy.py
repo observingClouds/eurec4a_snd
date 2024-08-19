@@ -92,7 +92,12 @@ def main():
 
     launch_time = ds_sel.launch_unixtime
     launch_time = dt.datetime.utcfromtimestamp(launch_time)
-    platform = ds_sel.platform_name.split('(')[1][:-1].strip()
+    
+    #print(ds_sel.platform)
+    platform = ds_sel.platform#.split('(')[1][:-1].strip()
+    
+    #old code had platform_name, but in the header (do ncdump -h file), the nc files have only an attribute called platform
+    #platform = ds_sel.platform_name.split('(')[1][:-1].strip()
     resolution = ds_sel.resolution.replace(' ', '')
 
     # Filter nans

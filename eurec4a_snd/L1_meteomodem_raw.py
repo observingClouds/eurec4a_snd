@@ -248,8 +248,14 @@ def main(args=None):
 
         # Get date information from filename
         basename = os.path.basename(mwx_file)
-        date_str = basename.split('_')[1]
-        date_dt = dt.datetime.strptime(date_str, '%Y%m%d%H').date()
+        
+        date_str = basename.split('_')[0][2:]  # Skip 'SA' and take the rest
+        date_dt = dt.datetime.strptime(date_str, '%Y%m%d%H')  
+        print(date_str)
+        print(date_dt)
+        #this was the previous code, but if filename is SA2024081400_2.cor, it returned 2.cor
+        #date_str = basename.split('_')[1]
+        #date_dt = dt.datetime.strptime(date_str, '%Y%m%d%H').date()
         first_time_hour =  np.round(pd_snd.Time[0]/(60*60))
         if (first_time_hour > 12) and (dt.datetime.strptime(date_str, '%Y%m%d%H').hour == 0):
             date_dt = date_dt - dt.timedelta(days=1)  # hour is the forecast hour and therefor at midnight -1 need to be subtracted
@@ -332,13 +338,14 @@ def main(args=None):
             ## COR files do not contain any metadata
             bufr_file = args['BUFRfile']
             if bufr_file is not None:
+                
                 meta_data_avail = True
             else:
                 # Guess filename
                 bufr_file = mwx_file.replace('COR','BFR').replace('.cor', '.309057.BFR')
                 # other option in case BFR has not been reprocessed, but cor has changed
                 ## find reprocessing addition in filename (_R%Y%m%d) and replace with ''
-                pattern = '_R\d{8}'
+                pattern = '\d{8}'
                 results = re.search(pattern, bufr_file)
                 if results is not None:
                     match = results.group()
@@ -356,6 +363,7 @@ def main(args=None):
 
             if meta_data_avail:
                 sounding_bfr = read_bufr_sounding(bufr_file, logging)
+
 
 
             xr_output = xr.Dataset()
